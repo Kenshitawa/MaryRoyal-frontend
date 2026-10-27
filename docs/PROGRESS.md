@@ -1,4 +1,5 @@
-# Progress
+Warning: truncated output (original token count: 13751)
+Total output lines: 287
 
 ## Phase 0 — complete
 - Built: initialized Git, wrote AGENTS.md, architecture analysis and decision log.
