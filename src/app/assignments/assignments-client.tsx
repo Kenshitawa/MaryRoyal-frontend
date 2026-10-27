@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { LearnerLink } from "@/components/learner-link";
+import { MAX_UPLOAD_FILE_BYTES } from "@/lib/upload-limits";
 import {
   AlertCircle,
   BookOpen,
@@ -119,6 +120,10 @@ export default function AssignmentsClient({
   }
 
   async function handleFileUpload(file: File, forAssignmentId?: string) {
+    if (file.size > MAX_UPLOAD_FILE_BYTES) {
+      setMessage("Choose a file smaller than 4 MB.");
+      return;
+    }
     const formData = new FormData();
     formData.append("file", file);
     if (!forAssignmentId) setUploadingAttachment(true);

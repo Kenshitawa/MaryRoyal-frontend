@@ -13,6 +13,10 @@ async function main() {
   const name = process.env.DIRECTOR_NAME?.trim();
   const email = process.env.DIRECTOR_EMAIL?.trim().toLowerCase();
   const password = process.env.DIRECTOR_PASSWORD;
+  const bootstrapToken = process.env.DIRECTOR_BOOTSTRAP_TOKEN;
+  if (!bootstrapToken || bootstrapToken.length < 32) {
+    throw new Error("Set a one-time DIRECTOR_BOOTSTRAP_TOKEN of at least 32 characters in the trusted command environment.");
+  }
   if (!name || name.length < 2 || name.length > 100 || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new Error("Set valid DIRECTOR_NAME and DIRECTOR_EMAIL values for the one-time bootstrap.");
   }

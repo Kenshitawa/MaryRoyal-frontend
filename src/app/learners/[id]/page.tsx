@@ -436,6 +436,14 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
 
             {/* Quick Actions */}
             <div className="flex flex-wrap items-center gap-2.5">
+              {canInScope(actor.role, "exports", "view", "school") && (
+                <a
+                  href={`/api/learners/${learner.id}/export`}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/20 px-4 py-2.5 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/30"
+                >
+                  <FileDown size={14} /> Export Learner Data
+                </a>
+              )}
               {canEditLearner && (
                 <Link
                   href={`/learners/${learner.id}/edit`}

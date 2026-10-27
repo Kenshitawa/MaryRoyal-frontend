@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIResponse } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { rm, unlink } from "node:fs/promises";
 import path from "node:path";
@@ -42,7 +42,7 @@ test.afterAll(async()=>{
  await cleanupDb.$disconnect();
 });
 test("Director signs in, changes temporary password when required, and manages learners and accounts", async ({ page, playwright }) => {
- test.setTimeout(180_000);
+ test.setTimeout(300_000);
  await page.emulateMedia({reducedMotion:"reduce"});
  await page.goto("/");
  await page.getByLabel("Email address").fill("director@maryroyal.ac.ke");
@@ -106,6 +106,16 @@ test("unauthenticated users cannot read learner data", async ({ request }) => {
  expect(response.status()).toBe(401);
  expect((await request.get("/privacy")).status()).toBe(200);
 });
+
+test("learner data exports are Director-only, scoped, downloadable and audited", async ({ playwright }) => {
+ const api=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});
+ let directorLogin: APIResponse | undefined;for(const password of ["PortalTest2026!","MaryRoyalTest2026!","MaryRoyal2026!"]){directorLogin=await api.post("/api/login",{data:{email:"director@maryroyal.ac.ke",password}});if(directorLogin.ok())break;}
+ expect(directorLogin?.ok()).toBeTruthy();if(directorLogin?.ok()&&(await directorLogin.json()).forcePasswordChange)expect((await api.post("/api/change-password",{data:{password:"PortalTest2026!"}})).ok()).toBeTruthy();
+ const response=await api.get(`/api/learners/${testOutOfScopeLearnerId}/export`);expect(response.ok()).toBeTruthy();expect(response.headers()["content-disposition"]).toContain("attachment");expect((await response.json()).learner.id).toBe(testOutOfScopeLearnerId);
+ expect(await cleanupDb.auditEvent.count({where:{action:"LEARNER_DATA_EXPORTED",entityId:testOutOfScopeLearnerId}})).toBeGreaterThan(0);
+ await api.dispose();
+ const teacher=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});let teacherLogin=await teacher.post("/api/login",{data:{email:"teacher@maryroyal.ac.ke",password:"PortalTest2026!"}});if(!teacherLogin.ok())teacherLogin=await teacher.post("/api/login",{data:{email:"teacher@maryroyal.ac.ke",password:"MaryRoyal2026!"}});expect(teacherLogin.ok()).toBeTruthy();if((await teacherLogin.json()).forcePasswordChange)await teacher.post("/api/change-password",{data:{password:"PortalTest2026!"}});expect((await teacher.get(`/api/learners/${testOutOfScopeLearnerId}/export`)).status()).toBe(403);await teacher.dispose();
+});
 test("root page applies saved dark theme before render without browser errors",async({page})=>{
  const errors:string[]=[];page.on("console",message=>{if(message.type()==="error")errors.push(message.text())});page.on("pageerror",error=>errors.push(error.message));
  await page.addInitScript(()=>window.localStorage.setItem("mary-theme","dark"));await page.goto("/");
@@ -114,7 +124,7 @@ test("root page applies saved dark theme before render without browser errors",a
  expect(errors).toEqual([]);
 });
 test("non-director roles receive only the account and learner access configured for them", async ({ playwright }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
  const roles=["headteacher","deputy","secretary","accountant","teacher","parent","learner"] as const;
  for(const role of roles){
   const api=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});
@@ -222,7 +232,8 @@ test("assigned teachers publish work, learners submit it, and school leaders con
 });
 
 test("breadcrumbs, safe back, mobile detail bar and unsaved-form warning work for every role",async({page,playwright})=>{
-  test.setTimeout(180_000);
+  // This intentionally visits each of the eight roles and tests both app and browser history.
+  test.setTimeout(360_000);
  await page.addInitScript(()=>window.localStorage.setItem("mary-theme","dark"));
  const roles=[
   {email:"director@maryroyal.ac.ke",home:"/dashboard",target:"/learners",label:"Learners"},

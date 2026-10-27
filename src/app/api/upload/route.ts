@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { writeStoredFile } from "@/lib/file-storage";
+import { MAX_MULTIPART_BODY_BYTES, MAX_UPLOAD_FILE_BYTES } from "@/lib/upload-limits";
 
 async function actor() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -24,8 +25,6 @@ const ALLOWED_MIME_TYPES = new Set([
   "application/pdf",
 ]);
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
 export async function POST(request: Request) {
   const user = await actor();
   if (!user) {
@@ -33,6 +32,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    const contentLength = Number(request.headers.get("content-length"));
+    if (Number.isFinite(contentLength) && contentLength > MAX_MULTIPART_BODY_BYTES) {
+      return NextResponse.json({ error: "Upload request exceeds the 4 MB file limit." }, { status: 413 });
+    }
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -47,10 +50,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_UPLOAD_FILE_BYTES) {
       return NextResponse.json(
-        { error: "File exceeds 10MB limit." },
-        { status: 400 }
+        { error: "File exceeds the 4 MB limit." },
+        { status: 413 }
       );
     }
 

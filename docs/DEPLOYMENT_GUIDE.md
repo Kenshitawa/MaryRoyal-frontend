@@ -17,13 +17,20 @@ Do not use both hosts for split halves. The Vercel/Render project root must cont
 - Production uses `prisma/postgresql/schema.prisma` and its checked-in PostgreSQL migration history.
 - `npm run build:production` generates the PostgreSQL Prisma Client and builds Next.js.
 - `npm run db:migrate:production` applies production migrations. It uses `DIRECT_URL` for migration connections; set both `DATABASE_URL` and `DIRECT_URL` in the shell that runs the command.
+- The PostgreSQL migrations enable RLS on every current `public` table and revoke schema/table access from `PUBLIC`, `anon`, and `authenticated`. Prisma is the server-side data path. After migration, run `npm run security:check-supabase` from a trusted environment with `DATABASE_URL`, `SUPABASE_URL`, and `SUPABASE_PUBLISHABLE_KEY` set; it verifies RLS and grants on each table and probes the public Data API. Do not call this check passed until run against the actual Supabase project.
 - Never run `npm run setup`, `npm run seed:demo`, or `npm run reset:fresh` against the production database.
 
 Supabase connection values depend on the application host. For Vercel functions, use the Supavisor transaction-pooler URL for `DATABASE_URL` and include `pgbouncer=true` when the Supabase Prisma connection instructions specify it; use a session/direct connection for `DIRECT_URL` and migrations. For a persistent Render Node service, use a session-pooler or direct connection supported by that service's network. Supabase connection strings are shown in its Connect panel. See [Supabase's Prisma guide](https://supabase.com/docs/guides/database/prisma) and [connection modes](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
-**Vercel upload limit:** Vercel Functions cap request and response bodies at 4.5 MB. This app's admission upload limit is 8 MB and assignment upload limit is 10 MB, and the current form uploads pass through the Next.js API. Those full-size uploads will fail on Vercel even with Supabase Storage configured. For the current complete upload workflow, choose Render with the configured persistent disk. Vercel becomes a full-workflow option after direct/resumable browser-to-Supabase uploads are implemented and tested. See [Vercel's function limits](https://vercel.com/docs/functions/limitations) and [Supabase resumable uploads](https://supabase.com/docs/guides/storage/uploads/resumable-uploads).
+**Vercel upload limit:** Vercel Functions cap request and response bodies at 4.5 MB. Admission and assignment uploads are capped at 4 MiB per file, and the API rejects multipart request bodies larger than 4 MiB plus 64 KiB to leave room below that platform cap. The API is authoritative; browser checks provide an earlier message. Verify uploads on the chosen host before using real records. Larger uploads would require direct/resumable browser-to-private-Supabase-Storage transfers. See [Vercel's function limits](https://vercel.com/docs/functions/limitations) and [Supabase resumable uploads](https://supabase.com/docs/guides/storage/uploads/resumable-uploads).
 
-The PostgreSQL schema validates and its initial migration is generated from the current data model. It has **not** been applied to a live Supabase instance or validated against a real Postgres server in this workspace. Take a new empty Supabase project and apply migrations before importing any school data.
+Deployment update (2026-10-27): the production migration set was applied to the empty Supabase project `yosbrtigxfqagdkixegh`: initial schema, deny-by-default RLS/API lockdown, append-only audit trigger, and fixed audit-function search path. The live project now has 52 public tables and all 52 have RLS enabled. A SQL privilege check confirmed `anon` and `authenticated` have no schema usage or table read/write permissions. The security advisor reports the expected informational notices for tables with RLS and no policies; server-side Prisma is the only application data path. No learner or demo data was inserted.
+
+The migrations were applied through the Supabase management connection, so Prisma's migration history table is not yet populated in the app database. Before running `prisma migrate deploy` from a host, reconcile Supabase migration history against the four checked-in PostgreSQL migration files; do not replay the already-applied initial schema.
+
+The supplied Supabase dashboard showed project status Healthy on 2026-10-27. Its database schema and public-role grants are now verified as described above. The unauthenticated Storage status endpoint returned HTTP 200; the Auth and REST endpoints returned HTTP 401 without an API key. A live app connection, runtime credentials, private bucket configuration, and backup/restore drill are still pending.
+
+At Node server startup, the app validates production `DATABASE_URL`, `SESSION_SECRET`, and storage-driver configuration. Build-time validation is skipped because Vercel builds do not connect to the database; production server startup remains strict. When `OBJECT_STORAGE_DRIVER=supabase`, all three Supabase storage variables are required. Vercel production rejects local file storage because its filesystem is ephemeral. Validation reports variable names only, never values. `DIRECT_URL` is needed by migration commands, not app requests.
 
 ## Vercel + Supabase setup
 
@@ -37,8 +44,8 @@ The PostgreSQL schema validates and its initial migration is generated from the 
    - `SUPABASE_SERVICE_ROLE_KEY`: server-only service-role secret. Never prefix it with `NEXT_PUBLIC_` and never put it in browser code.
    - `SUPABASE_STORAGE_BUCKET`: `mary-royal-private`.
 3. Create a **private** Supabase Storage bucket named `mary-royal-private`. Do not make it public. File reads are proxied through authenticated, scoped app routes; the service-role key stays server-side.
-4. Apply the initial schema before starting the app: with the two database URLs available in a trusted local shell, run `npm run db:migrate:production` from the full project checkout.
-5. Create the initial Director in the same trusted shell. Set `DIRECTOR_NAME`, `DIRECTOR_EMAIL`, and a unique `DIRECTOR_PASSWORD` (16+ characters with upper/lowercase, number and symbol), then run `npm run bootstrap:director`. The command refuses to run if any account exists and forces a password change at first login. Do not add the bootstrap password to Vercel variables or commit it. Clear the temporary environment variables immediately after the command.
+4. The schema and security migrations are already applied to project `yosbrtigxfqagdkixegh`, with 52/52 tables protected by RLS. Before running Prisma Migrate from another environment, reconcile its migration ledger against the four checked-in PostgreSQL migration files. Then set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` and run `npm run security:check-supabase` with real pooled and direct database URLs; require a pass before admitting data.
+5. Create the initial Director from a trusted shell connected to the production database. Set `DIRECTOR_BOOTSTRAP_TOKEN` (random and at least 32 characters), `DIRECTOR_NAME`, `DIRECTOR_EMAIL`, and a unique `DIRECTOR_PASSWORD` (16+ characters with upper/lowercase, number and symbol), then run `npm run bootstrap:director`. The command requires the token and refuses to run if any account exists; it forces a password change at first login. Do not add the bootstrap token or password to Vercel variables or commit either. Clear all temporary environment variables immediately after the command.
 6. Deploy. Verify `/api/health` returns `{"status":"ok"}`, sign in as the Director, change the password, and verify a private admission document and assignment attachment can be uploaded and retrieved by authorized accounts only.
 
 Generate a secret locally with `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"`; paste it directly into the host's secret field and do not commit or send it in chat.
@@ -49,11 +56,15 @@ The included `render.yaml` describes one Node web service for the full app, a pr
 
 Render's default filesystem is ephemeral. The persistent disk is necessary for local-file mode and may disable zero-downtime deploys. See [Render's Next.js guide](https://render.com/docs/deploy-nextjs-app), [deploy behavior](https://render.com/docs/deploys), and [persistent disk documentation](https://render.com/docs/disks).
 
+## Current app-host state
+
+The Vercel account contains an older `maryroyalschool` project connected to `Kenshitawa/maryroyalschool`. It has no environment variables and is not connected to canonical `MaryRoyal-frontend`. Do not replace its production source until the canonical commit is pushed and all runtime secrets below are set. The app is not yet live against Supabase.
+
 ## Before entering real learner data
 
 This repository is not certified production-ready yet. Do not admit real children until all of these are complete:
 
-- Apply and exercise the PostgreSQL migrations against a real disposable Postgres project; test backup and restore from a separate environment.
+- Test the live PostgreSQL app connection and migration ledger; test encrypted backup and restore from a separate environment.
 - Run the complete Playwright suite to green. The last recorded full run was 8/9, with the admission PDF request timing out on the remaining scenario.
 - Complete route-by-route authorization and IDOR tests, including nested records, file downloads, finance, parent/learner scope and the new upload routes. The present test suite does not cover every endpoint/action/role combination.
 - Replace process-local login throttling with a durable distributed rate limit; verify account lock and recovery, idle-session behavior, and sign-out-all-devices semantics under multiple instances.

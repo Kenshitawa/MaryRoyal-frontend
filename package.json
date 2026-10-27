@@ -11,13 +11,18 @@
     "build": "prisma generate && next build",
     "build:production": "prisma generate --schema prisma/postgresql/schema.prisma && next build",
     "db:migrate:production": "prisma migrate deploy --schema prisma/postgresql/schema.prisma",
+    "security:check-supabase": "prisma generate --schema prisma/postgresql/schema.prisma && tsx scripts/check-supabase-security.ts",
+    "security:scan-history": "node scripts/scan-secrets-history.mjs",
     "bootstrap:director": "tsx scripts/bootstrap-director.ts",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "node scripts/run-e2e.mjs",
-    "backup": "tsx scripts/backup.ts"
+    "backup": "tsx scripts/backup-postgres.ts",
+    "backup:sqlite": "tsx scripts/backup.ts",
+    "restore:postgres": "prisma generate --schema prisma/postgresql/schema.prisma && tsx scripts/restore-postgres.ts",
+    "retention:enforce": "prisma generate --schema prisma/postgresql/schema.prisma && tsx scripts/enforce-retention.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

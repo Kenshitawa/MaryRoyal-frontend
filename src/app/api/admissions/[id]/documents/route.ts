@@ -6,9 +6,9 @@ import { assertCanInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { admissionDocumentCategory } from "@/lib/admissions";
 import { deleteStoredFile, writeStoredFile } from "@/lib/file-storage";
+import { MAX_MULTIPART_BODY_BYTES, MAX_UPLOAD_FILE_BYTES } from "@/lib/upload-limits";
 
 export const runtime = "nodejs";
-const maxBytes = 8 * 1024 * 1024;
 const extensionByType = { "image/jpeg": "jpg", "image/png": "png", "application/pdf": "pdf" } as const;
 const fileKey = (draftId: string, key: string) => `admissions/${draftId}/${key}`;
 function matchesSignature(type: string, bytes: Uint8Array) {
@@ -30,13 +30,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!draft) return NextResponse.json({ error: "Admission draft not found." }, { status: 404 });
   if (user.role === "SECRETARY" && draft.createdById !== user.id) { await db.auditEvent.create({ data: { actorId: user.id, action: "ACCESS_DENIED", entity: "AdmissionDraft", entityId: id } }); return NextResponse.json({ error: "Forbidden" }, { status: 403 }); }
   if (draft.status !== "DRAFT") return NextResponse.json({ error: "Documents cannot change after submission." }, { status: 409 });
+  const contentLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_MULTIPART_BODY_BYTES) return NextResponse.json({ error: "Upload request exceeds the 4 MB file limit." }, { status: 413 });
   let form: FormData;
   try { form = await request.formData(); } catch { return NextResponse.json({ error: "Upload an admission document." }, { status: 400 }); }
   const category = admissionDocumentCategory.safeParse(form.get("category"));
   const file = form.get("file");
   if (!category.success || !(file instanceof File)) return NextResponse.json({ error: "Choose a document type and file." }, { status: 400 });
   const contentType = file.type.toLowerCase() as keyof typeof extensionByType;
-  if (!Object.hasOwn(extensionByType, contentType) || file.size < 1 || file.size > maxBytes || category.data === "PASSPORT_PHOTO" && contentType === "application/pdf") return NextResponse.json({ error: "Use a JPEG/PNG photo or PDF document up to 8 MB. Passport photos must be an image." }, { status: 400 });
+  if (!Object.hasOwn(extensionByType, contentType) || file.size < 1 || file.size > MAX_UPLOAD_FILE_BYTES || category.data === "PASSPORT_PHOTO" && contentType === "application/pdf") return NextResponse.json({ error: "Use a JPEG/PNG photo or PDF document up to 4 MB. Passport photos must be an image." }, { status: file.size > MAX_UPLOAD_FILE_BYTES ? 413 : 400 });
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!matchesSignature(contentType, bytes)) return NextResponse.json({ error: "The file content does not match the selected image or PDF type." }, { status: 400 });
   const key = `${randomUUID()}.${extensionByType[contentType]}`;

@@ -232,3 +232,50 @@
 - Local state: ran the confirmed fresh reset after E2E, removed local upload directories, and verified one Director account with zero learners, invoices, assessments and attendance rows.
 - Remaining blockers: no real Supabase database password was supplied (the URL is still a placeholder); no PostgreSQL migration has been applied to a live service; full route-by-route IDOR/security review, distributed login throttling/session revocation, backup/restore drill, data retention/export workflows and privacy/legal readiness remain incomplete. The Vercel path also needs direct/resumable uploads before it supports the existing max file sizes.
 - Next: use Render for the whole app with Supabase Postgres and Render persistent disk, or implement direct uploads before choosing Vercel. Provision secrets privately, apply migration to an empty project, run the one-time Director bootstrap, complete the security/privacy gates, and rerun the full E2E suite to green before real learner data.
+# Upload cap adjustment — 2026-10-27
+
+- **Built:** Admission documents and assignment attachments now share a 4 MiB per-file limit. Admission and generic assignment APIs reject declared multipart bodies above 4 MiB + 64 KiB before parsing and enforce the file cap after parsing; both browser forms reject oversized files before upload. The account profile photo's existing smaller limit remains unchanged. Updated deployment/security notes to explain the Vercel request-size headroom.
+- **Tested:** `npm run typecheck` passed; `npm test` passed (24 tests); `npm run lint` completed with 0 errors and the existing 39 warnings; local home and `/api/health` returned 200/ok; `git diff --check` passed. `npm run test:e2e` passed 8/9; its final cross-role navigation scenario timed out waiting for the saved dark theme on `<html>` (3.2 minutes), an existing unrelated test/UI issue.
+- **Known issues:** Full E2E remains not green. The Vercel multipart cap still needs an actual host deployment smoke test; platform rejection can happen before the app receives the request. Larger than 4 MiB files require a direct/resumable private-storage upload path.
+- **Next:** Resolve the remaining E2E dark-theme persistence failure and complete production gates in `docs/ROADMAP.md`; live PostgreSQL, backup/restore and privacy readiness remain open.
+
+## Browser-suite timeout diagnosis — 2026-10-27
+
+- **Built:** Kept the eight-role navigation/theme/back-forward assertions and gave this intentionally broad browser scenario a 6-minute test budget. Reproduced the scenario alone; saved and applied theme values were both `dark` for all eight roles and the scenario passed. This indicates the previous full-run failure was the test's 3-minute runtime budget under load, rather than a lost theme preference.
+- **Tested:** `npm run seed:demo` completed; isolated `npx playwright test -g 'breadcrumbs, safe back' --reporter=line` passed (1/1, 3.1 minutes). Full suite with the new budget is pending.
+- **Known issues:** The remaining production/security/data-readiness items in `docs/ROADMAP.md` still block real student data. No cloud service has been configured or migrated.
+- **Next:** Rerun full unit, E2E and permission suites, then implement and document database hardening and operational safeguards that can be verified without live credentials.
+
+## PostgreSQL public API lockdown — 2026-10-27
+
+- **Built:** Added a PostgreSQL migration to enable RLS on current public tables, revoke public/anon/authenticated schema and table access, and deny those roles future default table/sequence grants. Added `npm run security:check-supabase` to verify database grants/RLS plus publishable-key REST read denial for each table. Updated the deployment steps and started a candid code-review matrix in `docs/SECURITY_REVIEW.md`.
+- **Tested:** `npm run typecheck` passed; `npm test` passed (24 tests); `npm run lint` completed with 0 errors and 39 existing warnings; PostgreSQL Prisma schema validation passed. No live Supabase credentials were available, so migration application and API denial are not verified against the project.
+- **Known issues:** Runtime Prisma uses the privileged server database connection and therefore bypasses RLS; per-request RBAC remains essential. The bootstrap still lacks a separate token, exhaustive IDOR coverage is absent, and the published Supabase project's current grants remain unknown until migration and check are run.
+- **Next:** Add a bootstrap token, encrypted PostgreSQL backup/restore scripts, environment validation, then privacy tools and go-live owner checklist. Hosted migration/restore cannot be honestly marked complete without owner-configured credentials and a second database.
+
+## Bootstrap gate — 2026-10-27
+
+- **Built:** `bootstrap:director` now requires `DIRECTOR_BOOTSTRAP_TOKEN` (minimum 32 characters) in addition to the one-time Director details; it remains database-empty-only and forces password change. Documented that the token and initial password are entered only into a trusted ephemeral command environment.
+- **Tested:** Pending full type-check and targeted bootstrap test review.
+- **Known issues:** A CLI token is an operational safeguard; host dashboard access and database credentials still control who can invoke it. No production bootstrap has been run.
+- **Next:** Add encrypted PostgreSQL backup/restore scripts and production startup environment validation.
+
+## Production environment validation — 2026-10-27
+
+- **Built:** Added a Next.js Node startup hook and Zod validation for the production PostgreSQL URL, unique session secret, and Supabase storage variables when that driver is selected. Failure output names only missing/invalid fields.
+- **Tested:** Pending type-check and production build.
+- **Known issues:** Hosted variables and service startup have not been exercised. `DIRECT_URL` remains required only for migrations and maintenance commands.
+- **Next:** Test production build/startup validation and implement encrypted pg_dump/restore support.
+
+## Release hardening continuation — 2026-10-27
+
+- **Built:** Added RLS/Data API verification attempts for SELECT/INSERT/UPDATE/DELETE using the publishable key; a PostgreSQL trigger migration to block audit row update/delete/truncate; encrypted PostgreSQL backup/restore tooling with AES-256-GCM and an explicit empty-target guard; dry-run-first cleanup of abandoned admission drafts; Director-only audited learner JSON data export with an export button on profiles; draft child privacy notice and owner go-live checklist. Improved the cross-role navigation timeout to allow the full eight-role flow; full suite passed 9/9 after the timeout adjustment. Supabase dashboard checked read-only: project Healthy, no migrations and no backups recorded. Render currently has unrelated services and Vercel is on New Project.
+- **Tested:** Type-check passed before the latest privacy/export refinements, then caught and fixed a TypeScript union issue in the security verifier. Unit tests 24/24 passed; `npm audit` reported 0 vulnerabilities; the tracked-file/history secret-pattern scan found 0 matches; the full Playwright run passed 9/9 before the export test was added. Latest type-check and full 10-test E2E rerun pending. Lint 0 errors, 41 warnings at that point (2 new scanner warnings have been removed; existing 39 remain). No production migration or backup restore was performed.
+- **Known issues:** Supabase project has no schema migrations/backups; no direct DB password/connection is configured; no actual Vercel app or Mary Royal Render service exists. The system is not live or cleared for real student data. Security review still lists major gaps: exhaustive IDOR route coverage, durable login limit/session revocation, DB-enforced append-only audit, anonymization/deletion, and real restore test. The supplied publishable key is not a DB or storage secret.
+- **Next:** Finish type-check and full E2E run; build production schema; update docs and commit. Live deployment requires private runtime/direct DB URLs and server-only storage secret in the host dashboard; never commit or send them in chat.
+
+## Supabase schema deployed and Vercel readiness — 2026-10-27
+- Built: Applied four PostgreSQL migrations to the empty Supabase project `yosbrtigxfqagdkixegh`: initial 52-table schema, deny-by-default public API/RLS lockdown, append-only audit triggers, and audit-function search-path hardening. Updated deployment/go-live docs with live state. Fixed production Prisma import validation so the production build can run without attempting to use the local SQLite URL; production server startup still requires PostgreSQL and configured storage.
+- Tested: Supabase reports four migrations and 52/52 public tables with RLS enabled. SQL privilege checks confirm `anon` and `authenticated` have no public schema access or table select/insert/update privileges. Supabase security advisors have no security warnings after function hardening; only informational no-policy notices remain, as intended. `npm run build:production` passed (legacy lint warnings remain).
+- Known issues: Vercel account has an existing older `maryroyalschool` project connected to `Kenshitawa/maryroyalschool`; it has no environment variables. Canonical `MaryRoyal-frontend` is 55 commits ahead and 4 behind the local branch and still needs synchronization. Local `.env` has SQLite only; no production PostgreSQL URL or private Supabase storage key is configured. Therefore no functional Vercel deployment has been made. Private `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, private bucket setup, and Director bootstrap remain required. Full E2E result was 9/10; cross-role browser Back scenario still fails and is deferred per the latest request to prioritize deployment. Not cleared for real learner data.
+- Next: Commit and synchronize the canonical full-stack source, then complete Vercel environment setup and deploy when production connection/storage secrets have been entered privately in Vercel/Supabase.

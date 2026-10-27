@@ -35,7 +35,7 @@ export default function PrivacyPage() {
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3 py-1 text-[11px] font-bold text-blue-200 ring-1 ring-inset ring-blue-400/30">
                   <ShieldCheck size={14} className="text-blue-400" />
-                  Kenya Data Protection Act Compliance
+                  Privacy Notice · Draft for School Approval
                 </span>
                 <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
                   Data Protection &amp; Privacy Notice
@@ -78,8 +78,8 @@ export default function PrivacyPage() {
               </div>
             </div>
             <p className="mt-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-              Medical conditions, allergies, and emergency protocols are strictly shielded. Every access to a learner&apos;s
-              health profile generates an immutable audit record logging the viewing staff member and timestamp.
+              Medical conditions and allergies are restricted to authorized roles. Sensitive profile views are recorded in
+              the school access log; the school should review access and retention controls regularly.
             </p>
           </div>
 
@@ -110,8 +110,9 @@ export default function PrivacyPage() {
               </div>
             </div>
             <p className="mt-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-              Mary Royal School operates a local-first system. Learner data never leaves school-authorized devices or
-              safe backups, and external AI or paid tracking services are strictly prohibited.
+              This hosted system stores school information with school-approved service providers. Private learner files
+              are served through authenticated application routes. Optional assignment drafting uses a local model only;
+              learner content is not sent to an external AI service.
             </p>
           </div>
         </div>
@@ -123,7 +124,28 @@ export default function PrivacyPage() {
             <p>
               This school portal is designed exclusively to support learning, school administration, and parent-school
               collaboration. It holds learner identity records, daily attendance logs, CBC competency marks, guardian contact
-              details, and school fee statements strictly for educational administration.
+              details, health and safeguarding information, learning activity, and school fee statements for admission,
+              learner welfare, education, communication, and accounting purposes. The school collects only fields it
+              considers necessary for those purposes.
+            </p>
+            <p>
+              Before processing a child&apos;s personal data, the school must obtain and record verifiable consent from a
+              parent or guardian, explain how the information is used, and protect the child&apos;s best interests. Data is
+              accessible only to accounts whose role permits it. The hosted database and file storage are provided by
+              third-party infrastructure providers selected by the school; cross-border safeguards and provider contracts
+              must be confirmed by the school before real learner data is entered.
+            </p>
+            <p>
+              A parent or guardian may contact the school to request access, correction, restriction, objection, or deletion
+              where applicable. The Director can export a learner&apos;s system records. The school must verify the requester,
+              consider legal record-keeping duties, and document its decision. A full in-app anonymization/deletion workflow
+              and complete file export are not currently available.
+            </p>
+            <p>
+              Records should be kept only as long as necessary for school and legal purposes, then securely deleted or
+              anonymized. The school must approve and publish its retention schedule before production use; abandoned
+              admission drafts have a 365-day purge tool, while other records are not yet automatically purged. This notice
+              is a draft for review by the school&apos;s data protection lead and is not legal advice or a compliance certificate.
             </p>
             <p>
               Always protect your password and any downloaded receipts or term report cards. Never leave a session active on a
@@ -132,7 +154,7 @@ export default function PrivacyPage() {
             <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-900/50 dark:bg-blue-950/30">
               <p className="font-bold text-blue-900 dark:text-blue-200">Office of the Director &amp; Head Teacher</p>
               <p className="mt-1 text-slate-600 dark:text-slate-400">
-                Mary Royal School · Obunga, Kisumu, Kenya · Email: office@maryroyal.ac.ke
+                Mary Royal School · Obunga, Kisumu, Kenya · Contact the school office using its verified current contact details.
               </p>
             </div>
           </div>
