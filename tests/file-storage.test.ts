@@ -48,7 +48,7 @@ describe("file storage", () => {
   it("uses the configured private Supabase bucket for upload, read and removal", async () => {
     process.env.OBJECT_STORAGE_DRIVER = "supabase";
     process.env.SUPABASE_URL = "https://school.example.supabase.co";
-    process.env.SUPABASE_SERVICE_ROLE_KEY = "server-test-key";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "sb_secret_test_opaque_key";
     process.env.SUPABASE_STORAGE_BUCKET = "mary-royal-private";
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response("{}", { status: 200 }))
@@ -63,5 +63,25 @@ describe("file storage", () => {
       ["https://school.example.supabase.co/storage/v1/object/authenticated/mary-royal-private/admissions/draft/file.pdf", undefined],
       ["https://school.example.supabase.co/storage/v1/object/mary-royal-private", "DELETE"],
     ]);
+    for (const [, init] of fetchMock.mock.calls) {
+      const headers = new Headers((init as RequestInit).headers);
+      expect(headers.get("apikey")).toBe("sb_secret_test_opaque_key");
+      expect(headers.has("authorization")).toBe(false);
+    }
+  });
+
+  it("keeps bearer authorization for legacy JWT service-role keys", async () => {
+    process.env.OBJECT_STORAGE_DRIVER = "supabase";
+    process.env.SUPABASE_URL = "https://school.example.supabase.co";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "eyJ.legacy.service-role";
+    process.env.SUPABASE_STORAGE_BUCKET = "mary-royal-private";
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await writeStoredFile("private", "admissions/draft/file.pdf", Buffer.from("upload"), "application/pdf");
+    const headers = new Headers((fetchMock.mock.calls[0][1] as RequestInit).headers);
+    expect(headers.get("apikey")).toBe("eyJ.legacy.service-role");
+    expect(headers.get("authorization")).toBe("Bearer eyJ.legacy.service-role");
   });
 });
+

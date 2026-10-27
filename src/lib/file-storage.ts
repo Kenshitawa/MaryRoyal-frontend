@@ -10,6 +10,17 @@ function supabaseStorage() {
   return { url, serviceKey, bucket };
 }
 
+function storageAuthHeaders(config: NonNullable<ReturnType<typeof supabaseStorage>>) {
+  const headers: Record<string, string> = { apikey: config.serviceKey };
+  // Supabase's current sb_secret_* keys are opaque API keys, not JWTs. Sending
+  // one as a Bearer token makes the gateway reject it as an invalid JWT.
+  // Legacy service_role keys are JWTs and still need the Authorization header.
+  if (!config.serviceKey.startsWith("sb_secret_")) {
+    headers.authorization = `Bearer ${config.serviceKey}`;
+  }
+  return headers;
+}
+
 function objectUrl(config: NonNullable<ReturnType<typeof supabaseStorage>>, operation: "object" | "object/authenticated", key: string) {
   const objectKey = key.split("/").map(encodeURIComponent).join("/");
   return `${config.url}/storage/v1/${operation}/${encodeURIComponent(config.bucket)}/${objectKey}`;
@@ -30,7 +41,7 @@ export async function writeStoredFile(kind: "private" | "assignments" | "avatars
   const safe = safeKey(kind === "private" ? key : `${kind}/${key}`);
   const storage = supabaseStorage();
   if (storage) {
-    const response = await fetch(objectUrl(storage, "object", safe), { method: "POST", headers: { apikey: storage.serviceKey, authorization: `Bearer ${storage.serviceKey}`, "content-type": contentType, "x-upsert": "false" }, body: Buffer.from(bytes), signal: AbortSignal.timeout(20_000) });
+    const response = await fetch(objectUrl(storage, "object", safe), { method: "POST", headers: { ...storageAuthHeaders(storage), "content-type": contentType, "x-upsert": "false" }, body: Buffer.from(bytes), signal: AbortSignal.timeout(20_000) });
     if (!response.ok) throw new Error("Object storage upload failed.");
     return;
   }
@@ -45,7 +56,7 @@ export async function readStoredFile(kind: "private" | "assignments" | "avatars"
   const safe = safeKey(kind === "private" ? key : `${kind}/${key}`);
   const storage = supabaseStorage();
   if (storage) {
-    const response = await fetch(objectUrl(storage, "object/authenticated", safe), { headers: { apikey: storage.serviceKey, authorization: `Bearer ${storage.serviceKey}` }, signal: AbortSignal.timeout(20_000), cache: "no-store" });
+    const response = await fetch(objectUrl(storage, "object/authenticated", safe), { headers: storageAuthHeaders(storage), signal: AbortSignal.timeout(20_000), cache: "no-store" });
     if (!response.ok) throw new Error("Object storage read failed.");
     return Buffer.from(await response.arrayBuffer());
   }
@@ -60,7 +71,7 @@ export async function deleteStoredFile(kind: "private" | "assignments" | "avatar
   const safe = safeKey(kind === "private" ? key : `${kind}/${key}`);
   const storage = supabaseStorage();
   if (storage) {
-    const response = await fetch(`${storage.url}/storage/v1/object/${encodeURIComponent(storage.bucket)}`, { method: "DELETE", headers: { apikey: storage.serviceKey, authorization: `Bearer ${storage.serviceKey}`, "content-type": "application/json" }, body: JSON.stringify({ prefixes: [safe] }), signal: AbortSignal.timeout(20_000) });
+    const response = await fetch(`${storage.url}/storage/v1/object/${encodeURIComponent(storage.bucket)}`, { method: "DELETE", headers: { ...storageAuthHeaders(storage), "content-type": "application/json" }, body: JSON.stringify({ prefixes: [safe] }), signal: AbortSignal.timeout(20_000) });
     if (!response.ok) throw new Error("Object storage deletion failed.");
     return;
   }
@@ -70,3 +81,4 @@ export async function deleteStoredFile(kind: "private" | "assignments" | "avatar
   if (relativePath.startsWith("..") || isAbsolute(relativePath)) throw new Error("Invalid file path.");
   await unlink(path);
 }
+
