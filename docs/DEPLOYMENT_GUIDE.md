@@ -58,7 +58,7 @@ Render's default filesystem is ephemeral. The persistent disk is necessary for l
 
 ## Current app-host state
 
-The Vercel account contains an older `maryroyalschool` project connected to `Kenshitawa/maryroyalschool`. It has no environment variables and is not connected to canonical `MaryRoyal-frontend`. Do not replace its production source until the canonical commit is pushed and all runtime secrets below are set. The app is not yet live against Supabase.
+The current full-stack source was published to `Kenshitawa/MaryRoyal-frontend` `main` at commit `ea4d2a2910444f4d812fbe516062ca92633e3fe1`. The Vercel account still has an older `maryroyalschool` project connected to `Kenshitawa/maryroyalschool`; it has no environment variables and is not connected to the canonical repository. Do not replace its production source until runtime secrets below are set. A private `mary-royal-private` Storage bucket is configured with a 4 MiB file limit. The app is not yet live against Supabase.
 
 ## Before entering real learner data
 

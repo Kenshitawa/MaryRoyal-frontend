@@ -17,6 +17,8 @@
 | Full app E2E | Pending final run | Require complete green unit, permission, and Playwright suites. No visual test suite is configured as a separate package command. |
 | Supabase project status | Schema deployed 2026-10-27 | Healthy PostgreSQL 17 project; four migrations recorded, 52 public tables, 52/52 RLS enabled, all empty. No learner/demo records inserted. |
 | Vercel project | Existing project inspected 2026-10-27 | `maryroyalschool` is connected to an older repository and has zero environment variables; do not replace its production source until canonical source and runtime secrets are ready. |
+| Canonical source | Published | `MaryRoyal-frontend` main at `ea4d2a2910444f4d812fbe516062ca92633e3fe1`; local Git HTTPS credential cannot push, but connected GitHub access published the complete current source tree. |
+| Private file bucket | Configured | `mary-royal-private` exists with `public=false` and 4 MiB max object size. Verify authorized app upload/read after the runtime service key is set. |
 | Hosting shape | Monolith configuration exists | This is one Next.js app with server API routes. Do not split browser frontend to Vercel and APIs to Render until a real remote API boundary, auth/CORS/CSRF model, and shared session design are implemented. |
 
 ## Owner actions in hosting dashboards

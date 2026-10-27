@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 13751)
+Total output lines: 287
+
 # Progress
 
 ## Phase 0 — complete
@@ -94,105 +97,7 @@
 - Built: seven-step admission draft/resume, normalized learner/guardian/emergency/pick-up/residence/health data, validated private document uploads, consent, required-document checklist, branded admission PDF, explicit learner login and parent account link/create workflow. Learner records now open role-aware profiles; sensitive health fields are fetched only for permitted school leaders and the learner's class teacher, and each health view is audited. Accountant has a restricted learner directory/profile showing only basic identity and finance. Director and Head Teacher can browse staff profiles; staff can view their own profile. Staff fields not present in the data model are disclosed as unavailable.
 - Fixed: Playwright mobile dashboard overflow after viewport resize; isolated E2E marks now use a valid unused term and clean up after the test; ESLint excludes the isolated `.next-e2e` output. Added `staff` and `learner-identity` scopes to the central permission matrix.
 - Tested: `npm run lint` passed; `npm run typecheck` passed; `npm test` passed (13 tests); focused Playwright dashboard/marks tests passed (2/2); focused all-role access and profile sweep passed (1/1). The last full Playwright run passed 8/9; its only failure was an assertion that expected a redirect status while Playwright followed the redirect. The check now disables redirect following and the focused all-role test passes. `npm run build` passed; generated 46 static pages/routes.
-- Known issues: U4 still needs passport-photo crop, sibling parent-link E2E, admission invoice preview, and secure document preview/download from learner profiles. U5 still needs avatar display on learner profiles, full profile IDOR/tab coverage, assessment trend charts, receipt links, learner activity/discipline timeline, and stored TSC/qualification/attendance/punctuality fields. Major U6–U10 requirements remain; see `docs/ROADMAP.md`. No deployment was performed.
-- Next: continue U6 exams/rubrics/attendance, then U7 complaints, U8 KICD curation, U9 fee structures and U10 page-by-page QA. Admission/profile work is committed as `fa682a9`.
-
-## Upgrade Round 2 — U6 attendance overview checkpoint — 2026-10-25
-- Built: Director, Head Teacher and Deputy attendance now starts with a schoolwide daily summary, class register completion progress, and present/absent/late totals. Teacher attendance remains class-teacher-only.
-- Tested: `npm run lint`, `npm run typecheck`, `npm test` (13 tests), and `npm run build` passed. The prior focused all-role Playwright sweep passed before this view-only dashboard addition; no new E2E run was made for the dashboard.
-- Known issues: staff attendance is not modeled; date-range analytics, stream/gender split, absentee follow-up/parent notification, reminders/exports, Deputy exam sessions/timetable, active-exam mark filtering, and managed rubrics remain incomplete. See ROADMAP.
-- Next: implement U6 exams and rubric workflow, then complete remaining U6 attendance and proceed U7–U10.
-
-## Upgrade Round 2 — U8 KICD learning videos and full browser-suite checkpoint — 2026-10-25
-- Built: added the verified KICD Edu TV library, grade/subject/strand tags, teacher/leader curation, official-channel metadata verification, learner recommendations from released weak-topic results, watched tracking, privacy-enhanced playback and role-scoped API access. Ordinary teacher video resources are now excluded from learner feeds so only the curated verified catalogue can recommend videos. Added permission/unit coverage and wired the library into learner and staff navigation.
-- Fixed: Playwright had silently reused the unrelated localhost:3000 server when the test server fell back to 3001. The E2E server now uses its own isolated port (3187), and hard-coded test API/browser URLs target that same server. Updated the learning workflow assertion so it verifies unverified teacher videos stay hidden and no weak-topic video is fabricated when there are no released marks.
-- Tested: `npx prisma validate` passed; `npm run lint` passed; `npm run typecheck` passed; `npm test` passed (15 tests); full `npm run test:e2e` passed (9/9 Playwright tests, including all eight role routes, cross-role API denial, assessment workflow, admission, parent complaints, finance payment, attendance, learning and back/forward navigation). The user-facing local server at `http://localhost:3000` returned HTTP 200.
-- Known issues: this checkpoint does not complete all Round 2 requirements. U4/U5, U6 exams/rubrics and advanced attendance, U7 complaint attachments/notifications, U8 stronger content fixtures/trend weighting, U9 fee structures/adjustments/statement/export workflows, and the page-by-page U10 redesign/accessibility audit remain partial or unbuilt as itemized in `docs/ROADMAP.md` and `docs/UI_UPGRADE_CHECKLIST.md`. No production build was run in this checkpoint.
-- Next: continue U6 exam sessions/rubrics, then U9 fee structures and remaining U10 page-by-page work. No deployment was performed.
-
-## Upgrade Round 2 — U9 fee-structure foundation — 2026-10-25
-- Built: Head Teacher and Director can create versioned class/term fee structures with effective dates and optional/compulsory KES line items. Secretary and Accountant have read-only access. Changes record an audit event. Invoice API can load the current class/term structure, enforce compulsory items, accept selected optional item IDs, and retain the structure/version reference alongside invoice line snapshots. Added `/finance/structures` with an editor for authorized roles and version cards for read-only roles. Added the incremental SQLite migration `20261025_u9_fee_structures`.
-- Tested: Prisma schema validation and local SQLite sync passed; lint, strict TypeScript and all 15 Vitest tests passed; the U9-focused Secretary/admission/finance E2E passed; the full Playwright suite passed (9/9); local `GET /` returned HTTP 200.
-- Known issues: the invoice page still permits manual line entry and does not yet provide the requested structure-driven stepper, preview or optional-item toggles. Discounts/waiver approvals, statements/aging, expenses, financial analytics, downloadable branded PDFs/QR verification and export reports remain unbuilt. U6 exam sessions/rubrics and the exhaustive U10 UI audit are still outstanding; see `docs/ROADMAP.md` and `docs/UI_UPGRADE_CHECKLIST.md`. No production build was run in this checkpoint.
-- Next: finish U6 exams/rubrics, then remaining U9 finance workflows and the U10 page-by-page interface audit. No deployment was performed.
-
-## Upgrade Round 2 — U5 profile completion and staff records — 2026-10-25
-- Built: expanded learner profiles with role-aware section navigation, passport photo display through a private scoped endpoint, audited supporting-document preview/download, attendance summaries, released result trend bars, fee balance and authorized receipt links, discipline follow-up, and a dated activity timeline. Director, Head Teacher, Deputy and Secretary can access the school profile/admission record. Accountant profile data is constrained to learner identity, guardian contact and fee information; teacher records remain assignment-scoped; Parent and Learner access remains linked/self-scoped. Health data remains separately permission-checked and access-audited.
-- Built: added staff number, TSC number, position and qualifications to the staff model and Director account-creation form. Staff profile now shows contact/avatar, employment details, assignments, lessons, successful login, recent attendance/punctuality and Director-only payroll. Added a staff register UI and Zod-validated, audited attendance API; leadership can record/view schoolwide attendance, while other staff can view only their own.
-- Built: added additive SQLite migration `20261025_u5_profile_enrichment` and completed U11's definition as a local acceptance gate (not deployment).
-- Tested: lint, strict TypeScript, 16 Vitest tests, Prisma validation, `git diff --check`, local HTTP GET `/` (200), focused Playwright profile/admission flow (1/1), and focused role access with learner/account and staff-attendance checks (1/1 before the final discipline assertions were added).
-- Known issues: photo crop, employment-field editing after account creation, profile message-parent action, Director-configurable fee/health visibility settings, full U4/U6/U7/U9 requirements, and the page-by-page U10 visual audit remain. Full Playwright rerun and production build are part of U11.
-- Next: finish U10 interface audit/QA, then U11 full acceptance and update this record with final suite results. No deployment was performed.
-
-## Learner Profile comprehensive upgrade, Theme Light/Dark mode fixes, and Live Reports — 2026-10-26
-- Built: upgraded Learner Profile (`/learners/[id]`) with comprehensive, role-aware Bento & Glass tabs:
-  1. Biography & School Identity (full student details, NEMIS/UPI, age, admission date, languages, religion).
-  2. Fee Balance & Financial Ledger (net balance, total billed, total paid, term-by-term invoice line items, confirmed receipts with printable vouchers).
-  3. CBC Exam Results & Progress (overall average, proficiency descriptors EE/ME/AE/BE, subject trend visualization, detailed marksheets with strands and teacher evaluative feedback).
-  4. Class Register & Attendance (total sessions, attendance rate %, days present, absent, late, and daily roll-call register).
-  5. Talents, Clubs & CBC Co-Curricular Pathways (identified gifts & aptitudes, Arts/STEM/Social Sciences pathways, school clubs, sports & athletics, and student leadership).
-  6. Parents & Guardians (primary contact badge, direct phone and email links, emergency contacts, authorized pick-up persons).
-  7. Residence & Transport (Kisumu Central / Obunga physical address, landmarks, distance to school, and means of transport).
-  8. Restricted Health Record (audit-logged medical conditions, blood group, allergies, medications, and insurance).
-  9. Admission Documents (verified category uploads and download links).
-  10. Discipline & Welfare (conduct records, actions taken, and welfare status).
-  11. Profile Edit History & Audits (immutable timestamped security audit log).
-- Built: upgraded Learner Directory (`/learners`) with direct "View Profile →" action buttons for every pupil, alongside clickable name and admission number links.
-- Fixed: comprehensive light and dark mode styling across all pages:
-  - Enforced dark font (`#0f172a`) in light mode for all search inputs, text inputs, selects, and textareas, eliminating white/light font issues.
-  - Initialized `data-theme` explicitly (`light` or `dark`) in `theme-provider.tsx`, `layout.tsx` beforeInteractive script, and `theme-toggle.tsx`.
-  - Mapped dark mode surface opacities (`bg-white/*` and `bg-slate-50/*`) to deep navy/slate surfaces (`#111d32` / `#17253c`), ensuring high-contrast typography and no blinding white card backgrounds in dark mode.
-- Fixed: eliminated all "Coming soon" placeholders across the application:
-  - Implemented `/api/reports/assessments/route.ts` for live CSV export of released CBC assessments.
-  - Implemented `/api/reports/finance/route.ts` for live CSV export of fee collections and balances.
-  - Updated `/reports` with live download buttons for both reports.
-- Tested: `npm run typecheck` passed (0 errors); `npm run lint` passed (0 errors); `npm test` passed (20/20 unit and permission tests). Local git tree clean.
-
-## User Role Upgrades & Executive Reporting Enhancement
-- Built:
-  - **Secretary Dashboard & Operations**: Removed schoolwide fee balances from Secretary dashboard; added payment intake capabilities (Cash, M-Pesa, Bank) directly linked to the finance ledger; added dedicated Secretary Complaints tab allowing complaints logging and viewing within assigned scope.
-  - **Teacher Weekly Teaching Log**: Converted daily teaching logs to weekly teaching summaries due every Friday latest 4:00 PM (EAT); added real-time countdown badge indicating days/hours left or deadline overdue status.
-  - **Universal Learner Profile View**: Streamlined learner profile viewing links across Director, Head Teacher, and staff tables so clicking any learner profile immediately loads the full learner profile view.
-  - **Leadership Navigation Refinement**: Removed Audit Log link from Head Teacher sidebar; removed redundant sidebar text label for Director while preserving the header security eye-icon shortcut directly linking to the audit log.
-  - **Director Executive Reports & Visual Charts**: Upgraded `/reports` into an executive intelligence hub with interactive visual analytics (Fee Collections & Arrears Aging term comparison bars, CBC Assessment 4-level competency descriptor breakdown [EE/ME/AE/BE], and Grade Enrollment population distribution) displayed side-by-side with live CSV export download panels.
-  - **Parent Fee Payment Instructions**: Integrated a comprehensive interactive "How to Pay School Fees" guide into the Parent Portal featuring step-by-step M-PESA Paybill (522123) instructions with one-click copy buttons for child admission numbers, KCB Bank account deposit details, and campus accounts office hours.
-- Tested: `npm run lint` passed (0 errors); `npm run typecheck` passed (0 errors); `npm test` passed (20/20 unit tests across domain, learner profiles, admissions, and permission matrix). Local git tree clean.
-
-## Welfare, Library, Schemes of Work, AI Timetable, Notifications & Photo Assignments — 2026-10-27
-- Built:
-  - **Staff Welfare Module (`/welfare`)**:
-    - Created dedicated Welfare schema (`WelfareMember`, `WelfareContribution`, `WelfareLoan`, `WelfareProduct`) strictly separate from school operational finance.
-    - Added `WELFARE_CHAIR` and `NON_TEACHING_STAFF` roles; Non-Teaching Staff portal scoped strictly to welfare benefits.
-    - Enforced loan ceiling at 60% of member total savings.
-    - Enforced salary advance cap of KES 3,000, available only from the 15th of each month.
-    - Two-stage approval workflow: Applicant → Head Teacher review → Director authorization → Welfare Chair/Director disbursement.
-  - **Deputy Library & Textbook Tracking (`/library`)**:
-    - Added textbook inventory and issuance tracking (`Textbook`, `TextbookIssue`).
-    - Deputy issues textbooks with copy numbers and return due dates.
-    - Teacher receives notification and confirms receipt with one click.
-    - Returns requested and confirmed with live inventory count adjustments.
-  - **Schemes of Work Verification (`/schemes`)**:
-    - Added CBC Scheme of Work model (`SchemeOfWork`) with strands, sub-strands, outcomes, inquiries, experiences, resources, assessment methods, and teacher reflection.
-    - Automated approval routing: Teacher submits → Deputy reviews & confirms → Head Teacher verifies or requests revision with feedback.
-  - **AI-Assisted Timetable & Daily Teaching Widget (`/timetable`)**:
-    - AI-assisted heuristic timetable synthesizer generating balanced 5-day schedules (40 periods/week, 8 periods/day) aligned with KICD CBC guidelines.
-    - Automatic conflict-free teacher allocation based on teaching assignments.
-    - Interactive slot editor for Deputy and Head Teacher.
-    - Verification workflow: Deputy draft → Head Teacher verifies and publishes.
-    - Publishing notifies all teachers; Teacher Dashboard (`/dashboard`) highlights "Today's Lessons" with period, time, subject, and class venue.
-  - **Assignment Photo & Scan Upload (`/assignments`, `/api/upload`)**:
-    - Local file storage endpoint (`/api/upload`) supporting images and PDFs up to 10MB without external paid APIs.
-    - Teachers can snap a photo or scan textbook problem sets and publish them directly to learners.
-    - Learners view high-resolution assignment sheets and can snap/upload photos of their completed handwritten work.
-    - Teachers inspect submitted photos and evaluate CBC work.
-  - **System Notifications (`NotificationBell`)**:
-    - Header notification bell with live badge count and polling.
-    - Highlights action-required items (loans awaiting approval, schemes awaiting confirmation, textbooks awaiting confirmation).
-- Tested:
-  - `npm test`: 4 test suites, 21 unit & permission tests passed (100% pass rate).
-  - `npm run typecheck`: TypeScript compiler passed with 0 errors (`tsc --noEmit`).
-  - `npm run lint`: ESLint passed with 0 errors.
-  - `npm run build`: Production bundle compiled successfully for all 69 static and dynamic routes.
+- Known issues: U4 still needs passport-photo cr…3751 tokens truncated…piled successfully for all 69 static and dynamic routes.
   - `git diff --check`: 0 whitespace errors.
 
 
@@ -279,3 +184,9 @@
 - Tested: Supabase reports four migrations and 52/52 public tables with RLS enabled. SQL privilege checks confirm `anon` and `authenticated` have no public schema access or table select/insert/update privileges. Supabase security advisors have no security warnings after function hardening; only informational no-policy notices remain, as intended. `npm run build:production` passed (legacy lint warnings remain).
 - Known issues: Vercel account has an existing older `maryroyalschool` project connected to `Kenshitawa/maryroyalschool`; it has no environment variables. Canonical `MaryRoyal-frontend` is 55 commits ahead and 4 behind the local branch and still needs synchronization. Local `.env` has SQLite only; no production PostgreSQL URL or private Supabase storage key is configured. Therefore no functional Vercel deployment has been made. Private `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, private bucket setup, and Director bootstrap remain required. Full E2E result was 9/10; cross-role browser Back scenario still fails and is deferred per the latest request to prioritize deployment. Not cleared for real learner data.
 - Next: Commit and synchronize the canonical full-stack source, then complete Vercel environment setup and deploy when production connection/storage secrets have been entered privately in Vercel/Supabase.
+
+## Canonical source published; hosting credentials pending — 2026-10-27
+- Built: Published the current full-stack source tree to `Kenshitawa/MaryRoyal-frontend` main at `ea4d2a2910444f4d812fbe516062ca92633e3fe1`. The user's Vercel account was inspected: its existing `maryroyalschool` project still points to `Kenshitawa/maryroyalschool` and has no environment variables. Created and verified the private Supabase Storage bucket `mary-royal-private` with a 4 MiB file limit. Updated deployment and go-live records.
+- Tested: GitHub main ref points at the published commit. Supabase bucket query confirmed private flag and max size. The previous Supabase verification remains: all 52 public tables have RLS, public roles have no table grants, four migration records exist. Local production build, strict typecheck and 28 unit tests pass; lint has 39 warnings. Browser suite is 9/10 with cross-role back navigation failing.
+- Known issues: No functional Vercel deployment was made because the existing project has no runtime configuration and the local `.env` contains SQLite only. Supabase DB password/pooled `DATABASE_URL`, direct `DIRECT_URL`, Vercel `SESSION_SECRET`, and Supabase server-only `SUPABASE_SERVICE_ROLE_KEY` are not available in this workspace. The published app will fail server startup without them. Vercel remains linked to the old repo; do not replace its production deployment until those environment variables are entered privately. Not ready for real learner data.
+- Next: In Vercel's environment settings for the chosen app project, set `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `OBJECT_STORAGE_DRIVER=supabase`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_STORAGE_BUCKET=mary-royal-private`; link `MaryRoyal-frontend` `main`, deploy, bootstrap Director once, and verify health/login/storage before training with real records.
