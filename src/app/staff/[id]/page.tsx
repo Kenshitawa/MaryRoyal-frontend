@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { canInScope, canManageStaffTarget, canViewStaffStatutory, canEditStaffStatutory } from "@/lib/permissions";
 import { ArrowLeft } from "lucide-react";
+import { logSafeServerError } from "@/lib/safe-server-log";
 import { StaffProfileClient, type StaffProfileClientData } from "./staff-profile-client";
 
 export default async function StaffProfilePage({
@@ -33,6 +34,7 @@ export default async function StaffProfilePage({
     redirect("/dashboard");
   }
 
+  const canSeeStatutory = canViewStaffStatutory(actor.role);
   const staff = await db.user.findUnique({
     where: { id },
       select: {
@@ -48,9 +50,40 @@ export default async function StaffProfilePage({
         employmentTitle: true,
         qualifications: true,
       staffProfile: {
-        include: {
-          emergencyContacts: true,
-          referees: true,
+        select: {
+          id: true,
+          gender: true,
+          dateOfBirth: true,
+          nationalId: true,
+          nationality: true,
+          maritalStatus: true,
+          alternatePhone: true,
+          residenceAddress: true,
+          county: true,
+          dateJoined: true,
+          employmentType: true,
+          department: true,
+          lineManager: true,
+          probationEndDate: true,
+          educationHistory: true,
+          professionalQualifications: true,
+          certificates: true,
+          specializations: true,
+          yearsOfExperience: true,
+          previousEmployers: true,
+          ...(canSeeStatutory
+            ? {
+                kraPin: true,
+                nssfNumber: true,
+                shaNumber: true,
+                bankName: true,
+                bankAccountName: true,
+                bankAccountNumber: true,
+                bankBranch: true,
+              }
+            : {}),
+          emergencyContacts: { select: { id: true, fullName: true, relationship: true, phone: true, isNextOfKin: true } },
+          referees: { select: { id: true, fullName: true, organization: true, title: true, phone: true, email: true } },
           documents: {
             select: {
               id: true,
@@ -62,10 +95,13 @@ export default async function StaffProfilePage({
             },
           },
           editHistory: {
-            include: {
-              actor: {
-                select: { name: true, role: true },
-              },
+            select: {
+              id: true,
+              field: true,
+              oldValue: true,
+              newValue: true,
+              createdAt: true,
+              actor: { select: { name: true, role: true } },
             },
             orderBy: { createdAt: "desc" },
             take: 30,
@@ -80,23 +116,23 @@ export default async function StaffProfilePage({
         select: { grade: true },
       },
     },
+  }).catch((error: unknown) => {
+    logSafeServerError("staff_profile", error);
+    throw new Error("Staff profile could not be loaded.");
   });
 
   if (!staff || ["PARENT", "LEARNER"].includes(staff.role)) notFound();
 
   const [payroll, teachingLogs, attendance] = await Promise.all([
-    actor.role === "DIRECTOR"
+    canSeeStatutory
       ? db.payrollEntry.findMany({
           where: { staffId: id },
           orderBy: { period: "desc" },
           take: 12,
           select: {
             period: true,
-            grossAmount: true,
-            deductions: true,
             netAmount: true,
             status: true,
-            paidAt: true,
           },
         })
       : [],
@@ -119,9 +155,11 @@ export default async function StaffProfilePage({
       take: 60,
       select: { date: true, status: true, checkInAt: true, note: true },
     }),
-  ]);
+  ]).catch((error: unknown) => {
+    logSafeServerError("staff_profile_related_data", error);
+    throw new Error("Staff profile details could not be loaded.");
+  });
 
-  const canSeeStatutory = canViewStaffStatutory(actor.role);
   if (canSeeStatutory) {
     await db.auditEvent.create({
       data: {
@@ -133,24 +171,7 @@ export default async function StaffProfilePage({
     });
   }
 
-  // Strip restricted fields for unauthorized viewers
-  let sanitizedStaff: StaffProfileClientData = { ...staff, staffProfile: staff.staffProfile };
-  if (!canSeeStatutory && staff.staffProfile) {
-    const {
-      kraPin,
-      nssfNumber,
-      shaNumber,
-      bankName,
-      bankAccountName,
-      bankAccountNumber,
-      bankBranch,
-      ...safeProfile
-    } = staff.staffProfile;
-    sanitizedStaff = {
-      ...staff,
-      staffProfile: safeProfile,
-    };
-  }
+  const sanitizedStaff: StaffProfileClientData = { ...staff };
 
   const currentUser = actor.id === id;
   const canEdit = canManageStaffTarget(actor.role, staff.role);
@@ -173,7 +194,11 @@ export default async function StaffProfilePage({
           canEdit={canEdit}
           canViewStatutory={canSeeStatutory}
           canEditStatutory={canEditStat}
-          payroll={payroll.map((entry) => ({ ...entry, netAmount: Number(entry.netAmount) }))}
+          payroll={payroll.map((entry) => ({
+            period: entry.period,
+            status: entry.status,
+            netAmount: Number(entry.netAmount),
+          }))}
           teachingLogs={teachingLogs}
           attendance={attendance}
         />

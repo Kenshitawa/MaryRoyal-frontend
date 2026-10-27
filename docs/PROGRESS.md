@@ -344,3 +344,8 @@ Total output lines: 287
 - Replaced untyped staff API filters and payloads with Prisma and Zod schemas; removed database exception details from staff API logs.
 - Tightened the staff profile server query to select only fields needed by the page, preventing the password hash from being included in serialized user data.
 - Verified: npm run lint (0 errors; warnings remain), npm run typecheck, npm test (54/54), and npm run build:production all passed.
+
+## Round 3, Section 1 -- Staff crash and missing-profile recovery -- 2026-10-28
+- Built: Added additive SQLite and PostgreSQL staff-profile migrations, including an empty-profile backfill for existing staff; enabled RLS and revoked public roles on the PostgreSQL staff tables. Added safe server error logging and staff route error/not-found boundaries. Restricted statutory/payroll selection to authorized roles before querying.
+- Tested: Legacy SQLite migration/backfill passed on a disposable local database; `npm run typecheck` passed; `npm test` passed (9 files, 54/54 tests); targeted ESLint passed with 0 warnings. Full Playwright run passed 9/10 tests; the existing cross-role test passed including Director/Head Teacher staff routes, while the mobile navigation/breadcrumb test failed because the mobile nav was absent after viewport resize. Production build had passed earlier in the session; rerun after subsequent mobile changes.
+- Known/next: Finish the mobile nav/header issue in Sections 2–3, then rerun the full suite. Production migration has not been applied.

@@ -149,6 +149,26 @@ test("non-director roles receive only the account and learner access configured 
   if(["parent","learner","teacher"].includes(role)){const profile=await api.get(`/learners/${testOutOfScopeLearnerId}`,{maxRedirects:0});expect([302,307]).toContain(profile.status());expect(profile.headers().location).toContain("/dashboard");}
   if(role==="teacher"){const teacherUser=await cleanupDb.user.findUnique({where:{email:"teacher@maryroyal.ac.ke"},select:{id:true,name:true}});expect(teacherUser).toBeTruthy();const profile=await api.get(`/staff/${teacherUser!.id}`);expect(profile.ok()).toBeTruthy();expect(await profile.text()).toContain(teacherUser!.name);}
   const staffDirectory=await api.get("/staff");const staffDirectoryHtml=await staffDirectory.text();expect(["director","headteacher"].includes(role)?staffDirectoryHtml.includes("Staff profiles"):!staffDirectoryHtml.includes("Staff profiles"),`${role} staff directory must be Director/Head Teacher only`).toBeTruthy();
+  const staffApi = await api.get("/api/staff");
+  expect(staffApi.status(), `${role} staff API scope`).toBe(["director", "headteacher"].includes(role) ? 200 : 403);
+  const addStaff = await api.get("/staff/new", { maxRedirects: 0 });
+  if (["director", "headteacher"].includes(role)) {
+    expect(addStaff.ok(), `${role} can open Add Staff`).toBeTruthy();
+    const profileTarget = await cleanupDb.user.findFirst({
+      where: { role: { in: ["TEACHER", "SECRETARY", "ACCOUNTANT", "DEPUTY"] } },
+      select: { id: true, name: true, staffProfile: { select: { id: true } } },
+      orderBy: { createdAt: "asc" },
+    });
+    expect(profileTarget, "demo staff exists for profile smoke test").toBeTruthy();
+    const staffProfile = await api.get(`/staff/${profileTarget!.id}`);
+    expect(staffProfile.ok(), `${role} opens a staff profile`).toBeTruthy();
+    expect(await staffProfile.text()).toContain(profileTarget!.name);
+    if (!profileTarget!.staffProfile) {
+      expect(await staffProfile.text()).toContain("Biography");
+    }
+  } else {
+    expect([302, 307]).toContain(addStaff.status());
+  }
   const feeStructures=await api.get("/api/finance/structures");expect(feeStructures.status(),`${role} fee structure read`).toBe(["director","headteacher","secretary","accountant"].includes(role)?200:403);const createFeeStructure=await api.post("/api/finance/structures",{data:{}});expect(createFeeStructure.status(),`${role} fee structure write`).toBe(["director","headteacher"].includes(role)?400:403);const learningVideos=await api.get("/api/learning-videos");expect(learningVideos.status(),`${role} KICD video view`).toBe(["director","headteacher","deputy","teacher","learner"].includes(role)?200:403);
   const addVideo=await api.post("/api/learning-videos",{data:{url:"not-a-video",grade:"Grade 4",subject:"English",strand:"Reading"}});expect(addVideo.status(),`${role} KICD video curation`).toBe(["director","headteacher","deputy","teacher"].includes(role)?400:403);
    const admissionAttempt=await api.post("/api/learners",{data:{admissionNo:`DENY-${role}`,name:"Unauthorized",grade:"Grade 4",gender:"Male"}});expect(admissionAttempt.status()).toBe(["director","secretary"].includes(role)?410:403);

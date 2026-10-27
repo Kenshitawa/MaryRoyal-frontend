@@ -4,6 +4,7 @@ import PortalFrame from "@/components/portal-frame";
 import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
+import { logSafeServerError } from "@/lib/safe-server-log";
 import { ShieldCheck, Users } from "lucide-react";
 import { StaffDirectoryClient } from "./staff-directory-client";
 
@@ -43,6 +44,9 @@ export default async function StaffDirectoryPage() {
       },
     },
     orderBy: [{ role: "asc" }, { name: "asc" }],
+  }).catch((error: unknown) => {
+    logSafeServerError("staff_directory", error);
+    throw new Error("Staff directory could not be loaded.");
   });
 
   const canCreate = canInScope(user.role, "staff", "create", "school");
