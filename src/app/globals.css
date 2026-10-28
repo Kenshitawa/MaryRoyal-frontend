@@ -1403,6 +1403,22 @@ html[data-theme="dark"] .bg-white\/70,
 html[data-theme="dark"] .bg-white\/60,
 html[data-theme="dark"] .bg-white\/50 {
   background-color: var(--surface);
+  /* Legacy white surfaces turn dark, so hard-coded dark text must follow. */
+  color: var(--ink);
+}
+
+/* Call-to-action sitting on a blue hero stays white in both themes. */
+.hero-cta {
+  background-color: #ffffff;
+  color: #1e3a8a;
+}
+html[data-theme="dark"] .bg-white.hero-cta {
+  background-color: #ffffff;
+  color: #1e3a8a;
+}
+.hero-cta:hover {
+  background-color: #eff6ff;
+  color: #172554;
 }
 
 html[data-theme="dark"] .bg-slate-50,

@@ -196,7 +196,7 @@ export default function StaffAttendanceClient({ staff }: { staff: Staff[] }) {
                           className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                             isSelected
                               ? `${activeColor} shadow-sm`
-                              : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                              : "text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                           }`}
                         >
                           {value[0] + value.slice(1).toLowerCase()}

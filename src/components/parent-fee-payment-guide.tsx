@@ -185,7 +185,7 @@ export default function ParentFeePaymentGuide({
               {/* 5-Step Guide */}
               <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/30">
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Steps to Pay on your Phone:</p>
-                <ol className="mt-2.5 space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                <ol className="mt-2.5 space-y-2 text-sm text-slate-600 dark:text-slate-300">
                   <li className="flex items-start gap-2">
                     <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-100 font-mono text-[10px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                       1

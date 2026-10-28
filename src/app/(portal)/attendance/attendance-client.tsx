@@ -209,7 +209,7 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
                         className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                           isPresent
                             ? "bg-emerald-600 text-white shadow-sm"
-                            : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                            : "text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                         }`}
                       >
                         Present
@@ -222,7 +222,7 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
                         className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                           isLate
                             ? "bg-amber-500 text-white shadow-sm"
-                            : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                            : "text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                         }`}
                       >
                         Late
@@ -235,7 +235,7 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
                         className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                           isAbsent
                             ? "bg-red-600 text-white shadow-sm"
-                            : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                            : "text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                         }`}
                       >
                         Absent

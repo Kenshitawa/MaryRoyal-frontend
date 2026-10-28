@@ -149,7 +149,7 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
             {canManage && (
               <button
                 onClick={() => setShowAdd(!showAdd)}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-xs font-bold text-blue-950 shadow-md transition hover:bg-blue-50 active:scale-95"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl hero-cta bg-white px-5 text-xs font-bold text-blue-950 shadow-md transition hover:bg-blue-50 active:scale-95"
               >
                 <Plus size={15} />
                 {showAdd ? "Close Form" : "Curate Lesson"}
