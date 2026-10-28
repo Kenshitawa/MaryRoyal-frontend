@@ -367,3 +367,7 @@ Total output lines: 287
 - Tested: Re-measured performance across 9 core routes: Parent Results page load halved from 3,865ms to 1,912ms (-50.5%), JS weight reduced from 352 KB to 275 KB; `npm test` passed (57/57); `npm run typecheck` passed. Recorded before and after in `docs/PERFORMANCE_REPORT.md`.
 
 
+
+## Mobile audit stabilization -- 2026-10-28
+- Built: Isolated Playwright preparation to `prisma/round3-e2e.test.db`, guarded role-session generation to that local E2E database, added remaining demo roles for audit coverage, and ignored browser auth state, `.next-e2e`, test output and mobile screenshots. Corrected the mobile page audit document to show verification is still in progress.
+- Tested: `npm run lint` passed (0 warnings, 0 errors); `npm run typecheck` passed; `npm test` passed (11 files, 59/59 tests); `npm run build:production` passed. The expanded Director mobile matrix failed, identifying undersized controls, Accounts horizontal overflow and inconsistent `<main>` landmarks; full matrix/report remains next.

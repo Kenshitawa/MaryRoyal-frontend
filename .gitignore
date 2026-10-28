@@ -11,6 +11,7 @@ prisma/*.test.db-journal
 prisma/*-test.db
 prisma/*-test.db-journal
 .next-e2e/
+mobile-shots/
 prisma/dev.db
 prisma/dev.db-journal
 backups/
@@ -21,6 +22,7 @@ prisma/shadow.db
 coverage/
 playwright-report/
 test-results/
+e2e/.auth/
 tsbuildinfo
 tsconfig.tsbuildinfo
 .next-production-check/

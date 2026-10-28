@@ -490,7 +490,7 @@ export default async function Dashboard() {
                 href="/audit"
                 aria-label="Security activity"
                 title="Security activity"
-                className="grid h-9 w-9 place-items-center rounded-xl text-blue-800 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+                className="grid h-11 w-11 place-items-center rounded-xl text-blue-800 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
               >
                 <Eye size={17} />
               </Link>
@@ -521,7 +521,7 @@ export default async function Dashboard() {
             <form action="/api/logout" method="post">
               <button
                 aria-label="Sign out"
-                className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-blue-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                className="grid h-11 w-11 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-blue-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >
                 <LogOut size={17} />
               </button>

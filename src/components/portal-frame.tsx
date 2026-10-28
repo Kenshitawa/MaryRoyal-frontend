@@ -91,7 +91,7 @@ export default async function PortalFrame({ children, active }: { children: Reac
         </header>
         <MobileHeader active={active} homeHref={homeHref} user={{ name: user.name, email: user.email, role: user.role, roleLabel: roleTitle[user.role] ?? user.role, avatarUrl: user.avatarUrl }} />
         <PageNavigation active={active} homeHref={homeHref} userId={session.id} />
-        <div id="main-content" tabIndex={-1} className="min-h-[calc(100vh-68px)] outline-none pb-20 lg:pb-0">{children}</div>
+        <main id="main-content" tabIndex={-1} className="min-h-[calc(100vh-68px)] outline-none pb-20 lg:pb-0">{children}</main>
       </div>
       <MobileNav
         role={user.role}
