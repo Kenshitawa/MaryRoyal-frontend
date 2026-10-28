@@ -126,13 +126,8 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
 
   const loadStaff = useCallback(async () => {
     try {
-      const res = await fetch("/api/accounts");
-      if (res.ok) {
-        const data = await res.json();
-        setAllStaff((data.accounts ?? []).filter((a: { role: string }) =>
-          !["PARENT", "LEARNER"].includes(a.role)
-        ));
-      }
+      const res = await fetch("/api/welfare?scope=staff");
+      if (res.ok) setAllStaff((await res.json()).staff ?? []);
     } catch { /* ignore */ }
   }, []);
 

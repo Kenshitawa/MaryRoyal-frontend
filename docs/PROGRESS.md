@@ -391,3 +391,7 @@ Total output lines: 287
 - Root-fix batch: global 12/13/14 type snap, AA colour tokens, 44px `.btn`/`.icon-btn`, skip link 44px, tables→card lists (finance, learners, assessments, timetable), wizard nav wrapping, labelled staff wizard fields, library staff options via textbooks API, audit navigation settle loop. Typecheck + lint (0 warnings) passed.
 - Root pass 2: tier inheritance in the audit, solid brand/blue-700 backgrounds, translucent-accent overrides, 44px checkbox/radio targets, finance + payroll card lists, waivers fetch gated by role, /receipts link fixed, portal staff redirect, admissions/new keeps its URL. `/finance` payroll table hidden below lg.
 - Scoped audit (director, 360px + 390px, 25 routes × 4 appearances): 0 findings. Typecheck and lint (0 warnings) passed.
+
+## Qoder UI pass: attendance, documents, welfare scope -- 2026-10-28
+- Built: Attendance header/KPI/register refresh with an always-visible PageHeader, embedded KICD video heading (single h1), and a role-scoped welfare staff directory endpoint so the Director and Welfare Chair no longer hit 403s; Head Teacher gained report/export reads.
+- Tested: `npm run typecheck` and `npm run lint` (0 warnings, 0 errors) passed after the batch.

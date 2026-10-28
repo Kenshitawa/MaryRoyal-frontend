@@ -41,6 +41,15 @@ export async function GET(request: Request) {
     }) });
   }
 
+  if (scope === "staff" && ["DIRECTOR", "WELFARE_CHAIR"].includes(user.role)) {
+    const staff = await db.user.findMany({
+      where: { suspended: false, role: { notIn: ["PARENT", "LEARNER"] } },
+      select: { id: true, name: true, role: true },
+      orderBy: { name: "asc" },
+    });
+    return NextResponse.json({ staff });
+  }
+
   if (scope === "overview" && isAdmin) {
     const members = await db.welfareMember.findMany({
       include: {

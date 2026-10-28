@@ -23,5 +23,5 @@ export default async function LearningPage() {
     db.learningGameAttempt.findMany({ where: { learnerId: learner.id }, select: { id: true, gameKey: true, score: true, maxScore: true, createdAt: true }, orderBy: { createdAt: "desc" }, take: 20 }),
     db.attendance.findMany({ where: { learnerId: learner.id }, select: { status: true }, orderBy: { date: "desc" }, take: 30 })
   ]);
-  return <><div className="space-y-6"><LearningClient learner={learner} assessments={assessments} submissions={submissions} attempts={attempts} attendance={attendance}/><section className="mx-auto max-w-6xl px-4 pb-28 sm:px-6"><VideoLibrary/></section></div></>;
+  return <><div className="space-y-6"><LearningClient learner={learner} assessments={assessments} submissions={submissions} attempts={attempts} attendance={attendance}/><section className="mx-auto max-w-6xl px-4 pb-28 sm:px-6"><VideoLibrary embedded/></section></div></>;
 }

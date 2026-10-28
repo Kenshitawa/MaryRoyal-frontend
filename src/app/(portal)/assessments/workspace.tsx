@@ -338,6 +338,7 @@ export default function AssessmentWorkspace({
                 </label>
                 <input
                   name="term"
+                  aria-label="Assessment term"
                   value={term}
                   readOnly
                   className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-950"

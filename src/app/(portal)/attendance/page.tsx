@@ -127,19 +127,19 @@ export default async function AttendancePage() {
   return (
     <>
       <section className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
+        <PageHeader
+          title={overview ? "Schoolwide Attendance" : "My Class Attendance"}
+          meta={
+            <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-brand-line bg-brand-soft px-2.5 text-caption font-semibold text-brand-ink">
+              <Calendar size={14} aria-hidden="true" />
+              {new Intl.DateTimeFormat("en-KE", { dateStyle: "full", timeZone: "Africa/Nairobi" }).format(date)}
+            </span>
+          }
+          help={overview ? "Daily learner presence, class register progress and absentee follow-up." : "Mark and verify daily attendance for your assigned class."}
+        />
+
         {overview && (
           <>
-            <PageHeader
-              title="Schoolwide Attendance"
-              meta={
-                <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-brand-line bg-brand-soft px-2.5 text-caption font-semibold text-brand-ink">
-                  <Calendar size={14} aria-hidden="true" />
-                  {new Intl.DateTimeFormat("en-KE", { dateStyle: "full", timeZone: "Africa/Nairobi" }).format(date)}
-                </span>
-              }
-              help="Daily learner presence, class register progress and absentee follow-up."
-            />
-
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <StatCard label="Enrolled learners" value={counts.total} note="Across active classes" icon={Users} />
               <StatCard label="Present today" value={counts.present} note={`${counts.late} recorded late`} icon={UserCheck} tone="success" />

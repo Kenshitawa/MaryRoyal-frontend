@@ -1232,6 +1232,18 @@ html[data-theme="dark"] .hover\:bg-white:hover {
 .text-red-700\/80 {
   color: var(--danger);
 }
+.bg-purple-600,
+.bg-purple-700,
+.bg-purple-800 {
+  background-color: #7e22ce;
+  color: #ffffff;
+}
+[data-theme="dark"] .bg-purple-600,
+[data-theme="dark"] .bg-purple-700,
+[data-theme="dark"] .bg-purple-800 {
+  background-color: #6b21a8;
+  color: #ffffff;
+}
 .text-purple-600,
 .text-purple-700 {
   color: #7e22ce;

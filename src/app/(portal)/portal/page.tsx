@@ -160,7 +160,7 @@ export default async function FamilyPortal({
             {user.role === "PARENT" && (
               <Link
                 href="/complaints"
-                className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white px-5 text-xs font-bold text-blue-950 shadow-md transition hover:bg-blue-50 active:scale-95"
+                className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white px-5 text-xs font-bold text-blue-950 shadow-md transition hover:bg-blue-50 active:scale-95 dark:bg-brand dark:text-white"
               >
                 <HeartHandshake size={15} />
                 Message Leadership

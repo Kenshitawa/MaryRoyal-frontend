@@ -29,7 +29,7 @@ type VideoRow = {
 
 type WeakTopic = { subject: string; strand: string | null };
 
-export default function VideoLibrary({ canManage = false }: { canManage?: boolean }) {
+export default function VideoLibrary({ canManage = false, embedded = false }: { canManage?: boolean; embedded?: boolean }) {
   const [videos, setVideos] = useState<VideoRow[]>([]);
   const [weakTopics, setWeakTopics] = useState<WeakTopic[]>([]);
   const [busy, setBusy] = useState(false);
@@ -122,9 +122,13 @@ export default function VideoLibrary({ canManage = false }: { canManage?: boolea
               <Tv size={13} />
               Kenya Education Cloud · Edu TV Kenya
             </div>
-            <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-              KICD Video Library
-            </h1>
+            {embedded ? (
+              <h2 className="mt-2 text-page font-semibold tracking-tight">KICD Video Library</h2>
+            ) : (
+              <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+                KICD Video Library
+              </h1>
+            )}
             <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-blue-100">
               Curated, verified educational video lessons from the official Edu TV Kenya channel.
               Videos are aligned with CBC competency strands.

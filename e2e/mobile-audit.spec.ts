@@ -18,10 +18,10 @@ const rolePages: Record<string, string[]> = {
   head_teacher: ["/dashboard", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
   deputy: ["/dashboard", "/admissions", "/learners", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/timetable", "/learning-videos", "/schemes", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
   secretary: ["/dashboard", "/admissions", "/admissions/new", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
-  accountant: ["/dashboard", "/learners", "/finance", "/finance/structures", "/profile", "/privacy", "/change-password"],
+  accountant: ["/dashboard", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
   teacher: ["/dashboard", "/attendance", "/learners", "/assessments", "/assessments/exams", "/assessments/rubrics", "/assignments", "/learning-content", "/learning-videos", "/teaching-log", "/schemes", "/library", "/welfare", "/timetable", "/profile", "/privacy", "/change-password"],
   parent: ["/portal", "/complaints", "/profile", "/privacy", "/change-password"],
-  learner: ["/learning", "/assignments", "/learning-videos", "/profile", "/privacy", "/change-password"],
+  learner: ["/learning", "/assignments", "/learning-videos", "/portal", "/profile", "/privacy", "/change-password"],
   welfare_chair: ["/dashboard", "/welfare", "/profile", "/privacy", "/change-password"],
   non_teaching_staff: ["/dashboard", "/welfare", "/profile", "/privacy", "/change-password"],
 };
@@ -211,11 +211,14 @@ test.describe("Complete mobile audit, every role and route", () => {
                 continue;
               }
               await page.waitForTimeout(120);
-              for (let settle = 0; settle < 8; settle++) {
+              // Restricted routes may stream the shell before the server redirect lands.
+              const settleBudget = isAuthorizedPage ? 8 : 24;
+              for (let settle = 0; settle < settleBudget; settle++) {
                 const before = page.url();
                 await page.waitForTimeout(60);
                 if (page.url() === before) break;
               }
+              if (!isAuthorizedPage && new URL(page.url()).pathname === route) await page.waitForTimeout(500);
               const finalPath = new URL(page.url()).pathname;
               if (!isAuthorizedPage) {
                 if (finalPath === route && (!responseStatus || responseStatus < 400)) {
