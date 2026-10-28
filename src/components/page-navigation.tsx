@@ -21,7 +21,7 @@ function formSnapshot(form: HTMLFormElement) {
 }
 
 function hasUnsavedChanges() {
-  return [...editedForms].some(form => form.isConnected && formSnapshot(form) !== formBaselines.get(form));
+  return document.querySelector('form[data-unsaved="true"]') !== null || [...editedForms].some(form => form.isConnected && formSnapshot(form) !== formBaselines.get(form));
 }
 
 function readStack(key: string): string[] {

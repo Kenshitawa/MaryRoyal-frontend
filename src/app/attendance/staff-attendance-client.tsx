@@ -213,10 +213,11 @@ export default function StaffAttendanceClient({ staff }: { staff: Staff[] }) {
       {/* Note and Save Row */}
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+          <label htmlFor="staff-attendance-note" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
             Register Annotation / Log Note (Optional)
           </label>
           <input
+            id="staff-attendance-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             maxLength={240}

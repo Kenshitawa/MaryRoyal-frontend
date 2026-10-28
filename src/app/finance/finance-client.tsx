@@ -349,9 +349,9 @@ export default function FinanceClient({
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Finance &amp; Accounts Desk
-          </h1>
+          </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Term invoicing, KES fee collection, M-Pesa receipts with QR verification, and arrears aging.
           </p>

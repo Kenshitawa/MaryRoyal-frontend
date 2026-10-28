@@ -114,10 +114,11 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
       {/* Class & Date Selector */}
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+          <label htmlFor="attendance-grade" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
             Class / Grade
           </label>
           <select
+            id="attendance-grade"
             value={grade}
             onChange={(e) => setGrade(e.target.value)}
             className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-xs font-bold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
@@ -131,10 +132,11 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
         </div>
 
         <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+          <label htmlFor="attendance-date" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
             Attendance Date
           </label>
           <input
+            id="attendance-date"
             type="date"
             value={date}
             max={today()}

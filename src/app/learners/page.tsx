@@ -29,13 +29,13 @@ export default async function LearnersPage() {
 
   return (
     <PortalFrame active="Learners">
-      <main className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
         <LearnerDirectory
           identityOnly={identityOnly}
           canCreate={canInScope(user.role, "admissions", "create", "school")}
           canApprove={user.role === "HEAD_TEACHER"}
         />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

@@ -31,6 +31,14 @@ export default async function ReceiptPage({
   if (user.forcePasswordChange) redirect("/change-password");
 
   const { id } = await params;
+  const schoolPaymentsAllowed = canInScope(user.role, "payments", "view", "school");
+  const linkedPaymentsAllowed = canInScope(user.role, "payments", "view", "linked");
+  if (!schoolPaymentsAllowed && !linkedPaymentsAllowed) {
+    await db.auditEvent.create({
+      data: { actorId: user.id, action: "ACCESS_DENIED", entity: "FeePayment", entityId: id }
+    });
+    notFound();
+  }
   const payment = await db.feePayment.findUnique({
     where: { id },
     include: {
@@ -45,13 +53,7 @@ export default async function ReceiptPage({
 
   if (!payment || payment.status === "PENDING") notFound();
 
-  if (!canInScope(user.role, "payments", "view", "school")) {
-    if (!canInScope(user.role, "payments", "view", "linked")) {
-      await db.auditEvent.create({
-        data: { actorId: user.id, action: "ACCESS_DENIED", entity: "FeePayment", entityId: id }
-      });
-      notFound();
-    }
+  if (!schoolPaymentsAllowed && linkedPaymentsAllowed) {
     const link = await db.guardianLink.findUnique({
       where: {
         userId_learnerId: {

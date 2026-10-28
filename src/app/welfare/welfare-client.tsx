@@ -235,7 +235,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
           { key: "loans", label: "Loans & Advances", icon: CreditCard },
           { key: "products", label: "Welfare Products", icon: Gift },
         ].map(({ key, label, icon: Icon }) => (
-          <button key={key} onClick={() => setTab(key as typeof tab)}
+          <button key={key} aria-label={label} onClick={() => setTab(key as typeof tab)}
             className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition ${tab === key ? "bg-white text-blue-800 shadow-sm dark:bg-slate-700 dark:text-blue-300" : "text-slate-500 hover:text-slate-700"}`}>
             <Icon size={15} /><span className="hidden sm:inline">{label}</span>
           </button>

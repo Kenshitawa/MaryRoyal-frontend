@@ -126,7 +126,7 @@ export default async function AttendancePage() {
 
   return (
     <PortalFrame active="Attendance">
-      <main className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
         {overview && (
           <>
             {/* Header */}
@@ -316,7 +316,7 @@ export default async function AttendancePage() {
         )}
 
         <AttendanceClient grades={grades} />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

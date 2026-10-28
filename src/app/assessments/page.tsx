@@ -36,7 +36,7 @@ export default async function AssessmentsPage() {
 
   return (
     <PortalFrame active="Assessments">
-      <main className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
         <AssessmentWorkspace
           subjects={subjects}
           canCreate={
@@ -47,7 +47,7 @@ export default async function AssessmentsPage() {
           canReview={user.role === "HEAD_TEACHER"}
           canRelease={user.role === "DIRECTOR"}
         />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

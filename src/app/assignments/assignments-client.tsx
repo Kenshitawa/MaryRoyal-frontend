@@ -274,7 +274,7 @@ export default function AssignmentsClient({
   );
 
   return (
-    <main className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
+    <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-6 text-white shadow-xl sm:p-8">
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -1005,7 +1005,7 @@ export default function AssignmentsClient({
           )}
         </div>
       </section>
-    </main>
+    </section>
   );
 }
 

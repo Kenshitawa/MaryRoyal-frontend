@@ -179,7 +179,7 @@ export default async function StaffProfilePage({
 
   return (
     <PortalFrame active={currentUser ? "Profile" : "Staff"}>
-      <main className="mx-auto max-w-5xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-5xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
         <Link
           href={currentUser ? "/profile" : "/staff"}
           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-500"
@@ -202,7 +202,7 @@ export default async function StaffProfilePage({
           teachingLogs={teachingLogs}
           attendance={attendance}
         />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

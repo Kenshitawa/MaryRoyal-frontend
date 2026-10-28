@@ -596,15 +596,15 @@ export default function AccountDirectory() {
                 return (
                   <article
                     key={account.id}
-                    className={`group relative flex flex-col justify-between rounded-2xl border p-4.5 transition-all hover:shadow-md ${
+                    className={`group relative flex min-w-0 flex-col justify-between rounded-2xl border p-4 transition-all hover:shadow-md ${
                       account.suspended || locked
                         ? "border-red-200 bg-red-50/20 dark:border-red-900/40 dark:bg-red-950/20"
                         : "border-slate-200/80 bg-white/70 hover:border-blue-200 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700"
                     }`}
                   >
                     <div>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
+                      <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
                           <span
                             className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl font-bold ${
                               account.suspended || locked
@@ -633,7 +633,7 @@ export default function AccountDirectory() {
                           </div>
                         </div>
 
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold tracking-wider text-slate-600 uppercase dark:bg-slate-800 dark:text-slate-300">
+                        <span className="max-w-full break-words rounded-full bg-slate-100 px-2.5 py-1 text-center text-[10px] font-bold tracking-wider text-slate-600 uppercase dark:bg-slate-800 dark:text-slate-300 sm:max-w-[45%]">
                           {account.role.replaceAll("_", " ")}
                         </span>
                       </div>

@@ -24,9 +24,9 @@ export default async function AddStaffPage() {
 
   return (
     <PortalFrame active="Staff">
-      <main className="mx-auto max-w-4xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-4xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
         <StaffWizard userRole={user.role} />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

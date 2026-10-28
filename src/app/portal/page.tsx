@@ -58,7 +58,7 @@ export default async function FamilyPortal({
   if (!links.length) {
     return (
       <PortalFrame active={user.role === "PARENT" ? "My children" : "My learning"}>
-        <main className="mx-auto max-w-xl p-5 pb-28 md:py-16">
+        <section className="mx-auto max-w-xl p-5 pb-28 md:py-16">
           <section className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-8 text-center shadow-sm dark:border-slate-800/80">
             <GraduationCap size={36} className="mx-auto text-blue-600" />
             <h1 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">
@@ -69,7 +69,7 @@ export default async function FamilyPortal({
               administration to establish parent-child access.
             </p>
           </section>
-        </main>
+        </section>
       </PortalFrame>
     );
   }
@@ -129,7 +129,7 @@ export default async function FamilyPortal({
 
   return (
     <PortalFrame active={user.role === "PARENT" ? "My children" : "My learning"}>
-      <main className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8 space-y-6">
+      <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8 space-y-6">
         {/* Hero Header Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1b3b] via-blue-900 to-indigo-900 p-6 text-white shadow-xl sm:p-8">
           <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -527,7 +527,7 @@ export default async function FamilyPortal({
         <footer className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">
           Mary Royal School · Obunga, Kisumu, Kenya · CBC Excellence
         </footer>
-      </main>
+      </section>
     </PortalFrame>
   );
 }

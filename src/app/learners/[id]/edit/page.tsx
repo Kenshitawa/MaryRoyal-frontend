@@ -48,7 +48,7 @@ export default async function LearnerEditPage({
 
   return (
     <PortalFrame active="Learners">
-      <main className="mx-auto max-w-5xl p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-5xl p-4 pb-28 sm:p-6 md:p-8">
         <LearnerEditForm
           learner={{
             id: learner.id,
@@ -81,7 +81,7 @@ export default async function LearnerEditPage({
               : null
           }}
         />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

@@ -178,7 +178,7 @@ export default async function ReportsPage() {
 
   return (
     <PortalFrame active="Reports">
-      <main className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 lg:p-8">
+      <section className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 lg:p-8">
         {/* Executive Hero Header */}
         <div className="bento-card overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 p-6 text-white shadow-xl shadow-blue-950/15 sm:p-8 dark:border-blue-900/50">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -237,7 +237,7 @@ export default async function ReportsPage() {
             {welfareTrend.length ? <div className="mt-5 flex h-36 items-end gap-2">{welfareTrend.map((row) => <div key={`${row.year}-${row.month}`} title={`${new Intl.DateTimeFormat("en", { month: "short" }).format(new Date(row.year, row.month - 1))} ${row.year}: KES ${(row._sum.amount ?? 0).toLocaleString()}`} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2"><div className="w-full rounded-t-lg bg-blue-600/90" style={{ height: `${Math.max(4, (row._sum.amount ?? 0) / welfareMax * 100)}%` }} /><span className="text-[10px] text-slate-500">{new Intl.DateTimeFormat("en", { month: "short" }).format(new Date(row.year, row.month - 1))}</span></div>)}</div> : <p className="mt-6 rounded-xl bg-slate-50 p-5 text-sm text-slate-500 dark:bg-slate-800">No welfare contributions are recorded yet.</p>}
           </article>
         </section>
-      </main>
+      </section>
     </PortalFrame>
   );
 }

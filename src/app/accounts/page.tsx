@@ -23,10 +23,10 @@ export default async function AccountsPage() {
 
   return (
     <PortalFrame active="Accounts">
-      <main className="mx-auto max-w-7xl p-5 pb-28 md:p-8">
+      <section className="mx-auto max-w-7xl p-5 pb-28 md:p-8">
         <AccountDirectory />
         <GuardianLinks />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

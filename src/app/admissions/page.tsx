@@ -86,7 +86,7 @@ export default async function AdmissionsPage({
 
   return (
     <PortalFrame active="Admissions">
-      <main className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 lg:p-8">
+      <section className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 lg:p-8">
         {/* Header Hero */}
         <div className="bento-card overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 p-6 text-white shadow-xl shadow-blue-950/10 sm:p-8 dark:border-blue-900/50">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -198,7 +198,7 @@ export default async function AdmissionsPage({
           retentionNotice={retentionNotice}
           initialRetentionDays={retentionDays}
         />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

@@ -389,7 +389,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
 
   return (
     <PortalFrame active="Learners">
-      <main className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
         {/* Hero Header Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a2352] via-[#123e85] to-[#1e54be] p-6 text-white shadow-xl sm:p-8">
           <div aria-hidden="true" className="absolute -right-16 -top-16 h-64 w-64 rounded-full border-[32px] border-white/5" />
@@ -1115,7 +1115,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
             </Card>
           )}
         </div>
-      </main>
+      </section>
     </PortalFrame>
   );
 }

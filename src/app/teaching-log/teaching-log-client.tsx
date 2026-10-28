@@ -152,7 +152,7 @@ export default function TeachingLogClient({
   const confirmedCount = logs.filter((l) => l.status === "CONFIRMED").length;
 
   return (
-    <main className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8 space-y-6">
+    <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8 space-y-6">
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c1f44] via-blue-900 to-indigo-900 p-6 text-white shadow-xl sm:p-8">
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -507,6 +507,6 @@ export default function TeachingLogClient({
           )}
         </div>
       </section>
-    </main>
+    </section>
   );
 }

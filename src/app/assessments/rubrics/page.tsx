@@ -26,9 +26,9 @@ export default async function RubricsPage() {
 
   return (
     <PortalFrame active="Assessments">
-      <main className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
         <RubricsClient canManage={canManage} />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

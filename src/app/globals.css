@@ -193,7 +193,10 @@ html[data-theme="dark"] .bg-slate-200\/70 { background-color: #17253c !important
 html[data-theme="dark"] .bg-blue-50,
 html[data-theme="dark"] .bg-blue-50\/60,
 html[data-theme="dark"] .bg-blue-50\/80,
-html[data-theme="dark"] .bg-indigo-50 { background-color: #172f55 !important; }
+html[data-theme="dark"] .bg-blue-50\/70,
+html[data-theme="dark"] .bg-indigo-50,
+html[data-theme="dark"] .bg-gray-50\/70,
+html[data-theme="dark"] .bg-gray-850 { background-color: #172f55 !important; }
 html[data-theme="dark"] .bg-red-50 { background-color: #3a1d2a !important; }
 html[data-theme="dark"] .bg-amber-50 { background-color: #382d19 !important; }
 html[data-theme="dark"] .bg-emerald-50 { background-color: #153126 !important; }
@@ -206,6 +209,21 @@ html[data-theme="dark"] .text-amber-900 { color: #fcd34d !important; }
 html[data-theme="dark"] .text-emerald-700,
 html[data-theme="dark"] .text-emerald-800,
 html[data-theme="dark"] .text-emerald-900 { color: #6ee7b7 !important; }
+html[data-theme="dark"] .text-blue-900,
+html[data-theme="dark"] .text-blue-800,
+html[data-theme="dark"] .text-blue-700 { color: #bfdbfe !important; }
+html[data-theme="dark"] .text-blue-600 { color: #93c5fd !important; }
+html[data-theme="dark"] .text-purple-600 { color: #d8b4fe !important; }
+html[data-theme="dark"] .text-rose-600,
+html[data-theme="dark"] .text-rose-700\/80 { color: #fda4af !important; }
+html[data-theme="dark"] .text-emerald-700\/80 { color: #6ee7b7 !important; }
+html[data-theme="dark"] .text-amber-700\/80 { color: #fcd34d !important; }
+html[data-theme="dark"] .text-gray-900,
+html[data-theme="dark"] .text-gray-800 { color: #f1f5f9 !important; }
+html[data-theme="dark"] .text-gray-600,
+html[data-theme="dark"] .text-gray-500 { color: #cbd5e1 !important; }
+html[data-theme="dark"] .dark\:text-gray-100 { color: #f1f5f9 !important; }
+html[data-theme="dark"] .bg-emerald-600 { background-color: #047857 !important; }
 
 html[data-theme="dark"] .text-slate-950,
 html[data-theme="dark"] .text-slate-900,
@@ -301,17 +319,13 @@ html[data-theme="dark"] .border-emerald-200 { border-color: #285940 !important; 
     align-items: center;
   }
 
-  :where(body *:not(svg):not(path):not(style):not(script)) {
-    font-size: max(var(--mobile-text-secondary), 1em) !important;
-  }
-
-  :where(body time, body [data-mobile-badge="true"], body .mobile-timestamp) {
-    font-size: max(12px, 1em) !important;
-  }
-
-  :where(body .text-lg) { font-size: var(--mobile-text-section) !important; }
-  :where(body .text-xl, body .text-2xl, body .text-3xl, body .text-4xl, body .text-5xl) { font-size: var(--mobile-text-title) !important; }
-  :where(body .text-base) { font-size: var(--mobile-text-body) !important; }
+  :where(body *:not(svg):not(path):not(style):not(script)) { font-size: var(--mobile-text-secondary) !important; }
+  :where(body .text-sm, body .text-base) { font-size: var(--mobile-text-body) !important; }
+  :where(body .text-lg, body .text-xl, body h2, body h3) { font-size: var(--mobile-text-section) !important; }
+  :where(body .text-2xl, body .text-3xl, body .text-4xl, body .text-5xl, body h1) { font-size: var(--mobile-text-title) !important; }
+  :where(body time, body [data-mobile-badge="true"], body [data-badge="true"], body .mobile-timestamp, body .status-badge, body .badge) { font-size: 12px !important; }
+  :where(body *) { font-weight: 400; }
+  :where(body .font-medium, body .font-semibold, body .font-bold, body .font-extrabold, body .font-black, body strong, body b, body h1, body h2, body h3) { font-weight: 600 !important; }
 }
 
 /* Phone Efficiency and Typography Rules */

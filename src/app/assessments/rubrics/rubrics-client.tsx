@@ -237,10 +237,11 @@ export default function RubricsClient({ canManage }: { canManage: boolean }) {
 
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label htmlFor={`rubric-${idx}-code`} className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Code
                 </label>
                 <input
+                  id={`rubric-${idx}-code`}
                   disabled={!canManage}
                   type="text"
                   value={level.code}
@@ -250,10 +251,11 @@ export default function RubricsClient({ canManage }: { canManage: boolean }) {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label htmlFor={`rubric-${idx}-label`} className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Label
                 </label>
                 <input
+                  id={`rubric-${idx}-label`}
                   disabled={!canManage}
                   type="text"
                   value={level.label}
@@ -264,10 +266,11 @@ export default function RubricsClient({ canManage }: { canManage: boolean }) {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <label htmlFor={`rubric-${idx}-min`} className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Min Score (%)
                   </label>
                   <input
+                    id={`rubric-${idx}-min`}
                     disabled={!canManage}
                     type="number"
                     step="0.01"
@@ -279,10 +282,11 @@ export default function RubricsClient({ canManage }: { canManage: boolean }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <label htmlFor={`rubric-${idx}-max`} className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Max Score (%)
                   </label>
                   <input
+                    id={`rubric-${idx}-max`}
                     disabled={!canManage}
                     type="number"
                     step="0.01"
@@ -297,10 +301,11 @@ export default function RubricsClient({ canManage }: { canManage: boolean }) {
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label htmlFor={`rubric-${idx}-descriptor`} className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Official Competency Descriptor
               </label>
               <textarea
+                id={`rubric-${idx}-descriptor`}
                 disabled={!canManage}
                 rows={2}
                 value={level.descriptor}

@@ -371,3 +371,7 @@ Total output lines: 287
 ## Mobile audit stabilization -- 2026-10-28
 - Built: Isolated Playwright preparation to `prisma/round3-e2e.test.db`, guarded role-session generation to that local E2E database, added remaining demo roles for audit coverage, and ignored browser auth state, `.next-e2e`, test output and mobile screenshots. Corrected the mobile page audit document to show verification is still in progress.
 - Tested: `npm run lint` passed (0 warnings, 0 errors); `npm run typecheck` passed; `npm test` passed (11 files, 59/59 tests); `npm run build:production` passed. The expanded Director mobile matrix failed, identifying undersized controls, Accounts horizontal overflow and inconsistent `<main>` landmarks; full matrix/report remains next.
+
+## Mobile UI push preparation -- 2026-10-28
+- Built: Added shared mobile touch-target styling and clearer small-screen typography, corrected page landmarks and Accounts wrapping, improved dark-mode contrast, connected admission dirty-state to the leave guard, and restricted payment recording/receipt viewing to authorized finance roles. Kept the user's feature-branch scope; no production deployment was run.
+- Tested: `npm run lint` passed with 0 warnings/errors; `npm run typecheck` passed; `npm test` passed (12 files, 60/60). E2E production build completed, but the Director E2E run was stopped at the user's request and had failures before stopping; full E2E and mobile audit are not verified. Do not treat this branch as production-cleared.

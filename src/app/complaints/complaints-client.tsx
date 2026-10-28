@@ -193,7 +193,7 @@ export default function ComplaintsClient({
   const received = complaints.filter((c) => c.status === "RECEIVED").length;
 
   return (
-    <main className="mx-auto max-w-6xl p-4 pb-28 sm:p-7">
+    <section className="mx-auto max-w-6xl p-4 pb-28 sm:p-7">
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-6 text-white shadow-xl sm:p-8">
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -665,6 +665,6 @@ export default function ComplaintsClient({
         Signed in as {userName} ({role.replaceAll("_", " ")}). Confidential records are audited
         under Mary Royal School safeguarding policy.
       </p>
-    </main>
+    </section>
   );
 }

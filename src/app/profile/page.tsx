@@ -29,7 +29,7 @@ export default async function ProfilePage() {
 
   return (
     <PortalFrame active="Profile">
-      <main className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8 space-y-6">
+      <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8 space-y-6">
         <div>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50/80 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300">
@@ -51,7 +51,7 @@ export default async function ProfilePage() {
           role={user.role}
           initialAvatar={user.avatarUrl}
         />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

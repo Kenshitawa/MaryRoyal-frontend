@@ -54,7 +54,7 @@ export default async function StaffDirectoryPage() {
 
   return (
     <PortalFrame active="Staff">
-      <main className="mx-auto max-w-6xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
+      <section className="mx-auto max-w-6xl space-y-6 p-4 pb-28 sm:p-6 md:p-8">
         {/* Hero Section */}
         <div className="bento-card relative overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 p-6 text-white shadow-xl shadow-blue-950/10 sm:p-8 dark:border-blue-900/50">
           <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -87,7 +87,7 @@ export default async function StaffDirectoryPage() {
           canExport={canExport}
           userRole={user.role}
         />
-      </main>
+      </section>
     </PortalFrame>
   );
 }

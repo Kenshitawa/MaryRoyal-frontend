@@ -277,9 +277,9 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
             <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
               Staff Account &amp; Bio Onboarding
             </span>
-            <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-white">
+            <h1 className="mt-1 text-xl font-black text-slate-900 dark:text-white">
               Step {currentStep} of 7: {STEPS[currentStep - 1].label}
-            </h2>
+            </h1>
           </div>
 
           <div className="flex items-center gap-2">
@@ -307,6 +307,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
             return (
               <button
                 key={step.id}
+                aria-label={`Step ${step.id}: ${step.label}`}
                 onClick={() => {
                   if (step.id < currentStep) setCurrentStep(step.id);
                 }}

@@ -45,7 +45,8 @@ function persistFindings(items: Finding[]) {
 }
 
 async function inspectPage(page: Page): Promise<AuditResult> {
-  return page.evaluate(() => {
+  await page.addScriptTag({ content: axe.source });
+  const layout = await page.evaluate(() => {
     const visible = (element: Element) => {
       const node = element as HTMLElement;
       const rect = node.getBoundingClientRect();
@@ -92,10 +93,18 @@ async function inspectPage(page: Page): Promise<AuditResult> {
       }
     }
     const viewportWidth = document.documentElement.clientWidth;
+    const horizontalScrollers = Array.from(document.body.querySelectorAll("*"))
+      .filter(visible)
+      .filter((element) => element.scrollWidth > element.clientWidth + 1)
+      .filter((element) => getComputedStyle(element).overflowX === "auto" || getComputedStyle(element).overflowX === "scroll");
     const overflowNodes = Array.from(document.body.querySelectorAll("*"))
       .filter(visible)
       .map((element) => ({ element, rect: element.getBoundingClientRect() }))
-      .filter(({ rect }) => rect.width > viewportWidth + 1 || rect.right > viewportWidth + 1 || rect.left < -1)
+      .filter(({ element, rect }) => {
+        if (rect.width <= viewportWidth + 1 && rect.right <= viewportWidth + 1 && rect.left >= -1) return false;
+        const clippingAncestor = element.parentElement?.closest("[class*='overflow-hidden'],[style*='overflow: hidden'],[style*='overflow-x: hidden']");
+        return !clippingAncestor && !horizontalScrollers.some((scroller) => scroller.contains(element));
+      })
       .sort((a, b) => b.rect.width - a.rect.width)
       .slice(0, 10);
     const pageWidth = document.documentElement.scrollWidth;
@@ -119,12 +128,17 @@ async function inspectPage(page: Page): Promise<AuditResult> {
     const skip = Array.from(document.querySelectorAll("a[href^='#']")).find((element) => /skip to (main )?content/i.test(name(element)));
     if (!skip) notes.push({ cause: "Page landmarks and headings", detail: "missing Skip to content link" });
     for (const element of Array.from(document.querySelectorAll("body *")).filter(visible)) {
-      if (element instanceof SVGElement) continue;
+      if (element instanceof SVGElement || element.closest("svg")) continue;
       if (!element.children.length && !element.textContent?.trim()) continue;
       const fontSize = Number.parseFloat(getComputedStyle(element).fontSize);
       const badgeOrTime = element.matches("time,[data-badge='true'],.badge,.status-badge") || /badge|pill/.test(element.className?.toString() ?? "");
       const minimum = badgeOrTime ? 12 : 14;
       if (fontSize < minimum) notes.push({ cause: "Text below allowed sizes", detail: `${selector(element)} “${element.textContent?.trim().replace(/\s+/g, " ").slice(0, 50)}” ${fontSize.toFixed(1)}px (minimum ${minimum}px)` });
+    }
+    for (const scroller of horizontalScrollers) {
+      const chain: string[] = [];
+      for (let current: Element | null = scroller; current && chain.length < 5; current = current.parentElement) chain.push(selector(current));
+      notes.push({ cause: "Horizontal overflow", detail: `${selector(scroller)} horizontal scroll ${scroller.scrollWidth}px inside ${scroller.clientWidth}px; chain ${chain.join(" ← ")}` });
     }
     return { findings: notes, pageWidth, viewportWidth };
   });
@@ -148,8 +162,16 @@ test.describe("Complete mobile audit, every role and route", () => {
             const roleFindings: Finding[] = [];
             const consoleErrors: string[] = [];
             const failedRequests: string[] = [];
-            page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
-            page.on("requestfailed", (request) => { failedRequests.push(`${request.method()} ${new URL(request.url()).pathname}`); });
+            page.on("console", (message) => {
+              if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) consoleErrors.push(message.text());
+            });
+            page.on("response", (response) => {
+              if (response.status() >= 400) failedRequests.push(`${response.request().method()} ${new URL(response.url()).pathname} HTTP ${response.status()}`);
+            });
+            page.on("requestfailed", (request) => {
+              const reason = request.failure()?.errorText ?? "unknown network failure";
+              if (!/ERR_ABORTED|NS_BINDING_ABORTED|cancelled/i.test(reason)) failedRequests.push(`${request.method()} ${new URL(request.url()).pathname} ${reason}`);
+            });
             for (const route of allRoutes) {
               const routeStart = roleFindings.length;
               const isAuthorizedPage = rolePages[role].includes(route);
