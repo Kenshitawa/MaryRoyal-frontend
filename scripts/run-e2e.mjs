@@ -45,7 +45,7 @@ if (appReady.status !== 0) process.exit(appReady.status ?? 1);
 // 2. Run Playwright with passed arguments (or all tests)
 const extraArgs = process.argv.slice(2).join(" ");
 const playwrightCmd = extraArgs ? `npx playwright test ${extraArgs}` : "npx playwright test";
-const collectMobileAudit = process.argv.some((argument) => argument.includes("mobile-audit.spec.ts"));
+const collectMobileAudit = process.argv.length === 2 || process.argv.some((argument) => argument.includes("mobile-audit.spec.ts"));
 if (collectMobileAudit) {
   const collectionPath = resolve(root, "test-results/mobile-failure-collection.jsonl");
   fs.mkdirSync(resolve(root, "test-results"), { recursive: true });

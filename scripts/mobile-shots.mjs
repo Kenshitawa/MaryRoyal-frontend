@@ -9,7 +9,7 @@ const roles = (process.env.SHOT_ROLES ?? "").split(",").filter(Boolean);
 
 const rolePages = {
   director: ["/dashboard", "/accounts", "/admissions", "/admissions/new", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
-  head_teacher: ["/dashboard", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
+  head_teacher: ["/dashboard", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
   deputy: ["/dashboard", "/admissions", "/learners", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/timetable", "/learning-videos", "/schemes", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
   secretary: ["/dashboard", "/admissions", "/admissions/new", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
   accountant: ["/dashboard", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
@@ -56,7 +56,7 @@ for (const role of Object.keys(rolePages)) {
   const id = sample[`${role}StaffId`];
   if (id && !rolePages[role].includes(`/staff/${id}`)) rolePages[role].push(`/staff/${id}`);
 }
-for (const id of [sample.directorStaffId, sample.deputyStaffId, sample.secretaryStaffId, sample.accountantStaffId, sample.welfare_chairStaffId, sample.non_teaching_staffStaffId]) {
+for (const id of [sample.directorStaffId, sample.head_teacherStaffId, sample.deputyStaffId, sample.secretaryStaffId, sample.accountantStaffId, sample.welfare_chairStaffId, sample.non_teaching_staffStaffId]) {
   for (const role of ["director", "head_teacher"]) {
     if (id && !rolePages[role].includes(`/staff/${id}`)) rolePages[role].push(`/staff/${id}`);
   }

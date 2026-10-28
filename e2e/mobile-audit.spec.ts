@@ -15,7 +15,7 @@ const appearances = [
 ] as const;
 const rolePages: Record<string, string[]> = {
   director: ["/dashboard", "/accounts", "/admissions", "/admissions/new", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
-  head_teacher: ["/dashboard", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
+  head_teacher: ["/dashboard", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
   deputy: ["/dashboard", "/admissions", "/learners", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/timetable", "/learning-videos", "/schemes", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
   secretary: ["/dashboard", "/admissions", "/admissions/new", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
   accountant: ["/dashboard", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
@@ -69,7 +69,7 @@ for (const role of ["director", "deputy", "secretary"]) {
 for (const role of Object.keys(rolePages)) {
   if (sample[`${role}StaffId`]) detailRoutes(role, [[sample[`${role}StaffId`], "/staff/{id}"]]);
 }
-for (const id of [sample.directorStaffId, sample.deputyStaffId, sample.secretaryStaffId, sample.accountantStaffId, sample.welfare_chairStaffId, sample.non_teaching_staffStaffId]) {
+for (const id of [sample.directorStaffId, sample.head_teacherStaffId, sample.deputyStaffId, sample.secretaryStaffId, sample.accountantStaffId, sample.welfare_chairStaffId, sample.non_teaching_staffStaffId]) {
   detailRoutes("director", [[id, "/staff/{id}"]]);
   detailRoutes("head_teacher", [[id, "/staff/{id}"]]);
 }
@@ -258,31 +258,28 @@ test.describe("Complete mobile audit, every role and route", () => {
                 persistFindings(current);
                 continue;
               }
-              await page.waitForTimeout(120);
-              // Restricted routes may stream the shell before the server redirect lands.
-              const settleBudget = isAuthorizedPage ? 8 : 24;
-              for (let settle = 0; settle < settleBudget; settle++) {
-                const before = page.url();
-                await page.waitForTimeout(60);
-                if (page.url() === before) break;
-              }
-              if (!isAuthorizedPage && new URL(page.url()).pathname === route) await page.waitForTimeout(500);
+              await page.locator("main h1").first().waitFor({ state: "visible", timeout: 5000 }).catch(() => undefined);
               const finalPath = new URL(page.url()).pathname;
+              const recordUnavailable = await page.getByRole("heading", { name: "We could not find that page", exact: true }).isVisible();
               if (!isAuthorizedPage) {
-                if (finalPath === route && (!responseStatus || responseStatus < 400)) {
+                // Next.js streams notFound() with HTTP 200 after the shell has started.
+                if (finalPath === route && (!responseStatus || responseStatus < 400) && !recordUnavailable) {
                   roleFindings.push({ cause: "Route authorization", role, route, width: viewport.width, mode: "light", style: "bento", detail: "restricted route remained accessible to this role" });
                 }
                 const current = roleFindings.slice(routeStart);
                 persistFindings(current);
                 continue;
               }
-              if (finalPath !== route) {
-                roleFindings.push({ cause: "Authorized route unavailable", role, route, width: viewport.width, mode: "light", style: "bento", detail: `expected route but was sent to ${finalPath}` });
+              if (finalPath !== route || recordUnavailable) {
+                roleFindings.push({ cause: "Authorized route unavailable", role, route, width: viewport.width, mode: "light", style: "bento", detail: recordUnavailable ? "authorized record rendered the unavailable page" : `expected route but was sent to ${finalPath}` });
                 const current = roleFindings.slice(routeStart);
                 persistFindings(current);
                 continue;
               }
-              await page.waitForSelector("main", { timeout: 1000 }).catch(() => undefined);
+              await page.evaluate(async () => {
+                const animations = document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity);
+                await Promise.all(animations.map(animation => animation.finished.catch(() => undefined)));
+              });
               for (const appearance of appearances) {
                 try {
                   await page.evaluate(({ mode, style }) => {
@@ -305,7 +302,7 @@ test.describe("Complete mobile audit, every role and route", () => {
               const current = roleFindings.slice(routeStart);
               persistFindings(current);
             }
-            fs.appendFileSync(collectionPath, `${JSON.stringify({ kind: "complete", role, width: viewport.width, findingCount: roleFindings.length })}\n`);
+            fs.appendFileSync(collectionPath, `${JSON.stringify({ kind: "complete", role, width: viewport.width, routeCount: allRoutes.length, renderedRouteCount: rolePages[role].length, findingCount: roleFindings.length })}\n`);
             expect(roleFindings.length, `${role} mobile violations (details in docs/MOBILE_FAILURES.md)`).toBe(0);
           });
         });

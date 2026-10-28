@@ -27,8 +27,10 @@ const sections = [...byCause.entries()].sort((a, b) => b[1].reduce((n, g) => n +
   }).join("\n");
   return `## ${cause} — ${count} (${items.length} unique causes)\n\n${lines}`;
 });
-const complete = completed.length === expectedContexts;
-const summary = `**${complete ? "Complete" : `INCOMPLETE (${completed.length}/${expectedContexts} role and viewport collections)`} mobile audit.** Generated ${new Date().toISOString()}. It attempted all 29 inventoried route paths for each of ten roles at 360px and 390px; four mode/style appearances were measured for each authorized rendered route. Access-denied routes were attempted once per role and were not counted as rendered UI. The sole touch-target exception is an inline anchor within a prose paragraph with surrounding sentence text, as documented in docs/DECISIONS.md.\n\nTotal findings: **${records.length}** across ${byCause.size} distinct causes. Completed collections: **${completed.length}/${expectedContexts}**.\n`;
+const complete = new Set(completed.map(row => `${row.role}:${row.width}`)).size === expectedContexts;
+const routeCount = completed[0]?.routeCount;
+const routeSummary = routeCount ? `${routeCount} inventoried route paths` : "inventoried index and detail route paths";
+const summary = `**${complete ? "Complete" : `INCOMPLETE (${completed.length}/${expectedContexts} role and viewport collections)`} mobile audit.** Generated ${new Date().toISOString()}. It attempted all ${routeSummary} for each of ten roles at 360px and 390px; four mode/style appearances were measured for each authorized rendered route. Access-denied routes were attempted once per role and were not counted as rendered UI. The sole touch-target exception is an inline anchor within a prose paragraph with surrounding sentence text, as documented in docs/DECISIONS.md.\n\nTotal findings: **${records.length}** across ${byCause.size} distinct causes. Completed collections: **${completed.length}/${expectedContexts}**.\n`;
 const content = `# Mobile failure report\n\n${summary}\n\n${sections.join("\n\n") || "## Result\n\nNo findings were collected. A zero-failure result requires a Complete audit."}\n`;
 fs.writeFileSync(path.join(root, "docs/MOBILE_FAILURES.md"), content);
 console.log(`Mobile failure report written: ${records.length} findings; ${completed.length}/${expectedContexts} collections; ${complete ? "complete" : "incomplete"}.`);
