@@ -40,14 +40,14 @@ export default async function PortalFrame({ children, active }: { children: Reac
   const homeHref = user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : user.role === "NON_TEACHING_STAFF" || user.role === "WELFARE_CHAIR" ? "/welfare" : "/dashboard";
   return (
     <div className="min-h-screen lg:flex">
-      <a href="#main-content" className="sr-only fixed left-4 top-4 z-[60] rounded-xl bg-blue-800 px-4 py-3 font-semibold text-white focus:not-sr-only focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-300">Skip to main content</a>
+      <a href="#main-content" className="skip-to-content sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-blue-800 focus:px-4 focus:py-3 focus:font-semibold focus:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-300">Skip to main content</a>
       <aside className="school-sidebar fixed inset-y-0 left-0 z-30 hidden h-screen w-[250px] shrink-0 flex-col overflow-y-auto border-r border-slate-200/80 bg-[#f1f6ff] px-4 py-6 lg:flex dark:bg-slate-950 dark:border-slate-800">
         <Link href={homeHref} className="mb-9 flex items-center gap-3 px-2">
           <Image src="/mary-royal-logo.png" alt="Mary Royal School home" width={42} height={42} />
           <span><b className="block text-sm tracking-tight text-slate-900 dark:text-white">Mary Royal School</b><span className="text-[10px] text-slate-500">Obunga · Kisumu</span></span>
         </Link>
         <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Workspace</p>
-        <nav aria-label="Main navigation" className="space-y-1">
+        <nav aria-label="Desktop navigation" className="space-y-1">
           {nav.map(({ label, href, icon: Icon }) => (
             <Link key={label} href={href} aria-current={active === label ? "page" : undefined}
               className={`flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-semibold transition ${active === label ? "bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" : "text-slate-600 hover:bg-slate-50 hover:text-blue-700 dark:text-slate-400 dark:hover:bg-slate-800"}`}>
@@ -61,7 +61,7 @@ export default async function PortalFrame({ children, active }: { children: Reac
         </div>
       </aside>
       <div className="min-w-0 flex-1 lg:ml-[250px]">
-        <header className="sticky top-0 z-20 hidden h-[68px] items-center justify-between border-b border-slate-200/75 bg-white px-4 sm:px-7 lg:flex lg:px-10 dark:bg-slate-950 dark:border-slate-800">
+        <header aria-label="Desktop app bar" className="sticky top-0 z-20 hidden h-[68px] items-center justify-between border-b border-slate-200/75 bg-white px-4 sm:px-7 lg:flex lg:px-10 dark:bg-slate-950 dark:border-slate-800">
           <div className="hidden text-xs text-slate-500 lg:block">
             Mary Royal School <span className="mx-2 text-slate-300">/</span><span className="font-semibold text-slate-700 dark:text-slate-300">{active}</span>
           </div>

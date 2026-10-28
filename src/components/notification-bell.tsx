@@ -127,7 +127,7 @@ export default function NotificationBell() {
                   <CheckCheck size={12} /> All read
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-slate-100">
+              <button type="button" aria-label="Close notifications" onClick={() => setOpen(false)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-slate-100">
                 <X size={13} />
               </button>
             </div>

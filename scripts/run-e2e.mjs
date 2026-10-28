@@ -8,7 +8,9 @@ delete env.FORCE_COLOR;
 delete env.NO_COLOR;
 env.DATABASE_URL = "file:./round3-e2e.test.db";
 env.MARY_E2E = "1";
-env.NODE_ENV = "test";
+env.NODE_ENV = "production";
+env.NEXT_DIST_DIR = ".next-e2e";
+env.PORT = "3187";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const win = process.platform === "win32";
@@ -24,6 +26,9 @@ const run = (cmdStr) =>
     : spawnSync("sh", ["-c", cmdStr], { cwd: root, env, stdio: "inherit" });
 
 // Always prepare only the isolated local E2E database.
+const clientReady = run("npx prisma generate --schema prisma/schema.prisma");
+if (clientReady.status !== 0) process.exit(clientReady.status ?? 1);
+
 const schemaReady = run("npx prisma db push --schema prisma/schema.prisma --skip-generate");
 if (schemaReady.status !== 0) process.exit(schemaReady.status ?? 1);
 
@@ -31,10 +36,26 @@ if (schemaReady.status !== 0) process.exit(schemaReady.status ?? 1);
 const seeded = run("npm run seed:demo");
 if (seeded.status !== 0) process.exit(seeded.status ?? 1);
 
-// Playwright's guarded global setup generates fresh role storage states.
+const sessionsReady = run("npx tsx scripts/generate-test-sessions.ts");
+if (sessionsReady.status !== 0) process.exit(sessionsReady.status ?? 1);
+
+const appReady = run("npm run build:e2e");
+if (appReady.status !== 0) process.exit(appReady.status ?? 1);
+
 // 2. Run Playwright with passed arguments (or all tests)
 const extraArgs = process.argv.slice(2).join(" ");
 const playwrightCmd = extraArgs ? `npx playwright test ${extraArgs}` : "npx playwright test";
+const collectMobileAudit = process.argv.some((argument) => argument.includes("mobile-audit.spec.ts"));
+if (collectMobileAudit) {
+  const collectionPath = resolve(root, "test-results/mobile-failure-collection.jsonl");
+  fs.mkdirSync(resolve(root, "test-results"), { recursive: true });
+  fs.rmSync(collectionPath, { force: true });
+}
 const result = run(playwrightCmd);
+
+if (collectMobileAudit) {
+  const report = run("node scripts/write-mobile-failure-report.mjs");
+  if (report.status !== 0) process.exit(report.status ?? 1);
+}
 
 process.exit(result.status ?? 1);

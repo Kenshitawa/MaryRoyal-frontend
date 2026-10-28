@@ -223,6 +223,7 @@ export default function ProfileSettings({
               />
               <button
                 type="button"
+                aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
@@ -249,6 +250,7 @@ export default function ProfileSettings({
               />
               <button
                 type="button"
+                aria-label={showNewPassword ? "Hide new password" : "Show new password"}
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >

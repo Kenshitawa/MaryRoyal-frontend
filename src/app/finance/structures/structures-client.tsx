@@ -397,6 +397,7 @@ export default function FeeStructuresClient({ canManage }: { canManage: boolean 
                   <div className="flex h-10 items-center pb-1">
                     <button
                       type="button"
+                      aria-label={`Remove fee item ${line.label || index + 1}`}
                       disabled={lines.length === 1}
                       onClick={() => setLines((curr) => curr.filter((_, i) => i !== index))}
                       className="rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-700 disabled:opacity-30 dark:hover:bg-red-950/40 dark:hover:text-red-400"

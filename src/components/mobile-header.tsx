@@ -8,6 +8,7 @@ import { ArrowLeft, Search, X } from "lucide-react";
 import NotificationBell from "@/components/notification-bell";
 import { useTheme } from "@/components/design-system/theme-provider";
 import { getMobileNavigation } from "@/lib/navigation";
+import { IconButton } from "@/components/ui/actions";
 
 type Props = { active: string; homeHref: string; user: { name: string; role: string; roleLabel: string; email?: string | null; avatarUrl?: string | null } };
 type PersonResult = { id: string; title: string; subtitle: string; href: string };
@@ -104,16 +105,16 @@ export default function MobileHeader({ active, homeHref, user }: Props) {
   }
 
   return <>
-    <header className={`mobile-app-header sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-slate-200 bg-white px-3 pt-[env(safe-area-inset-top)] transition-transform dark:border-slate-800 dark:bg-slate-950 lg:hidden ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
-      {isDetail ? <button type="button" aria-label="Go back" onClick={back} className="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-700 dark:text-slate-200"><ArrowLeft size={21}/></button> : <Link href={homeHref} aria-label="Mary Royal home" className="grid min-h-11 min-w-11 place-items-center rounded-xl"><Image src="/mary-royal-logo.png" alt="" width={30} height={30}/></Link>}
-      <h1 className="min-w-0 flex-1 truncate text-lg font-semibold text-slate-950 dark:text-white">{active}</h1>
-      <button type="button" aria-label="Search" onClick={() => setSearchOpen(true)} className="grid min-h-11 min-w-11 place-items-center rounded-xl text-slate-700 dark:text-slate-200"><Search size={20}/></button>
+    <header aria-label="Mobile app bar" className={`mobile-app-header sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-slate-200 bg-white px-3 pt-[env(safe-area-inset-top)] transition-transform dark:border-slate-800 dark:bg-slate-950 lg:hidden ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
+      {isDetail ? <IconButton ariaLabel="Go back" onClick={back} className="grid place-items-center rounded-xl text-slate-700 dark:text-slate-200"><ArrowLeft size={21}/></IconButton> : <Link href={homeHref} aria-label="Mary Royal home" className="grid min-h-11 min-w-11 place-items-center rounded-xl"><Image src="/mary-royal-logo.png" alt="" width={30} height={30}/></Link>}
+      <div className="min-w-0 flex-1 truncate text-lg font-semibold text-slate-950 dark:text-white">{active}</div>
+      <IconButton ariaLabel="Search" onClick={() => setSearchOpen(true)} className="grid place-items-center rounded-xl text-slate-700 dark:text-slate-200"><Search size={20}/></IconButton>
       <div className="grid h-11 w-11 place-items-center"><NotificationBell/></div>
-      <button type="button" aria-label="Open profile menu" onClick={() => setProfileOpen(true)} className="grid min-h-11 min-w-11 place-items-center rounded-full">
+      <IconButton ariaLabel="Open profile menu" onClick={() => setProfileOpen(true)} className="grid place-items-center rounded-full">
         <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-blue-100 text-sm font-semibold text-blue-900 ring-1 ring-blue-200 dark:bg-blue-950 dark:text-blue-100 dark:ring-blue-800">
           {user.avatarUrl ? <Image src={user.avatarUrl} alt="" fill sizes="36px" className="object-cover" unoptimized/> : initials}
         </span>
-      </button>
+      </IconButton>
     </header>
 
     {profileOpen && <div role="presentation" className="fixed inset-0 z-[70] flex items-end bg-slate-950/50 lg:hidden" onClick={() => setProfileOpen(false)}>

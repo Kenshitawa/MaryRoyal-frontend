@@ -423,7 +423,8 @@ export default async function Dashboard() {
   const greeting = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 
   return (
-    <div className="min-h-screen lg:flex">
+    <div className="min-h-screen min-w-0 lg:flex">
+      <a href="#main-content" className="skip-to-content sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-blue-800 focus:px-4 focus:py-3 focus:font-semibold focus:text-white focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-300">Skip to main content</a>
       {/* Sidebar */}
       <aside className="school-sidebar sticky top-0 z-30 hidden h-screen w-[264px] shrink-0 flex-col overflow-y-auto border-r border-slate-200/80 bg-[#f1f6ff] px-4 py-6 lg:flex dark:border-slate-800 dark:bg-slate-950">
         <Link href="/dashboard" className="mb-9 flex items-center gap-3 px-2">
@@ -436,7 +437,7 @@ export default async function Dashboard() {
 
         <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Workspace</p>
 
-        <nav aria-label="Main navigation" className="space-y-1">
+        <nav aria-label="Desktop navigation" className="space-y-1">
           {nav.map(({ label, href, icon: Icon }) => (
             <Link
               key={label}
@@ -470,7 +471,7 @@ export default async function Dashboard() {
       {/* Main content area */}
       <div className="w-full min-w-0 flex-1">
         {/* Top header */}
-        <header className="sticky top-0 z-20 flex h-[72px] items-center justify-between border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-xl sm:px-7 lg:px-10 dark:border-slate-800/70 dark:bg-slate-950/90">
+        <header aria-label="Dashboard app bar" className="sticky top-0 z-20 flex h-[72px] min-w-0 items-center justify-between border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-xl sm:px-7 lg:px-10 dark:border-slate-800/70 dark:bg-slate-950/90">
           <div className="flex items-center gap-3 lg:hidden">
             <Image src="/mary-royal-logo.png" alt="Mary Royal School" width={36} height={36} />
             <span className="font-extrabold tracking-tight dark:text-white">Mary Royal</span>
@@ -530,7 +531,7 @@ export default async function Dashboard() {
         </header>
 
         {/* Page content */}
-        <main className="mx-auto w-full min-w-0 max-w-[1480px] overflow-x-clip px-4 pb-28 pt-7 sm:px-7 sm:pt-9 lg:px-10 lg:pb-10">
+        <main id="main-content" className="mx-auto w-full min-w-0 max-w-[1480px] px-4 pb-28 pt-7 sm:px-7 sm:pt-9 lg:px-10 lg:pb-10">
           {/* Welcome hero */}
           <section className="relative mb-7 overflow-hidden rounded-[28px] bg-gradient-to-r from-[#102653] via-[#173d80] to-[#1d4ed8] px-6 py-7 text-white shadow-xl shadow-blue-950/10 sm:px-8 sm:py-8">
             <div className="relative z-10 max-w-2xl">
@@ -919,7 +920,7 @@ export default async function Dashboard() {
 
       {/* Mobile navigation */}
       <nav
-        aria-label="Mobile navigation"
+        aria-label="Dashboard mobile navigation"
         className="mobile-nav fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-slate-200/80 bg-white/95 px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(15,35,70,.07)] backdrop-blur lg:hidden dark:border-slate-800 dark:bg-slate-950/95"
       >
         {nav.slice(0, 4).map(({ label, href, icon: Icon }) => (

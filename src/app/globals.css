@@ -20,7 +20,6 @@ html { min-height: 100%; background: var(--page-bg, var(--page)); scroll-behavio
 body {
   min-height: 100vh;
   margin: 0;
-  overflow-x: clip;
   background-color: var(--page);
   background-image: var(--page-bg, none);
   color: var(--text-primary, var(--navy));
@@ -257,6 +256,63 @@ html[data-theme="dark"] .border-amber-100,
 html[data-theme="dark"] .border-amber-200 { border-color: #62502e !important; }
 html[data-theme="dark"] .border-emerald-100,
 html[data-theme="dark"] .border-emerald-200 { border-color: #285940 !important; }
+
+:root {
+  --mobile-touch-target: 44px;
+  --mobile-text-secondary: 14px;
+  --mobile-text-body: 16px;
+  --mobile-text-section: 20px;
+  --mobile-text-title: 24px;
+}
+
+@media (max-width: 767px) {
+  button,
+  [role="button"],
+  [role="link"],
+  input,
+  select,
+  textarea,
+  a[href]:not(p a):not(.skip-to-content) {
+    min-width: var(--mobile-touch-target);
+    min-height: var(--mobile-touch-target);
+  }
+
+  a[href]:not(p a):not(.skip-to-content) {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    min-height: 48px;
+    font-size: 16px !important;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: var(--mobile-touch-target);
+    height: var(--mobile-touch-target);
+  }
+
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]) {
+    min-height: var(--mobile-touch-target);
+    align-items: center;
+  }
+
+  :where(body *:not(svg):not(path):not(style):not(script)) {
+    font-size: max(var(--mobile-text-secondary), 1em) !important;
+  }
+
+  :where(body time, body [data-mobile-badge="true"], body .mobile-timestamp) {
+    font-size: max(12px, 1em) !important;
+  }
+
+  :where(body .text-lg) { font-size: var(--mobile-text-section) !important; }
+  :where(body .text-xl, body .text-2xl, body .text-3xl, body .text-4xl, body .text-5xl) { font-size: var(--mobile-text-title) !important; }
+  :where(body .text-base) { font-size: var(--mobile-text-body) !important; }
+}
 
 /* Phone Efficiency and Typography Rules */
 @media (max-width: 640px) {

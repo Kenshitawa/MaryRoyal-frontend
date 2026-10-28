@@ -747,7 +747,7 @@ export default function FinanceClient({
                   {stepperStep === 3 && "Step 3: Preview & Confirm Invoice"}
                 </h3>
               </div>
-              <button onClick={() => setShowInvoiceStepper(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" aria-label="Close invoice creator" onClick={() => setShowInvoiceStepper(false)} className="text-slate-400 hover:text-slate-600">
                 <X size={18} />
               </button>
             </div>
@@ -922,7 +922,7 @@ export default function FinanceClient({
           <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
               <h3 className="font-extrabold text-slate-900 dark:text-white">Record Fee Payment</h3>
-              <button onClick={() => setShowPaymentDrawer(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" aria-label="Close payment form" onClick={() => setShowPaymentDrawer(false)} className="text-slate-400 hover:text-slate-600">
                 <X size={18} />
               </button>
             </div>
@@ -1063,7 +1063,7 @@ export default function FinanceClient({
           <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-slate-900 dark:text-white">Request Fee Waiver / Discount</h3>
-              <button onClick={() => setShowWaiverModal(false)} className="text-slate-400">
+              <button type="button" aria-label="Close fee waiver request" onClick={() => setShowWaiverModal(false)} className="text-slate-400">
                 <X size={18} />
               </button>
             </div>

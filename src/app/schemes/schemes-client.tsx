@@ -254,7 +254,7 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
           <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-base font-bold text-slate-900 dark:text-white">Submit Scheme of Work</h2>
-              <button onClick={() => setShowCreate(false)} className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-slate-100"><X size={15}/></button>
+              <button type="button" aria-label="Close scheme editor" onClick={() => setShowCreate(false)} className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-slate-100"><X size={15}/></button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <button type="button" onClick={() => void draftWithAI()} disabled={aiBusy || !form.grade || !form.subject || !(form.strand || form.subStrand || form.learningOutcomes)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 text-sm font-semibold text-blue-800 disabled:opacity-50 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"><Sparkles size={15}/>{aiBusy ? "Drafting locally…" : "Draft with local AI"}</button>

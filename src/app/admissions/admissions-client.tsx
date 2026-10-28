@@ -461,6 +461,8 @@ export function AdmissionsClient({
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Draft Retention Policy</h3>
               </div>
               <button
+                type="button"
+                aria-label="Close draft retention policy"
                 onClick={() => setShowRetentionModal(false)}
                 className="p-1 text-slate-400 hover:text-slate-600"
               >

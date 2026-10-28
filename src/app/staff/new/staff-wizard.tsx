@@ -807,6 +807,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
                       {emergencyContacts.length > 1 && (
                         <button
                           type="button"
+                          aria-label={`Remove emergency contact ${index + 1}`}
                           onClick={() => setEmergencyContacts(emergencyContacts.filter((_, i) => i !== index))}
                           className="mt-4 p-2 text-rose-500 hover:text-rose-700"
                         >

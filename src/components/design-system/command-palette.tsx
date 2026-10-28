@@ -134,6 +134,8 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
             }}
           />
           <button
+            type="button"
+            aria-label="Close search"
             onClick={onClose}
             className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
           >

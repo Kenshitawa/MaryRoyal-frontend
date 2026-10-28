@@ -21,8 +21,16 @@ const productionEnvironmentSchema = z.object({
 
 export function validateProductionEnvironment() {
   if (process.env.NODE_ENV !== "production" || process.env.NEXT_PHASE === "phase-production-build") return;
+  if (isIsolatedE2EEnvironment()) return;
   const parsed = productionEnvironmentSchema.safeParse(process.env);
   if (parsed.success) return;
   const details = parsed.error.issues.map(issue => `${issue.path.join(".") || "environment"}: ${issue.message}`).join("; ");
   throw new Error(`Production environment is incomplete or invalid (${details}).`);
+}
+
+export function isIsolatedE2EEnvironment() {
+  return process.env.MARY_E2E === "1"
+    && process.env.DATABASE_URL === "file:./round3-e2e.test.db"
+    && process.env.VERCEL !== "1"
+    && process.env.RENDER !== "true";
 }
