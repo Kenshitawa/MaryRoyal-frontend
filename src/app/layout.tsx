@@ -1,8 +1,18 @@
 import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 import IdleSessionGuard from "@/components/idle-session-guard";
 import { ThemeProvider } from "@/components/design-system/theme-provider";
+
+const inter = localFont({
+  src: "../assets/fonts/inter-latin.woff2",
+  weight: "400 600",
+  style: "normal",
+  display: "swap",
+  variable: "--font-inter",
+  preload: true,
+});
 
 export const metadata: Metadata = {
   title: "Mary Royal School | Hard work pays",
@@ -25,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <Script
           id="mary-theme-init"
