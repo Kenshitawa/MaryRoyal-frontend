@@ -81,6 +81,8 @@ export function PortalNav({ role }: { role: string }) {
     return true;
   };
 
+  const shortLabel = (label: string) => (label === "My Learning" ? "Learning" : label);
+
   const inMore = nav.moreCategories.some((category) => category.items.some((item) => isActive(item.href)));
   const filtered = nav.moreCategories
     .map((category) => ({
@@ -108,7 +110,7 @@ export function PortalNav({ role }: { role: string }) {
                   </span>
                 ) : null}
               </span>
-              <span>{label}</span>
+              <span>{shortLabel(label)}</span>
             </Link>
           );
         })}

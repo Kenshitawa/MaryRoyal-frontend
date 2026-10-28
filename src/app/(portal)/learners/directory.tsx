@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Clock,
   Copy,
-  GraduationCap,
   KeyRound,
   Plus,
   Printer,
@@ -17,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { LearnerLink } from "@/components/learner-link";
+import { PageHeader, StatCard } from "@/components/ui/primitives";
 
 type Learner = {
   id: string;
@@ -226,107 +226,30 @@ export default function LearnerDirectory({
   const pendingCount = rows.filter((r) => r.admissionStatus === "PENDING").length;
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50/80 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300">
-              <GraduationCap size={12} />
-              Enrolment &amp; Register
-            </span>
-          </div>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-            School Learner Register
-          </h1>
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-            {identityOnly
-              ? "Official learner identity records and fee balances."
-              : "Search learners, review profiles, verify admission status, and provision digital credentials."}
-          </p>
-        </div>
+    <div className="space-y-3">
+      <PageHeader
+        title="School learner register"
+        help={
+          identityOnly
+            ? "Official learner identity records and fee balances."
+            : "Search learners, review profiles, verify admission status and provision digital credentials."
+        }
+        action={
+          canCreate ? (
+            <Link href="/admissions/new" className="btn btn-primary">
+              <Plus size={16} aria-hidden="true" />
+              <span>New admission</span>
+            </Link>
+          ) : undefined
+        }
+      />
 
-        {canCreate && (
-          <Link
-            href="/admissions/new"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-700 px-5 text-xs font-bold text-white shadow-md shadow-blue-700/20 transition hover:brightness-110 active:scale-95"
-          >
-            <Plus size={15} />
-            + Full admission
-          </Link>
-        )}
-      </div>
-
-      {/* KPI Bento Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Enrolled Pupils
-            </span>
-            <div className="rounded-xl bg-blue-50 p-2 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
-              <Users size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">
-              {busy ? "…" : rows.length}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Across all grades</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Approved
-            </span>
-            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-              <UserCheck size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
-              {busy ? "…" : approvedCount}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Fully enrolled pupils</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Pending Approval
-            </span>
-            <div className="rounded-xl bg-amber-50 p-2 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
-              <Clock size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-700 dark:text-amber-400">
-              {busy ? "…" : pendingCount}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Awaiting Head Teacher</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Grade Bands
-            </span>
-            <div className="rounded-xl bg-purple-50 p-2 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400">
-              <GraduationCap size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-purple-700 dark:text-purple-400">
-              {grades.length}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Classes represented</p>
-        </div>
-      </div>
+      <section aria-label="Register summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="Enrolled pupils" value={busy ? "…" : String(rows.length)} note="Across all grades" icon={Users} tone="brand" />
+        <StatCard label="Approved" value={busy ? "…" : String(approvedCount)} note="Fully enrolled" icon={UserCheck} tone="success" />
+        <StatCard label="Pending approval" value={busy ? "…" : String(pendingCount)} note="Awaiting Head Teacher" tone="warning" />
+        <StatCard label="Grade bands" value={String(grades.length)} note="Classes represented" tone="neutral" />
+      </section>
 
       {notice && (
         <div

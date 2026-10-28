@@ -388,12 +388,12 @@ html[data-style="glass"] .card {
   width: 100%;
   max-width: 80rem;
   margin-inline: auto;
-  padding: 16px 16px 96px;
+  padding: 16px 16px 24px;
 }
 
 @media (min-width: 640px) {
   .page {
-    padding: 24px 24px 96px;
+    padding: 24px 24px 32px;
   }
 }
 
@@ -410,6 +410,22 @@ html[data-style="glass"] .card {
   width: 100%;
   max-width: 80rem;
   min-width: 0;
+}
+
+.page-main {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 1024px) {
+  .page-main {
+    padding-bottom: 0;
+  }
+}
+
+.bento-card[class*="bg-gradient"],
+.glass-card[class*="bg-gradient"] {
+  background: linear-gradient(120deg, #0c234b 0%, #1d4ed8 58%, #1e3a8a 100%);
+  color: #ffffff;
 }
 
 .page-main > :where(section, div, article):where([data-bleed]) {
@@ -593,6 +609,14 @@ html[data-style="glass"] .card {
   font-size: 0.75rem;
   color: var(--ink-3);
   margin-top: 6px;
+}
+
+input[class~="pl-10"] {
+  padding-left: 2.5rem !important;
+}
+
+.input-icon {
+  padding-left: 2.5rem !important;
 }
 
 .input,

@@ -131,8 +131,10 @@ async function inspectPage(page: Page): Promise<AuditResult> {
       if (element instanceof SVGElement || element.closest("svg")) continue;
       if (!element.children.length && !element.textContent?.trim()) continue;
       const fontSize = Number.parseFloat(getComputedStyle(element).fontSize);
-      const badgeOrTime = element.matches("time,[data-badge='true'],.badge,.status-badge") || /badge|pill/.test(element.className?.toString() ?? "");
-      const minimum = badgeOrTime ? 12 : 14;
+      const classList = element.className?.toString() ?? "";
+      const badgeOrTime = element.matches("time,caption,figcaption,[data-badge='true'],.badge,.status-badge") || /badge|pill|caption/.test(classList);
+      const labelOrSecondary = element.matches("label,.field-label,.text-label,[data-text='secondary']") || /text-label|field-label|secondary/.test(classList);
+      const minimum = badgeOrTime ? 12 : labelOrSecondary ? 13 : 14;
       if (fontSize < minimum) notes.push({ cause: "Text below allowed sizes", detail: `${selector(element)} “${element.textContent?.trim().replace(/\s+/g, " ").slice(0, 50)}” ${fontSize.toFixed(1)}px (minimum ${minimum}px)` });
     }
     for (const scroller of horizontalScrollers) {

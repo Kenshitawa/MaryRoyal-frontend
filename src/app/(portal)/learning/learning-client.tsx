@@ -5,15 +5,14 @@ import Link from "next/link";
 import {
   BookOpenCheck,
   CheckCircle2,
-  ChevronRight,
   CirclePlay,
   ExternalLink,
   Flame,
   Gamepad2,
-  GraduationCap,
   Lightbulb,
   Trophy,
 } from "lucide-react";
+import { PageHeader, StatCard } from "@/components/ui/primitives";
 
 type Learner = { id: string; name: string; admissionNo: string; grade: string };
 type Assessment = {
@@ -285,105 +284,25 @@ export default function LearningClient({
   }
 
   return (
-    <section className="mx-auto max-w-7xl p-4 pb-12 sm:p-6 md:p-8 space-y-6">
-      {/* Hero Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c1f44] via-blue-900 to-indigo-900 p-6 text-white shadow-xl sm:p-8">
-        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-200 backdrop-blur-sm">
-              <GraduationCap size={13} />
-              CBC Learner Portal · {learner.grade}
-            </div>
-            <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
-              Jambo, {learner.name.split(" ")[0]}!
-            </h1>
-            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-blue-100">
-              Welcome to your digital classroom. Review lessons from your teachers, solve practice
-              challenges, and track your achievements.
-            </p>
-          </div>
-
-          <Link
-            href="/assignments"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-xs font-bold text-blue-950 shadow-md transition hover:bg-blue-50 active:scale-95"
-          >
-            <BookOpenCheck size={16} />
-            My Classwork Tasks
-            <ChevronRight size={14} />
+    <section className="space-y-3">
+      <PageHeader
+        title={`Jambo, ${learner.name.split(" ")[0]}!`}
+        help="Review lessons from your teachers, solve practice challenges and track your achievements."
+        meta={`CBC learner portal · ${learner.grade}`}
+        action={
+          <Link href="/assignments" className="btn btn-primary">
+            <BookOpenCheck size={16} aria-hidden="true" />
+            <span>Classwork tasks</span>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
-      {/* KPI Bento Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Released Marks
-            </span>
-            <div className="rounded-xl bg-blue-50 p-2 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
-              <Trophy size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">
-              {assessments.length}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Official assessments</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Tasks Handed In
-            </span>
-            <div className="rounded-xl bg-indigo-50 p-2 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
-              <BookOpenCheck size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-indigo-700 dark:text-indigo-400">
-              {submissions.length}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Evaluated by teacher</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Practice Games
-            </span>
-            <div className="rounded-xl bg-purple-50 p-2 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400">
-              <Gamepad2 size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-purple-700 dark:text-purple-400">
-              {attempts.length}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Completed quiz rounds</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Attendance
-            </span>
-            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-              <CheckCircle2 size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
-              {attendanceRate === null ? "—" : `${attendanceRate}%`}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Recent classroom record</p>
-        </div>
-      </div>
+      <section aria-label="Learning summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="Released marks" value={String(assessments.length)} note="Official assessments" icon={Trophy} tone="brand" />
+        <StatCard label="Tasks handed in" value={String(submissions.length)} note="Evaluated by teacher" icon={BookOpenCheck} tone="neutral" />
+        <StatCard label="Practice games" value={String(attempts.length)} note="Completed quiz rounds" icon={Gamepad2} tone="neutral" />
+        <StatCard label="Attendance" value={attendanceRate === null ? "—" : `${attendanceRate}%`} note="Recent classroom record" icon={CheckCircle2} tone="success" />
+      </section>
 
       {/* Progress & Quick Games Bento Grid */}
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">

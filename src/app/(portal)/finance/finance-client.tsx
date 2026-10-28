@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Wallet, Plus, Search, CheckCircle2, Download, X, ChevronRight
+  Wallet, Plus, Search, CheckCircle2, Download, X
 } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
@@ -44,6 +44,9 @@ type FeeWaiver = {
   requestedBy: { name: string };
   approvedBy?: { name: string };
 };
+
+const kesShort = (n: number) =>
+  n >= 1_000_000 ? `Ksh ${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `Ksh ${Math.round(n / 1_000)}K` : `Ksh ${n}`;
 
 const kes = (n: number) =>
   new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 }).format(n);
@@ -345,127 +348,103 @@ export default function FinanceClient({
   });
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Finance &amp; Accounts Desk
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Term invoicing, KES fee collection, M-Pesa receipts with QR verification, and arrears aging.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/finance/structures"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        {canInvoice && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowInvoiceStepper(true);
+              setStepperStep(1);
+            }}
+            className="btn btn-primary"
           >
-            <span>Fee Structures</span>
-            <ChevronRight size={14} />
-          </Link>
+            <Plus size={16} aria-hidden="true" />
+            <span>Create invoice</span>
+          </button>
+        )}
 
-          {canInvoice && (
-            <button
-              onClick={() => {
-                setShowInvoiceStepper(true);
-                setStepperStep(1);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95"
-            >
-              <Plus size={16} />
-              <span>Create Invoice (Stepper)</span>
-            </button>
-          )}
-
-          {canPay && (
-            <button
-              onClick={() => {
-                setSelectedInvoice(invoices[0] || null);
-                setShowPaymentDrawer(true);
-                setPaymentSuccess(null);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 active:scale-95"
-            >
-              <Wallet size={16} />
-              <span>Record Payment</span>
-            </button>
-          )}
-        </div>
+        {canPay && (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedInvoice(invoices[0] || null);
+              setShowPaymentDrawer(true);
+              setPaymentSuccess(null);
+            }}
+            className="btn btn-secondary"
+          >
+            <Wallet size={16} aria-hidden="true" />
+            <span>Record payment</span>
+          </button>
+        )}
       </div>
 
       {message && (
-        <div role="status" className="rounded-xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+        <div role="status" className="rounded-xl bg-success-soft p-4 text-sm font-semibold text-success">
           {message}
         </div>
       )}
       {error && (
-        <div role="alert" className="rounded-xl bg-rose-50 p-4 text-sm font-semibold text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+        <div role="alert" className="rounded-xl bg-danger-soft p-4 text-sm font-semibold text-danger">
           {error}
         </div>
       )}
 
       {/* KPI Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <ThemedCard className="p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Invoiced</p>
-          <p className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">{kes(totalBilled)}</p>
-          <p className="mt-1 text-xs text-slate-500">{invoices.length} learner invoices</p>
-        </ThemedCard>
-
-        <ThemedCard className="p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Collected</p>
-          <p className="mt-2 text-2xl font-extrabold text-emerald-700 dark:text-emerald-300">{kes(totalCollected)}</p>
-          <p className="mt-1 text-xs text-slate-500">{collectionRate}% collection target</p>
-        </ThemedCard>
-
-        <ThemedCard className="p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-rose-500">Outstanding Arrears</p>
-          <p className="mt-2 text-2xl font-extrabold text-rose-700 dark:text-rose-300">{kes(totalOutstanding)}</p>
-          <p className="mt-1 text-xs text-slate-500">Pending recovery</p>
-        </ThemedCard>
-
-        <ThemedCard className="p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Collection Rate</p>
-          <p className="mt-2 text-2xl font-extrabold text-blue-800 dark:text-blue-300">{collectionRate}%</p>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-            <div className="h-full bg-blue-600 rounded-full" style={{ width: `${collectionRate}%` }} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="card p-3.5">
+          <p className="text-label font-semibold text-ink-2">Total invoiced</p>
+          <p className="mt-2 text-kpi font-semibold tabular-nums text-ink">{kesShort(totalBilled)}</p>
+          <p className="mt-1 text-caption text-ink-3">{invoices.length} learner invoices</p>
+        </div>
+        <div className="card p-3.5">
+          <p className="text-label font-semibold text-ink-2">Collected</p>
+          <p className="mt-2 text-kpi font-semibold tabular-nums text-success">{kesShort(totalCollected)}</p>
+          <p className="mt-1 text-caption text-ink-3">{collectionRate}% collection target</p>
+        </div>
+        <div className="card p-3.5">
+          <p className="text-label font-semibold text-ink-2">Outstanding arrears</p>
+          <p className="mt-2 text-kpi font-semibold tabular-nums text-danger">{kesShort(totalOutstanding)}</p>
+          <p className="mt-1 text-caption text-ink-3">Pending recovery</p>
+        </div>
+        <div className="card p-3.5">
+          <p className="text-label font-semibold text-ink-2">Collection rate</p>
+          <p className="mt-2 text-kpi font-semibold tabular-nums text-ink">{collectionRate}%</p>
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-2">
+            <div className="h-full rounded-full bg-brand" style={{ width: `${collectionRate}%` }} />
           </div>
-        </ThemedCard>
+        </div>
       </div>
 
       {/* Tabs navigation */}
-      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1" role="tablist" aria-label="Finance views">
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "invoices"}
           onClick={() => setActiveTab("invoices")}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition ${
-            activeTab === "invoices"
-              ? "border-b-2 border-blue-600 text-blue-600 dark:text-blue-400"
-              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-          }`}
+          className={`btn btn-sm ${activeTab === "invoices" ? "btn-secondary shadow-sm" : "btn-ghost"}`}
         >
-          Invoices &amp; Receipts ({invoices.length})
+          Invoices ({invoices.length})
         </button>
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "arrears"}
           onClick={() => setActiveTab("arrears")}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition ${
-            activeTab === "arrears"
-              ? "border-b-2 border-blue-600 text-blue-600 dark:text-blue-400"
-              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-          }`}
+          className={`btn btn-sm ${activeTab === "arrears" ? "btn-secondary shadow-sm" : "btn-ghost"}`}
         >
-          Aging &amp; Arrears Buckets
+          Arrears
         </button>
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "waivers"}
           onClick={() => setActiveTab("waivers")}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition ${
-            activeTab === "waivers"
-              ? "border-b-2 border-blue-600 text-blue-600 dark:text-blue-400"
-              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-          }`}
+          className={`btn btn-sm ${activeTab === "waivers" ? "btn-secondary shadow-sm" : "btn-ghost"}`}
         >
-          Discounts &amp; Waivers ({waivers.length})
+          Waivers ({waivers.length})
         </button>
       </div>
 
@@ -479,7 +458,7 @@ export default function FinanceClient({
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search by learner name, admission no, or class..."
+                placeholder="Search learner or admission no."
                 className="w-56 sm:w-72 bg-transparent text-xs outline-none placeholder:text-slate-400"
               />
             </div>

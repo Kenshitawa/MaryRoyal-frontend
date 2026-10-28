@@ -6,7 +6,8 @@ import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
 import FinanceClient from "./finance-client";
 import PayrollSheet from "./payroll-sheet";
-import { ArrowRight, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
+import { PageHeader } from "@/components/ui/primitives";
 
 export default async function FinancePage() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -21,28 +22,17 @@ export default async function FinancePage() {
   const canPayroll = user.role === "HEAD_TEACHER" || user.role === "DIRECTOR";
 
   return (
-    <>
-      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 md:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
-              Accounts & Revenue
-            </p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-              Financial Management
-            </h1>
-          </div>
-
-          <Link
-            href="/finance/structures"
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-2.5 text-xs font-bold text-blue-800 shadow-sm backdrop-blur-sm transition hover:bg-blue-50 dark:border-slate-800 dark:bg-slate-900/80 dark:text-blue-300 dark:hover:bg-slate-800"
-          >
-            <Layers size={15} />
-            <span>View Approved Fee Structures</span>
-            <ArrowRight size={14} />
+    <div className="space-y-3">
+      <PageHeader
+        title="Finance"
+        help="Term invoicing, fee collection, M-Pesa receipts and arrears in one place."
+        action={
+          <Link href="/finance/structures" className="btn btn-secondary">
+            <Layers size={15} aria-hidden="true" />
+            <span>Fee structures</span>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <FinanceClient
         canInvoice={user.role === "ACCOUNTANT" || user.role === "DIRECTOR"}
@@ -57,6 +47,6 @@ export default async function FinancePage() {
           canApprove={user.role === "DIRECTOR"}
         />
       )}
-    </>
+    </div>
   );
 }

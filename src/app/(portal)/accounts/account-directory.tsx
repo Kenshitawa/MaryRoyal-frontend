@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { PageHeader, StatCard } from "@/components/ui/primitives";
 import {
   AlertTriangle,
   Check,
@@ -194,103 +195,24 @@ export default function AccountDirectory() {
   const alertCount = accounts.filter((a) => a.suspended || a.failedLogins >= 8).length;
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50/80 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300">
-              <Shield size={12} />
-              Identity & Access
-            </span>
-          </div>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-            User Accounts
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Provision user access, monitor security state, and audit system credentials.
-          </p>
-        </div>
+    <div className="space-y-3">
+      <PageHeader
+        title="User accounts"
+        help="Provision access, monitor security state and review credentials."
+        action={
+          <button type="button" onClick={() => setShowCreate(!showCreate)} className="btn btn-primary">
+            <UserPlus size={16} aria-hidden="true" />
+            {showCreate ? "Close" : "Provision account"}
+          </button>
+        }
+      />
 
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-700 px-5 text-sm font-bold text-white shadow-lg shadow-blue-700/20 transition-all hover:brightness-110 active:scale-95"
-        >
-          <UserPlus size={16} />
-          {showCreate ? "Close Provisioning" : "Provision Account"}
-        </button>
-      </div>
-
-      {/* KPI Bento Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Total Accounts
-            </span>
-            <div className="rounded-xl bg-blue-50 p-2 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
-              <Users size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">
-              {loading ? "…" : totalCount}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">All registered roles</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Active Users
-            </span>
-            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-              <UserCheck size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
-              {loading ? "…" : activeCount}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Can log in without issue</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Faculty & Staff
-            </span>
-            <div className="rounded-xl bg-indigo-50 p-2 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
-              <Shield size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-indigo-700 dark:text-indigo-400">
-              {loading ? "…" : staffCount}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Teachers & leaders</p>
-        </div>
-
-        <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Attention Required
-            </span>
-            <div className="rounded-xl bg-amber-50 p-2 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
-              <UserX size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-700 dark:text-amber-400">
-              {loading ? "…" : alertCount}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Locked or suspended</p>
-        </div>
-      </div>
+      <section aria-label="Account summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="Total accounts" value={loading ? "…" : String(totalCount)} note="All roles" icon={Users} tone="brand" />
+        <StatCard label="Active users" value={loading ? "…" : String(activeCount)} note="Can sign in" icon={UserCheck} tone="success" />
+        <StatCard label="Faculty & staff" value={loading ? "…" : String(staffCount)} note="Teachers and leaders" icon={Shield} tone="neutral" />
+        <StatCard label="Needs attention" value={loading ? "…" : String(alertCount)} note="Locked or suspended" icon={UserX} tone="warning" />
+      </section>
 
       {/* Temporary Password Notification Banner */}
       {temp && (

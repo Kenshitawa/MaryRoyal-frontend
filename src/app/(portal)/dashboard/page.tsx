@@ -40,6 +40,9 @@ const roleCopy: Record<string, string> = {
   NON_TEACHING_STAFF: "View your welfare savings, loan applications and contributions.",
 };
 
+const kesShort = (value: number) =>
+  value >= 1_000_000 ? `Ksh ${(value / 1_000_000).toFixed(1)}M` : value >= 1_000 ? `Ksh ${Math.round(value / 1_000)}K` : `Ksh ${value}`;
+
 const kes = (value: number) =>
   new Intl.NumberFormat("en-KE", {
     style: "currency",
@@ -194,10 +197,10 @@ export default async function Dashboard() {
       { label: "Active Staff", value: String(staff), note: "School team accounts", iconName: "graduation", tone: "purple" },
       { label: "Present Today", value: String(attendance), note: "Learners marked present", iconName: "calendar", tone: "emerald" },
       { label: "Released Results", value: String(released), note: "Ready for families", iconName: "book", tone: "amber" },
-      { label: "Fees Collected", value: kes(collected), note: `${collectionPercent}% of invoiced fees`, iconName: "wallet", tone: "emerald" },
-      { label: "Fee Balances", value: kes(balance), note: "Outstanding across all terms", iconName: "clock", tone: "amber" },
-      { label: "Payroll This Month", value: kes(payrollSummary.total), note: `${payrollSummary.staffCount} staff · ${period}`, iconName: "dollar", tone: "blue" },
-      { label: "Payroll Pending", value: kes(payrollSummary.pending), note: "Net pay awaiting payment", iconName: "clipboard", tone: "rose" },
+      { label: "Fees Collected", value: kesShort(collected), note: `${collectionPercent}% of invoiced fees`, iconName: "wallet", tone: "emerald" },
+      { label: "Fee Balances", value: kesShort(balance), note: "Outstanding across all terms", iconName: "clock", tone: "amber" },
+      { label: "Payroll This Month", value: kesShort(payrollSummary.total), note: `${payrollSummary.staffCount} staff · ${period}`, iconName: "dollar", tone: "blue" },
+      { label: "Payroll Pending", value: kesShort(payrollSummary.pending), note: "Net pay awaiting payment", iconName: "clipboard", tone: "rose" },
     ];
   } else if (role === "HEAD_TEACHER") {
     const [learners, pending, released, absent, grades, recent, financeInvoices] = await Promise.all([
@@ -230,8 +233,8 @@ export default async function Dashboard() {
       { label: "Marks to Review", value: String(pending), note: "Awaiting your decision", iconName: "clipboard", tone: "amber" },
       { label: "Results Released", value: String(released), note: "Visible to families", iconName: "book", tone: "emerald" },
       { label: "Absent Today", value: String(absent), note: "Recorded in attendance", iconName: "calendar", tone: "rose" },
-      { label: "Fees Collected", value: kes(collected), note: `${billed ? Math.round((collected / billed) * 100) : 0}% of invoices`, iconName: "wallet", tone: "emerald" },
-      { label: "Fee Balance", value: kes(balances), note: "Confirmed payments only", iconName: "clock", tone: "amber" },
+      { label: "Fees Collected", value: kesShort(collected), note: `${billed ? Math.round((collected / billed) * 100) : 0}% of invoices`, iconName: "wallet", tone: "emerald" },
+      { label: "Fee Balance", value: kesShort(balances), note: "Confirmed payments only", iconName: "clock", tone: "amber" },
     ];
   } else if (role === "DEPUTY") {
     const [learners, records, absent, grades] = await Promise.all([
@@ -318,9 +321,9 @@ export default async function Dashboard() {
     collectionPercent = totals.invoiced ? Math.round((totals.paid / totals.invoiced) * 100) : 0;
     metrics = [
       { label: "Fee Invoices", value: String(invoices.length), note: "Recent fee invoices", iconName: "book", tone: "blue" },
-      { label: "Fees Invoiced", value: kes(totals.invoiced), note: "Total invoiced", iconName: "dollar", tone: "purple" },
-      { label: "Payments Received", value: kes(totals.paid), note: "Recorded payments", iconName: "wallet", tone: "emerald" },
-      { label: "Outstanding", value: kes(totals.balance), note: "Remaining fee balances", iconName: "clock", tone: "amber" },
+      { label: "Fees Invoiced", value: kesShort(totals.invoiced), note: "Total invoiced", iconName: "dollar", tone: "purple" },
+      { label: "Payments Received", value: kesShort(totals.paid), note: "Recorded payments", iconName: "wallet", tone: "emerald" },
+      { label: "Outstanding", value: kesShort(totals.balance), note: "Remaining fee balances", iconName: "clock", tone: "amber" },
     ];
   } else {
     // WELFARE_CHAIR and NON_TEACHING_STAFF
@@ -334,8 +337,8 @@ export default async function Dashboard() {
     const activeLoans = member?.loans.filter((l) => ["DISBURSED", "APPROVED"].includes(l.status)).length ?? 0;
     const pendingLoans = member?.loans.filter((l) => l.status.startsWith("PENDING")).length ?? 0;
     metrics = [
-      { label: "My Welfare Savings", value: kes(totalSavings), note: "Total accumulated savings", iconName: "wallet", tone: "blue" },
-      { label: "Max Loan Limit (60%)", value: kes(Math.floor(totalSavings * 0.6)), note: "60% of total savings", iconName: "dollar", tone: "emerald" },
+      { label: "My Welfare Savings", value: kesShort(totalSavings), note: "Total accumulated savings", iconName: "wallet", tone: "blue" },
+      { label: "Max Loan Limit (60%)", value: kesShort(Math.floor(totalSavings * 0.6)), note: "60% of total savings", iconName: "dollar", tone: "emerald" },
       { label: "Active Loans", value: String(activeLoans), note: "Ongoing loans", iconName: "clipboard", tone: "purple" },
       { label: "Pending Approvals", value: String(pendingLoans), note: "Awaiting Head/Director", iconName: "clock", tone: "amber" },
     ];

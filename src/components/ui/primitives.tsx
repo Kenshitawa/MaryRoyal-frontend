@@ -95,7 +95,7 @@ export function StatCard({
   const body = (
     <>
       <div className="flex min-w-0 items-start justify-between gap-2">
-        <p className="min-w-0 truncate text-label font-semibold text-ink-2">{label}</p>
+        <p className="min-w-0 text-label font-semibold leading-snug text-ink-2">{label}</p>
         {Icon ? (
           <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${tones[tone]}`} aria-hidden="true">
             <Icon size={16} strokeWidth={2} />
