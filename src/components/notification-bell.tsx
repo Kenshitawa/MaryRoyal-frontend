@@ -98,9 +98,9 @@ export default function NotificationBell() {
         id="notification-bell"
         aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
         onClick={() => { setOpen((o) => !o); if (!open) void load(); }}
-        className="relative grid h-9 w-9 place-items-center rounded-xl text-slate-600 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        className="relative grid h-11 w-11 place-items-center rounded-xl text-slate-700 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800"
       >
-        <Bell size={17} />
+        <Bell size={20} />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold leading-none text-white">
             {unread > 99 ? "99+" : unread}

@@ -33,7 +33,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `try {
               const t = localStorage.getItem("mary-theme");
-              document.documentElement.dataset.theme = t === "dark" ? "dark" : "light";
+              document.documentElement.dataset.theme = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
               const s = localStorage.getItem("mary-style");
               if (s) document.documentElement.dataset.style = s;
             } catch {}`

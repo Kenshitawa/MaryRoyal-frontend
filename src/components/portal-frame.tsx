@@ -2,13 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Eye, LogOut } from "lucide-react";
+import { Eye } from "lucide-react";
 import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 import PageNavigation from "@/components/page-navigation";
 import NotificationBell from "@/components/notification-bell";
 import MobileNav from "@/components/mobile-nav";
+import MobileHeader from "@/components/mobile-header";
+import ConfirmLogoutForm from "@/components/confirm-logout-form";
 import { getRoleNavigation } from "@/lib/navigation";
 
 const roleTitle: Record<string, string> = {
@@ -27,7 +29,7 @@ export default async function PortalFrame({ children, active }: { children: Reac
   const token = (await cookies()).get("mary_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
-  const user = await db.user.findUnique({ where: { id: session.id }, select: { name: true, role: true, avatarUrl: true, suspended: true, forcePasswordChange: true } });
+  const user = await db.user.findUnique({ where: { id: session.id }, select: { name: true, email: true, role: true, avatarUrl: true, suspended: true, forcePasswordChange: true } });
   if (!user || user.suspended) redirect("/");
   if (user.forcePasswordChange) redirect("/change-password");
   let nav = getRoleNavigation(user.role);
@@ -59,11 +61,7 @@ export default async function PortalFrame({ children, active }: { children: Reac
         </div>
       </aside>
       <div className="min-w-0 flex-1 lg:ml-[250px]">
-        <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-slate-200/75 bg-white/90 px-4 backdrop-blur-xl sm:px-7 lg:px-10 dark:bg-slate-950/90 dark:border-slate-800">
-          <Link href={homeHref} aria-label="Go to your dashboard" className="flex items-center gap-2 lg:hidden">
-            <Image src="/mary-royal-logo.png" alt="Mary Royal School" width={34} height={34} />
-            <span className="text-sm font-extrabold">Mary Royal</span>
-          </Link>
+        <header className="sticky top-0 z-20 hidden h-[68px] items-center justify-between border-b border-slate-200/75 bg-white px-4 sm:px-7 lg:flex lg:px-10 dark:bg-slate-950 dark:border-slate-800">
           <div className="hidden text-xs text-slate-500 lg:block">
             Mary Royal School <span className="mx-2 text-slate-300">/</span><span className="font-semibold text-slate-700 dark:text-slate-300">{active}</span>
           </div>
@@ -79,16 +77,19 @@ export default async function PortalFrame({ children, active }: { children: Reac
               <span className="block text-xs font-bold text-slate-800 dark:text-white">{user.name}</span>
               <span className="text-[10px] text-slate-500">{roleTitle[user.role] ?? user.role}</span>
             </span>
-            <Link href="/profile" aria-label="Open profile and security settings" className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-blue-100 text-xs font-bold text-blue-800 ring-1 ring-blue-200">
-              {user.avatarUrl ? <Image src={user.avatarUrl} alt="" fill sizes="36px" className="object-cover" unoptimized /> : user.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
-            </Link>
-            <form action="/api/logout" method="post">
-              <button aria-label="Sign out" className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
-                <LogOut size={17} />
-              </button>
-            </form>
+            <details className="relative">
+              <summary aria-label="Open profile menu" className="relative grid h-10 w-10 cursor-pointer list-none place-items-center overflow-hidden rounded-full bg-blue-100 text-xs font-bold text-blue-800 ring-1 ring-blue-200 dark:bg-blue-950 dark:text-blue-100 dark:ring-blue-800">
+                {user.avatarUrl ? <Image src={user.avatarUrl} alt="" fill sizes="40px" className="object-cover" unoptimized /> : user.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
+              </summary>
+              <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-slate-200 bg-white p-3 text-slate-900 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+                <p className="truncate text-sm font-semibold">{user.name}</p><p className="truncate text-xs text-slate-600 dark:text-slate-300">{user.email}</p>
+                <Link href="/profile" className="mt-3 flex min-h-11 items-center rounded-xl px-3 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Profile & password</Link>
+                <ConfirmLogoutForm className="mt-2 border-t border-slate-200 pt-2 dark:border-slate-700" buttonClassName="min-h-11 w-full rounded-xl px-3 text-left text-sm font-semibold text-rose-700 hover:bg-rose-50 dark:text-rose-200 dark:hover:bg-rose-950/40" />
+              </div>
+            </details>
           </div>
         </header>
+        <MobileHeader active={active} homeHref={homeHref} user={{ name: user.name, email: user.email, role: user.role, roleLabel: roleTitle[user.role] ?? user.role, avatarUrl: user.avatarUrl }} />
         <PageNavigation active={active} homeHref={homeHref} userId={session.id} />
         <div id="main-content" tabIndex={-1} className="min-h-[calc(100vh-68px)] outline-none pb-20 lg:pb-0">{children}</div>
       </div>

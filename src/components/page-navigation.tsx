@@ -166,11 +166,10 @@ export default function PageNavigation({ active, homeHref, userId }: { active: s
     return [{ label: homeLabel, href: homeHref }, { label: active, href: pathname }];
   }, [active, hasDetail, homeHref, homeLabel, isHome, pathname, segments]);
 
-  return <div className="border-b border-slate-200/70 bg-white/75 px-4 py-2.5 backdrop-blur sm:px-7 lg:px-10 print:hidden">
-    {!isHome && <div className="mb-1 flex items-center gap-2 lg:hidden"><button type="button" aria-label="Go back" onClick={back} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"><ArrowLeft size={19}/></button><p className="truncate text-sm font-bold text-slate-900">{active}</p></div>}
+  return <div className="hidden border-b border-slate-200/70 bg-white/75 px-4 py-2.5 backdrop-blur lg:block lg:px-10 print:hidden">
     <div className="flex min-h-8 items-center gap-3">
       {!isHome && <button type="button" aria-label="Go back" onClick={back} className="hidden h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 lg:inline-flex"><ArrowLeft size={15}/> Back</button>}
-      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 overflow-x-auto text-xs text-slate-500">
+      <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-1.5 overflow-x-auto text-xs text-slate-500 lg:flex">
         {breadcrumb.map((item, index) => <span key={`${item.href}-${index}`} className="flex shrink-0 items-center gap-1.5">
           {index > 0 && <ChevronRight size={13} aria-hidden="true"/>}
           {index === breadcrumb.length - 1 ? <span aria-current="page" className="max-w-48 truncate font-semibold text-slate-800">{item.label}</span> : <Link href={item.href} className="rounded px-1 py-1 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">{item.label}</Link>}

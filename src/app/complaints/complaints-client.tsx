@@ -445,9 +445,9 @@ export default function ComplaintsClient({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto">
             {/* Status pills */}
-            <div className="flex items-center gap-1 rounded-2xl border border-slate-200/80 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="flex max-w-full flex-wrap items-center gap-1 rounded-2xl border border-slate-200/80 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-900/60">
               <button
                 onClick={() => setStatusFilter("ALL")}
                 className={`rounded-xl px-3 py-1 text-xs font-bold transition ${

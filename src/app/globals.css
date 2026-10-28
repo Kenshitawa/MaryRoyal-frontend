@@ -162,11 +162,13 @@ html[data-theme="dark"] .glass-card {
 .school-sidebar nav a:hover { background: rgb(255 255 255 / .1) !important; color: #fff !important; }
 .school-sidebar nav a[aria-current="page"] { background: #fff !important; color: #102e66 !important; }
 .school-sidebar nav a[aria-current="page"] > span { background: #1d4ed8 !important; }
-.mobile-nav { background-color: #163a7d !important; border-color: #315995 !important; }
-.mobile-nav a { color: #dbeafe !important; }
-.mobile-nav a[aria-current="page"] { background: rgb(255 255 255 / .14) !important; color: #fff !important; }
+.mobile-nav { background-color: #fff !important; border-color: #cbd5e1 !important; backdrop-filter: none !important; }
+.mobile-nav a:not([aria-current="page"]), .mobile-nav button:not([aria-expanded="true"]):not([aria-current="page"]) { color: #334155 !important; }
+.mobile-nav a[aria-current="page"], .mobile-nav button[aria-expanded="true"], .mobile-nav button[aria-current="page"] { background: #dbeafe !important; color: #1d4ed8 !important; }
 html[data-theme="dark"] .school-sidebar { background-color: #081a36 !important; border-color: #1d3151 !important; }
 html[data-theme="dark"] .mobile-nav { background-color: #081a36 !important; border-color: #1d3151 !important; }
+html[data-theme="dark"] .mobile-nav a:not([aria-current="page"]), html[data-theme="dark"] .mobile-nav button:not([aria-expanded="true"]):not([aria-current="page"]) { color: #e2e8f0 !important; }
+html[data-theme="dark"] .mobile-nav a[aria-current="page"], html[data-theme="dark"] .mobile-nav button[aria-expanded="true"], html[data-theme="dark"] .mobile-nav button[aria-current="page"] { background: #1e3a8a !important; color: #bfdbfe !important; }
 
 /* Dark mode surface colors for cards and panels */
 html[data-theme="dark"] .bg-white,
