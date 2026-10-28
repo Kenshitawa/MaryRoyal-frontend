@@ -12,14 +12,10 @@ import {
   Activity,
   Lock,
   Download,
-  Upload,
   Edit3,
   ShieldCheck,
   ShieldAlert,
-  CheckCircle2,
   X,
-  Plus,
-  AlertCircle,
   CalendarCheck,
   Building,
 } from "lucide-react";
@@ -712,6 +708,24 @@ export function StaffProfileClient({
           ) : (
             <p className="mt-4 text-xs text-slate-500">No profile modifications logged yet.</p>
           )}
+
+          <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-800">
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Teaching day summaries</h4>
+            {teachingLogs.length ? (
+              <ul className="mt-3 space-y-3">
+                {teachingLogs.map((log, index) => (
+                  <li key={`${log.createdAt}-${log.grade}-${index}`} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{log.subject} · {log.grade}</p>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{log.topics}</p>
+                    {log.reflection && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{log.reflection}</p>}
+                    <p className="mt-2 text-xs text-slate-500">{log.status} · {toDate(log.createdAt).toLocaleDateString("en-KE")}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500">No teaching summaries recorded yet.</p>
+            )}
+          </div>
         </section>
       )}
 

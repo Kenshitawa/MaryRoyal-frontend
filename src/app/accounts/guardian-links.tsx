@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { LearnerLink } from "@/components/learner-link";
 import {
   AlertCircle,
-  Check,
   HeartHandshake,
   Link2,
   Plus,

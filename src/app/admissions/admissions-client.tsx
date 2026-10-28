@@ -11,7 +11,6 @@ import {
   Clock,
   Settings,
   X,
-  FileCheck2,
 } from "lucide-react";
 import { LearnerLink } from "@/components/learner-link";
 

@@ -3,12 +3,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Wallet, Plus, Search, FileText, CheckCircle2, AlertTriangle, ArrowRight,
-  Download, Printer, X, Sparkles, Filter, ChevronRight, ShieldCheck, Clock
+  Wallet, Plus, Search, CheckCircle2, Download, X, ChevronRight
 } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
-import { ChartCard } from "@/components/design-system/chart-card";
 import { LearnerLink } from "@/components/learner-link";
 
 type Learner = { id: string; name: string; admissionNo: string; grade: string };
@@ -517,6 +515,7 @@ export default function FinanceClient({
                 ) : (
                   filteredInvoices.map(inv => {
                     const status = inv.balance <= 0 ? "PAID" : inv.paid > 0 ? "PARTIAL" : "UNPAID";
+                    const latestPayment = inv.payments[0];
                     return (
                       <tr key={inv.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                         <td className="px-4 py-3.5">
@@ -559,6 +558,24 @@ export default function FinanceClient({
                                 className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-emerald-700 shadow-sm"
                               >
                                 Pay
+                              </button>
+                            )}
+
+                            {canApprove && latestPayment?.status === "PENDING" && (
+                              <button
+                                onClick={() => void confirmPayment(latestPayment)}
+                                className="rounded-lg bg-blue-700 px-2.5 py-1 text-xs font-bold text-white hover:bg-blue-800"
+                              >
+                                Confirm payment
+                              </button>
+                            )}
+
+                            {canVoid && latestPayment && latestPayment.status !== "VOIDED" && (
+                              <button
+                                onClick={() => void voidPayment(latestPayment)}
+                                className="rounded-lg border border-rose-200 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30"
+                              >
+                                Void
                               </button>
                             )}
 

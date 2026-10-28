@@ -353,3 +353,7 @@ Total output lines: 287
 ## Round 3, Sections 2–3 -- Mobile header and bottom navigation -- 2026-10-28
 - Built: Replaced the cramped phone header with a 56px title bar, back/home, page and people search, notification and profile bottom sheet (appearance, system/light/dark, password/profile, help/privacy, confirmed sign-out). Desktop sign-out now lives in its profile menu. Reworked nav contrast, active state, icons, labels, touch size and keyboard/wizard behavior; fixed complaint-filter wrapping at 360px.
 - Tested: Role-by-role Playwright navigation passed for all eight roles at 360/390/430px; profile/search/theme checks passed; focused staff-role, admission/guardian and cross-role tests passed. Targeted ESLint and type-check passed; unit tests 54/54. Full suite still needs a clean final run.
+
+## Round 3, Lint cleanup -- 2026-10-28
+- Built: Removed the 56 warnings reported by the current full lint run, replaced raw images with `next/image`, centralized statutory-field response stripping without changing access scope, and set lint to fail on any warning. Restored finance payment confirm/void actions and limited exam publishing to approvers.
+- Tested: `npm run lint` passed with 0 warnings and 0 errors; `npm run typecheck` passed; `npm test` passed (9 files, 54/54 tests). Full E2E, production build, comprehensive mobile checks and deployment gates remain incomplete.

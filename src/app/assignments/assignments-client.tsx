@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { LearnerLink } from "@/components/learner-link";
 import { MAX_UPLOAD_FILE_BYTES } from "@/lib/upload-limits";
 import {
@@ -600,9 +601,13 @@ export default function AssignmentsClient({
             {attachmentUrl && (
               <div className="mt-3 flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800">
                 {attachmentType?.startsWith("image/") ? (
-                  <img
+                  <Image
                     src={attachmentUrl}
                     alt="Assignment preview"
+                    width={56}
+                    height={56}
+                    unoptimized
+                    sizes="56px"
                     className="h-14 w-14 rounded-lg object-cover border"
                   />
                 ) : (
@@ -773,9 +778,13 @@ export default function AssignmentsClient({
 
                       {assignment.attachmentType?.startsWith("image/") || (!assignment.attachmentType?.includes("pdf") && assignment.attachmentUrl.match(/\.(jpeg|jpg|png|webp|gif)$/i)) ? (
                         <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-black/5">
-                          <img
+                          <Image
                             src={assignment.attachmentUrl}
                             alt="Teacher's assignment sheet"
+                            width={1200}
+                            height={800}
+                            unoptimized
+                            sizes="(max-width: 768px) 100vw, 80vw"
                             className="max-h-80 w-auto rounded-lg mx-auto object-contain cursor-pointer hover:opacity-95 transition"
                             onClick={() => window.open(assignment.attachmentUrl!, "_blank")}
                           />
@@ -938,9 +947,13 @@ export default function AssignmentsClient({
                               <div className="mt-2.5 p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   {sub.attachmentType?.startsWith("image/") || sub.attachmentUrl.match(/\.(jpeg|jpg|png|webp|gif)$/i) ? (
-                                    <img
+                                    <Image
                                       src={sub.attachmentUrl}
                                       alt="Learner work"
+                                      width={48}
+                                      height={48}
+                                      unoptimized
+                                      sizes="48px"
                                       className="h-12 w-12 rounded object-cover border"
                                     />
                                   ) : (

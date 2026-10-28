@@ -9,6 +9,6 @@ The requested starting files `docs/ROUND3_STATUS.md` and `docs/OWNER_ACTIONS.md`
 | 3. Bottom navigation | Implemented; final suite pending | Light/dark contrast, active state and 24px icons updated; keyboard and full-screen wizard handling corrected. Mobile overflow was found and fixed on the Parent Complaints page. |
 | 4. Speed | Todo | No local Lighthouse or page timing baseline recorded yet. |
 | 5. Every page mobile pass | Todo | No Round 3 page-by-page audit or four-theme viewport suite exists yet. |
-| 6. Lint | Todo | Latest known baseline is 69 warnings, 0 errors. |
+| 6. Lint | Complete | Current run found 56 warnings and 0 errors; all were fixed. `npm run lint` now uses `--max-warnings 0` and passed with 0 warnings and 0 errors. Type-check and unit tests passed after the cleanup. |
 | 7. Verification | In progress | Type-check passed, unit tests 54/54 passed, legacy SQLite migration/backfill test passed. Latest targeted E2E: cross-role permissions, admissions/guardian linking and all-role mobile navigation passed. Full suite, mobile/accessibility/performance matrices and production build remain. |
 | 8. Safe deploy | Not started | Must follow `docs/OWNER_ACTIONS.md`; no production migration or test data operation has been run. |

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Users, ShieldCheck, Wallet, BookOpen, Calendar, ArrowRight, User } from "lucide-react";
+import { Search, X, Users, BookOpen, ArrowRight, User } from "lucide-react";
 
 interface SearchItem {
   id: string;

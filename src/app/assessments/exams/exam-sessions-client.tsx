@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { Plus, Calendar, Clock, CheckCircle2, Lock, Unlock, AlertCircle, Users, BookOpen } from "lucide-react";
+import { Plus, CheckCircle2, Lock, Unlock, AlertCircle } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
 
@@ -351,7 +350,6 @@ export default function ExamSessionsClient({
           exams.map(exam => {
             const isActive = exam.status === "ACTIVE";
             const isClosed = exam.status === "CLOSED";
-            const isPublished = exam.status === "PUBLISHED";
 
             return (
               <ThemedCard key={exam.id} className="p-5 sm:p-6">
@@ -390,14 +388,6 @@ export default function ExamSessionsClient({
                             <Unlock size={13} />
                             <span>Reopen</span>
                           </button>
-                          <button
-                            disabled={busy}
-                            onClick={() => updateStatus(exam.id, "PUBLISHED")}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
-                          >
-                            <CheckCircle2 size={13} />
-                            <span>Publish Results</span>
-                          </button>
                         </>
                       )}
                       {exam.status === "DRAFT" && (
@@ -411,6 +401,16 @@ export default function ExamSessionsClient({
                         </button>
                       )}
                     </div>
+                  )}
+                  {isClosed && canApprove && (
+                    <button
+                      disabled={busy}
+                      onClick={() => updateStatus(exam.id, "PUBLISHED")}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
+                    >
+                      <CheckCircle2 size={13} />
+                      <span>Approve &amp; Publish Results</span>
+                    </button>
                   )}
                 </div>
 

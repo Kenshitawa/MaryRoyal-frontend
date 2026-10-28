@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { canInScope, canManageStaffTarget, canDeleteStaffAccount, canViewStaffStatutory, canEditStaffStatutory } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { staffEmergencyContactSchema, staffRefereeSchema } from "@/lib/staff-validation";
+import { stripStaffStatutoryFields } from "@/lib/staff-sanitization";
 
 const dateInput = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable();
 const textInput = (max = 250) => z.string().trim().max(max).optional().nullable();
@@ -144,16 +145,7 @@ export async function GET(
   // Strip restricted statutory fields if not permitted
   const responseStaff = staff.staffProfile && !canSeeStatutory
     ? (() => {
-    const {
-      kraPin,
-      nssfNumber,
-      shaNumber,
-      bankName,
-      bankAccountName,
-      bankAccountNumber,
-      bankBranch,
-      ...safeProfile
-    } = staff.staffProfile;
+    const safeProfile = stripStaffStatutoryFields(staff.staffProfile);
     return { ...staff, staffProfile: safeProfile };
   })()
     : staff;

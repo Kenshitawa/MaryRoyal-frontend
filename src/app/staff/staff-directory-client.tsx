@@ -13,12 +13,10 @@ import {
   Mail,
   Phone,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
   AlertCircle,
   FileSpreadsheet,
   X,
-  FileText,
   Copy,
   Check,
 } from "lucide-react";

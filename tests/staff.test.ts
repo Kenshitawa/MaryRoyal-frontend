@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { Role } from "@prisma/client";
 import {
   staffPersonalSchema,
-  staffEmploymentSchema,
   staffEmergencyContactSchema,
   staffStatutorySchema,
   kenyanPhoneRegex,

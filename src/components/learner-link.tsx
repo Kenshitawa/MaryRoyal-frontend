@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface LearnerLinkProps {
   id: string;
@@ -92,9 +93,13 @@ export function LearnerChip({
   const content = (
     <div className={`inline-flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white/80 px-2.5 py-1.5 shadow-sm backdrop-blur transition hover:border-blue-300 hover:bg-blue-50/50 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:border-blue-800 ${className}`}>
       {photoUrl ? (
-        <img
+        <Image
           src={photoUrl}
           alt={name}
+          width={28}
+          height={28}
+          unoptimized
+          sizes="28px"
           className="h-7 w-7 rounded-lg object-cover"
         />
       ) : (
