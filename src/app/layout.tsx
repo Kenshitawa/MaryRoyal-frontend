@@ -39,6 +39,17 @@ export default function RootLayout({
             } catch {}`
           }}
         />
+        <Script
+          id="mary-sw-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+              });
+            }`
+          }}
+        />
       </head>
       <body>
         <ThemeProvider>

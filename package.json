@@ -23,7 +23,8 @@
     "backup:sqlite": "tsx scripts/backup.ts",
     "restore:postgres": "prisma generate --schema prisma/postgresql/schema.prisma && tsx scripts/restore-postgres.ts",
     "retention:enforce": "prisma generate --schema prisma/postgresql/schema.prisma && tsx scripts/enforce-retention.ts",
-    "schema:check": "tsx scripts/check-schema-drift.ts"
+    "schema:check": "tsx scripts/check-schema-drift.ts",
+    "budget:check": "tsx scripts/check-perf-budget.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

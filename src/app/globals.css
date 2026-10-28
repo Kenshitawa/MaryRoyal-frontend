@@ -258,6 +258,35 @@ html[data-theme="dark"] .border-amber-200 { border-color: #62502e !important; }
 html[data-theme="dark"] .border-emerald-100,
 html[data-theme="dark"] .border-emerald-200 { border-color: #285940 !important; }
 
+/* Phone Efficiency and Typography Rules */
+@media (max-width: 640px) {
+  /* Disable expensive backdrop blur on phones for fast smooth scrolling */
+  .backdrop-blur-md,
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-lg,
+  .glass,
+  .glass-dark {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 44px minimum touch targets */
+  button:not(.badge-btn),
+  a:not(.inline-link):not(.badge-link),
+  input:not([type="checkbox"]):not([type="radio"]),
+  select {
+    min-height: 44px;
+  }
+
+  /* 16px minimum text size on inputs to avoid automatic browser zoom on iOS/Android */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @media print {
   html, body { background: white !important; }
   body { color: #0f172a !important; }

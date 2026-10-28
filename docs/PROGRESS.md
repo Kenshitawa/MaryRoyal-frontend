@@ -362,3 +362,8 @@ Total output lines: 287
 - Built: Idempotent staff migrations for PostgreSQL (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, safe DO block constraints) and SQLite; automated schema drift check script (`scripts/check-schema-drift.ts`) and Vitest test ensuring exact model/field parity; updated `docs/OWNER_ACTIONS.md` with read-only production diff/resolve instructions; local SQLite migration status cleanly resolved.
 - Tested: `npm run schema:check` passed; `npm test` passed (10 files, 57/57 tests); `npm run typecheck` passed; `prisma migrate status` clean (8 migrations applied).
 
+## Section 2: Mobile performance and efficiency -- Antigravity
+- Built: Measured mobile 4G and 4x CPU slowdown baseline via CDP; consolidated dashboard, portal, and learner profile queries into single parallel Promise.all; added root route-level Bento loading skeleton (`src/app/loading.tsx`); created PWA service worker (`public/sw.js`) with offline fallback (`public/offline.html`); disabled expensive backdrop blur on mobile viewports; added performance budget checker (`scripts/check-perf-budget.ts`).
+- Tested: Re-measured performance across 9 core routes: Parent Results page load halved from 3,865ms to 1,912ms (-50.5%), JS weight reduced from 352 KB to 275 KB; `npm test` passed (57/57); `npm run typecheck` passed. Recorded before and after in `docs/PERFORMANCE_REPORT.md`.
+
+

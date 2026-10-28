@@ -160,7 +160,20 @@ export default async function Dashboard() {
       timeZone: "Africa/Nairobi",
     }).format(new Date());
 
-    const [learners, staff, attendance, released, grades, invoices, payroll] = await Promise.all([
+    const [
+      learners,
+      staff,
+      attendance,
+      released,
+      grades,
+      invoices,
+      payroll,
+      examSessions,
+      attendanceCount,
+      marksCount,
+      paymentsCount,
+      feeStructuresCount
+    ] = await Promise.all([
       db.learner.count({ where: { archivedAt: null } }),
       db.user.count({ where: { suspended: false, role: { notIn: ["PARENT", "LEARNER"] } } }),
       db.attendance.count({ where: { date: today, status: "PRESENT" } }),
@@ -184,6 +197,11 @@ export default async function Dashboard() {
         where: { period },
         select: { netAmount: true, status: true },
       }),
+      db.examSession.count(),
+      db.attendance.count(),
+      db.assessment.count({ where: { status: { not: "DRAFT" } } }),
+      db.feePayment.count({ where: { status: "RECORDED" } }),
+      db.feeStructure.count(),
     ]);
 
     gradeRows = grades;
@@ -214,14 +232,6 @@ export default async function Dashboard() {
       { period, total: 0, paid: 0, pending: 0, staffCount: 0 }
     );
 
-    // Director setup checklist stats
-    const [examSessions, attendanceCount, marksCount, paymentsCount, feeStructuresCount] = await Promise.all([
-      db.examSession.count(),
-      db.attendance.count(),
-      db.assessment.count({ where: { status: { not: "DRAFT" } } }),
-      db.feePayment.count({ where: { status: "RECORDED" } }),
-      db.feeStructure.count(),
-    ]);
     directorStats = {
       staffCount: staff,
       learnerCount: learners,

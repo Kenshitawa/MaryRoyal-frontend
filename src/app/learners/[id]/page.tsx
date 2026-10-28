@@ -186,22 +186,6 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
     (actor.role === "TEACHER" &&
       !!(await db.classTeacherAssignment.findFirst({ where: { teacherId: actor.id, grade: learner.grade }, select: { id: true } })));
 
-  const healthRecord = healthAllowed
-    ? await db.learnerProfile.findUnique({
-        where: { learnerId: learner.id },
-        select: {
-          knownConditions: true,
-          allergies: true,
-          currentMedication: true,
-          specialNeeds: true,
-          bloodGroup: true,
-          doctorOrHospital: true,
-          immunizationStatus: true,
-          healthInsurance: true
-        }
-      })
-    : null;
-
   if (healthAllowed) {
     await db.auditEvent.create({
       data: { actorId: actor.id, action: "HEALTH_PROFILE_ACCESSED", entity: "LearnerProfile", entityId: learner.id }
@@ -209,13 +193,6 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
   }
 
   const fullProfileScope = canInScope(actor.role, "learners", "view", "school");
-  const admissionDocuments =
-    learner.admissionDraft && fullProfileScope
-      ? await db.admissionDocument.findMany({
-          where: { draftId: learner.admissionDraft.id },
-          select: { id: true, category: true, originalName: true, contentType: true, sizeBytes: true }
-        })
-      : [];
 
   const disciplineAllowed =
     canInScope(actor.role, "discipline", "view", "school") ||
@@ -230,8 +207,18 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
       canInScope(actor.role, "assessments", "view", "self"));
 
   const feeAllowed = canInScope(actor.role, "finance", "view", "school") || canInScope(actor.role, "finance", "view", "linked");
+  const receiptsAllowed = canInScope(actor.role, "payments", "view", "school") || canInScope(actor.role, "payments", "view", "linked");
 
-  const [attendance, assessments, invoices, discipline, editHistoryEvents] = await Promise.all([
+  const [
+    attendance,
+    assessments,
+    invoices,
+    discipline,
+    editHistoryEvents,
+    healthRecord,
+    admissionDocuments,
+    receipts
+  ] = await Promise.all([
     !identityOnly
       ? db.attendance.findMany({
           where: { learnerId: learner.id },
@@ -288,19 +275,37 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
           take: 20,
           include: { actor: { select: { name: true, role: true } } }
         })
-      : []
-  ]);
-
-  const receiptsAllowed = canInScope(actor.role, "payments", "view", "school") || canInScope(actor.role, "payments", "view", "linked");
-  const receipts =
+      : [],
+    healthAllowed
+      ? db.learnerProfile.findUnique({
+          where: { learnerId: learner.id },
+          select: {
+            knownConditions: true,
+            allergies: true,
+            currentMedication: true,
+            specialNeeds: true,
+            bloodGroup: true,
+            doctorOrHospital: true,
+            immunizationStatus: true,
+            healthInsurance: true
+          }
+        })
+      : null,
+    learner.admissionDraft && fullProfileScope
+      ? db.admissionDocument.findMany({
+          where: { draftId: learner.admissionDraft.id },
+          select: { id: true, category: true, originalName: true, contentType: true, sizeBytes: true }
+        })
+      : [],
     feeAllowed && receiptsAllowed
-      ? await db.feePayment.findMany({
+      ? db.feePayment.findMany({
           where: { status: { in: ["RECORDED", "VOID"] }, invoice: { learnerId: learner.id } },
           orderBy: { createdAt: "desc" },
           take: 50,
           select: { id: true, receiptNo: true, amount: true, method: true, status: true, createdAt: true, invoice: { select: { term: true } } }
         })
-      : [];
+      : []
+  ]);
 
   const attendanceCounts = attendance.reduce((counts, row) => {
     const key = row.status.toLowerCase();

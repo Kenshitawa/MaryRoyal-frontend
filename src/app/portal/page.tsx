@@ -33,26 +33,27 @@ export default async function FamilyPortal({
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 
-  const user = await db.user.findUnique({
-    where: { id: session.id },
-    select: {
-      id: true,
-      name: true,
-      role: true,
-      suspended: true,
-      forcePasswordChange: true,
-    },
-  });
+  const [user, links] = await Promise.all([
+    db.user.findUnique({
+      where: { id: session.id },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        suspended: true,
+        forcePasswordChange: true,
+      },
+    }),
+    db.guardianLink.findMany({
+      where: { userId: session.id, learner: { archivedAt: null } },
+      include: { learner: true },
+      orderBy: { learner: { name: "asc" } },
+    }),
+  ]);
 
   if (!user || user.suspended) redirect("/");
   if (user.forcePasswordChange) redirect("/change-password");
   if (user.role !== "PARENT" && user.role !== "LEARNER") notFound();
-
-  const links = await db.guardianLink.findMany({
-    where: { userId: user.id, learner: { archivedAt: null } },
-    include: { learner: true },
-    orderBy: { learner: { name: "asc" } },
-  });
 
   if (!links.length) {
     return (
