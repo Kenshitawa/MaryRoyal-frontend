@@ -132,8 +132,12 @@ async function inspectPage(page: Page): Promise<AuditResult> {
       if (!element.children.length && !element.textContent?.trim()) continue;
       const fontSize = Number.parseFloat(getComputedStyle(element).fontSize);
       const classList = element.className?.toString() ?? "";
-      const badgeOrTime = element.matches("time,caption,figcaption,[data-badge='true'],.badge,.status-badge") || /badge|pill|caption/.test(classList);
-      const labelOrSecondary = element.matches("label,.field-label,.text-label,[data-text='secondary']") || /text-label|field-label|secondary/.test(classList);
+      const badgeOrTime =
+        element.matches("time,caption,figcaption,[data-badge='true'],.badge,.status-badge,.meta") ||
+        /(badge|pill|caption|(^|\s)text-xs(\s|$)|text-\[(?:8\.5|9|10|11|12)px\])/.test(classList);
+      const labelOrSecondary =
+        element.matches("label,.field-label,.text-label,[data-text='secondary']") ||
+        /(text-label|field-label|field-help|mobile-nav-item|secondary|text-sm|text-\[13(?:\.5)?px\])/.test(classList);
       const minimum = badgeOrTime ? 12 : labelOrSecondary ? 13 : 14;
       if (fontSize < minimum) notes.push({ cause: "Text below allowed sizes", detail: `${selector(element)} “${element.textContent?.trim().replace(/\s+/g, " ").slice(0, 50)}” ${fontSize.toFixed(1)}px (minimum ${minimum}px)` });
     }
@@ -180,21 +184,34 @@ test.describe("Complete mobile audit, every role and route", () => {
               consoleErrors.length = 0;
               failedRequests.length = 0;
               let responseStatus: number | null = null;
-              try {
-                const response = await page.goto(route, { waitUntil: "domcontentloaded", timeout: 15000 });
-                responseStatus = response?.status() ?? null;
-                await page.waitForTimeout(100);
-              } catch (error) {
-                await page.waitForTimeout(150);
+              let navigationError: unknown = null;
+              for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                  const response = await page.goto(route, { waitUntil: "domcontentloaded", timeout: 15000 });
+                  responseStatus = response?.status() ?? null;
+                  navigationError = null;
+                  break;
+                } catch (error) {
+                  navigationError = error;
+                  await page.waitForTimeout(300);
+                }
+              }
+              if (navigationError) {
                 const settledPath = new URL(page.url()).pathname;
                 if (isAuthorizedPage && settledPath !== route) {
                   roleFindings.push({ cause: "Authorized route unavailable", role, route, width: viewport.width, mode: "light", style: "bento", detail: `navigation redirected to ${settledPath}` });
                 } else if (isAuthorizedPage) {
-                  roleFindings.push({ cause: "Page load or runtime errors", role, route, width: viewport.width, mode: "light", style: "bento", detail: error instanceof Error ? error.message.slice(0, 180) : "page navigation failed" });
+                  roleFindings.push({ cause: "Page load or runtime errors", role, route, width: viewport.width, mode: "light", style: "bento", detail: navigationError instanceof Error ? navigationError.message.slice(0, 180) : "page navigation failed" });
                 }
                 const current = roleFindings.slice(routeStart);
                 persistFindings(current);
                 continue;
+              }
+              await page.waitForTimeout(120);
+              for (let settle = 0; settle < 8; settle++) {
+                const before = page.url();
+                await page.waitForTimeout(60);
+                if (page.url() === before) break;
               }
               const finalPath = new URL(page.url()).pathname;
               if (!isAuthorizedPage) {

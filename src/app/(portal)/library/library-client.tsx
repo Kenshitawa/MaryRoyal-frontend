@@ -68,10 +68,10 @@ export default function LibraryClient({ role }: { role: string; userId?: string 
   }, []);
 
   const loadStaff = useCallback(async () => {
-    const res = await fetch("/api/accounts");
+    const res = await fetch("/api/textbooks");
     if (!res.ok) return;
     const data = await res.json();
-    setAllStaff((data.accounts ?? []).filter((a: { role: string }) => ["TEACHER", "DEPUTY"].includes(a.role)));
+    setAllStaff(data.staffOptions ?? []);
   }, []);
 
   useEffect(() => { void load(); }, [load]);

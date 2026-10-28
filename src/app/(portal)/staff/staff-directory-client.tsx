@@ -212,7 +212,7 @@ export function StaffDirectoryClient({
       </div>
 
       {/* Role Filter Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex flex-wrap items-center gap-1.5 pb-1">
         {roles.map((tab) => (
           <button
             key={tab.value}

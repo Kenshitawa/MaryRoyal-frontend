@@ -371,8 +371,85 @@ export default function LearnerDirectory({
           </div>
         </div>
 
+        {/* Learner register: cards on phones, table on wide screens */}
+        <div className="mt-5 space-y-3 lg:hidden">
+          {busy ? (
+            <div className="card p-4">
+              <p className="text-body text-ink-2">Loading learner records…</p>
+            </div>
+          ) : filteredRows.length === 0 ? (
+            <div className="card p-6 text-center text-body text-ink-2">
+              No learners found matching the search criteria.
+            </div>
+          ) : (
+            filteredRows.map((learner) => {
+              const isApproved = learner.admissionStatus === "APPROVED";
+              return (
+                <article key={learner.id} className="card min-w-0 p-4">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <LearnerLink id={learner.id} name={learner.name} showAdmissionNo={false} />
+                      <p className="mt-0.5 break-all font-mono text-label text-ink-2">{learner.admissionNo}</p>
+                    </div>
+                    <span className="pill shrink-0 bg-surface-2 text-ink-2">{learner.grade}</span>
+                  </div>
+                  {!identityOnly && (
+                    <>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span
+                          className={`pill ${isApproved ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`}
+                        >
+                          {isApproved ? <CheckCircle2 size={12} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}
+                          {learner.admissionStatus}
+                        </span>
+                        <span className="text-label text-ink-2">
+                          {learner.hasLearnerLogin ? "Portal access active" : "No portal access"}
+                        </span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {!learner.hasLearnerLogin && canCreate && (
+                          <button
+                            type="button"
+                            disabled={saving}
+                            onClick={() => void createLogin(learner)}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            <KeyRound size={14} aria-hidden="true" />
+                            Create login
+                          </button>
+                        )}
+                        {canApprove && learner.admissionStatus === "PENDING" && (
+                          <button
+                            type="button"
+                            disabled={saving}
+                            onClick={() => void approve(learner)}
+                            className="btn btn-primary btn-sm"
+                          >
+                            <CheckCircle2 size={14} aria-hidden="true" />
+                            Approve
+                          </button>
+                        )}
+                        <Link href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
+                          View profile
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                  {identityOnly && (
+                    <div className="mt-3">
+                      <Link href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
+                        View profile
+                      </Link>
+                    </div>
+                  )}
+                </article>
+              );
+            })
+          )}
+        </div>
+
         {/* Learner Register Table */}
-        <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+        <div className="mt-5 hidden overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 lg:block">
           <table className="w-full min-w-[760px] text-left text-xs">
             <thead>
               <tr className="bg-slate-50/80 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-900/80 dark:text-slate-400">

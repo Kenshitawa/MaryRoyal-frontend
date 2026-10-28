@@ -20,7 +20,11 @@ const byCause = new Map();
 for (const group of groups.values()) byCause.set(group.cause, [...(byCause.get(group.cause) ?? []), group]);
 const sections = [...byCause.entries()].sort((a, b) => b[1].reduce((n, g) => n + g.contexts.length, 0) - a[1].reduce((n, g) => n + g.contexts.length, 0)).map(([cause, items]) => {
   const count = items.reduce((total, item) => total + item.contexts.length, 0);
-  const lines = items.map((item) => `- **${item.contexts.length} occurrence${item.contexts.length === 1 ? "" : "s"}:** ${item.detail}\n  - ${item.contexts.join("; ")}`).join("\n");
+  const lines = items.map((item) => {
+    const sample = item.contexts.slice(0, 6);
+    const rest = item.contexts.length - sample.length;
+    return `- **${item.contexts.length} occurrence${item.contexts.length === 1 ? "" : "s"}:** ${item.detail}\n  - ${sample.join("; ")}${rest > 0 ? `; …and ${rest} more` : ""}`;
+  }).join("\n");
   return `## ${cause} — ${count} (${items.length} unique causes)\n\n${lines}`;
 });
 const complete = completed.length === expectedContexts;

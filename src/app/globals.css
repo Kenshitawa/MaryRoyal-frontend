@@ -265,17 +265,17 @@ html[data-theme="dark"] ::selection {
 [class~="text-[8.5px]"],
 [class~="text-[9px]"],
 [class~="text-[10px]"],
-[class~="text-[11px]"] {
-  font-size: 0.75rem;
-  line-height: 1.4;
+[class~="text-[11px]"],
+[class~="text-[12px]"] {
+  font-size: 0.8125rem;
+  line-height: 1.45;
 }
 
 .text-sm,
-[class~="text-[12px]"],
 [class~="text-[13px]"],
 [class~="text-[13.5px]"] {
-  font-size: 0.8125rem;
-  line-height: 1.45;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .text-base,
@@ -470,7 +470,7 @@ html[data-style="glass"] .card {
 }
 
 .page-help {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--ink-2);
   max-width: 60ch;
 }
@@ -526,55 +526,55 @@ html[data-style="glass"] .card {
   pointer-events: none;
 }
 
-.btn-primary {
+.btn.btn-primary {
   background: var(--brand);
   color: #ffffff;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
 }
-.btn-primary:hover {
+.btn.btn-primary:hover {
   background: var(--brand-hover);
 }
 
-.btn-secondary {
+.btn.btn-secondary {
   background: var(--surface);
   border-color: var(--line);
   color: var(--ink);
 }
-.btn-secondary:hover {
+.btn.btn-secondary:hover {
   background: var(--surface-2);
 }
 
-.btn-soft {
+.btn.btn-soft {
   background: var(--brand-soft);
   color: var(--brand-ink);
   border-color: var(--brand-line);
 }
-.btn-soft:hover {
+.btn.btn-soft:hover {
   background: var(--brand-line);
 }
 
-.btn-ghost {
+.btn.btn-ghost {
   background: transparent;
   color: var(--ink-2);
 }
-.btn-ghost:hover {
+.btn.btn-ghost:hover {
   background: var(--surface-2);
   color: var(--ink);
 }
 
-.btn-danger {
+.btn.btn-danger {
   background: var(--danger-soft);
   border-color: var(--danger-line);
   color: var(--danger);
 }
-.btn-danger:hover {
+.btn.btn-danger:hover {
   filter: saturate(1.15);
 }
 
 .btn-sm {
   min-height: 44px;
   padding: 0 12px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   border-radius: 10px;
 }
 
@@ -606,7 +606,7 @@ html[data-style="glass"] .card {
 }
 
 .field-help {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--ink-3);
   margin-top: 6px;
 }
@@ -748,7 +748,7 @@ a.list-row:hover {
   color: var(--ink);
 }
 .empty-state-text {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--ink-2);
   max-width: 42ch;
 }
@@ -819,7 +819,7 @@ a.list-row:hover {
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--card-shadow);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 .toast-success {
   border-color: var(--success-line);
@@ -861,11 +861,14 @@ a.list-row:hover {
   left: 8px;
   z-index: 90;
   transform: translateY(-200%);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   border-radius: 10px;
   background: var(--brand);
   color: #fff;
-  padding: 10px 14px;
-  font-size: 0.8125rem;
+  padding: 0 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
 }
@@ -946,7 +949,7 @@ a.list-row:hover {
   padding: 0 12px;
   border-radius: 10px;
   color: var(--ink-2);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -1018,7 +1021,7 @@ a.list-row:hover {
   border: none;
   background: transparent;
   color: var(--ink-2);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
@@ -1227,4 +1230,108 @@ html[data-theme="dark"] .hover\:bg-white:hover {
   .page-main > :where(section, div, article) {
     padding: 0 !important;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Legacy colour compatibility                                         */
+/* Muted slate utilities are remapped to accessible ink tokens so old   */
+/* screens still meet WCAG AA in both appearances.                      */
+/* ------------------------------------------------------------------ */
+.text-slate-400,
+.text-slate-500,
+.text-gray-400,
+.text-gray-500 {
+  color: var(--ink-2);
+}
+[data-theme="dark"] .text-slate-400,
+[data-theme="dark"] .text-slate-500,
+[data-theme="dark"] .text-gray-400,
+[data-theme="dark"] .text-gray-500,
+[data-theme="dark"] .dark\:text-slate-400,
+[data-theme="dark"] .dark\:text-slate-500 {
+  color: var(--ink-3);
+}
+
+.bg-indigo-600,
+.bg-indigo-500 {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .btn.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+[data-theme="dark"] .btn.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* Legacy accent utilities resolved to AA-safe brand tokens. */
+:root {
+  --brand-solid: #1d4ed8;
+  --success-solid: #047857;
+  --danger-solid: #b91c1c;
+}
+[data-theme="dark"] {
+  --brand-solid: #2563eb;
+  --success-solid: #047857;
+  --danger-solid: #b91c1c;
+}
+
+.text-blue-500,
+.text-blue-600,
+.text-indigo-500,
+.text-indigo-600 {
+  color: var(--brand);
+}
+.text-emerald-500,
+.text-emerald-600,
+.text-green-600 {
+  color: var(--success);
+}
+.text-amber-600,
+.text-orange-600 {
+  color: var(--warning);
+}
+.text-rose-500,
+.text-rose-600,
+.text-red-600 {
+  color: var(--danger);
+}
+
+.bg-blue-500,
+.bg-blue-600 {
+  background-color: var(--brand-solid);
+  color: #ffffff;
+}
+.bg-indigo-500,
+.bg-indigo-600 {
+  background-color: #3730a3;
+  color: #ffffff;
+}
+.bg-emerald-500,
+.bg-emerald-600,
+.bg-green-600 {
+  background-color: var(--success-solid);
+  color: #ffffff;
+}
+.bg-rose-500,
+.bg-rose-600 {
+  background-color: var(--danger-solid);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-gray-50,
+[data-theme="dark"] .bg-slate-50 {
+  background-color: var(--surface);
+}
+[data-theme="dark"] .bg-gray-100,
+[data-theme="dark"] .bg-gray-200,
+[data-theme="dark"] .bg-gray-300,
+[data-theme="dark"] .bg-gray-400,
+[data-theme="dark"] .bg-slate-100,
+[data-theme="dark"] .bg-slate-200,
+[data-theme="dark"] .bg-slate-300,
+[data-theme="dark"] .bg-slate-400 {
+  background-color: var(--surface-2);
 }

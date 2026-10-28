@@ -101,7 +101,7 @@ export default function FinanceClient({
     try {
       const [invRes, learnRes, structRes, waiverRes] = await Promise.all([
         fetch("/api/finance/invoices"),
-        fetch("/api/learners?take=200"),
+        fetch("/api/learners?take=100"),
         fetch("/api/finance/structures"),
         fetch("/api/finance/waivers")
       ]);
@@ -347,6 +347,63 @@ export default function FinanceClient({
     );
   });
 
+  const invoiceActions = (inv: Invoice) => {
+    const latestPayment = inv.payments[0];
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {canPay && inv.balance > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedInvoice(inv);
+              setPayAmount(String(inv.balance));
+              setShowPaymentDrawer(true);
+              setPaymentSuccess(null);
+            }}
+            className="btn btn-primary btn-sm"
+          >
+            Pay
+          </button>
+        )}
+        {canApprove && latestPayment?.status === "PENDING" && (
+          <button type="button" onClick={() => void confirmPayment(latestPayment)} className="btn btn-secondary btn-sm">
+            Confirm payment
+          </button>
+        )}
+        {canVoid && latestPayment && latestPayment.status !== "VOIDED" && (
+          <button type="button" onClick={() => void voidPayment(latestPayment)} className="btn btn-danger btn-sm">
+            Void
+          </button>
+        )}
+        {inv.payments.length > 0 && (
+          <a
+            href={`/api/finance/payments/${inv.payments[0].id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-secondary btn-sm"
+            title="Download official PDF receipt with verification QR code"
+          >
+            <Download size={14} aria-hidden="true" />
+            Receipt PDF
+          </a>
+        )}
+        {canInvoice && (
+          <button
+            type="button"
+            onClick={() => {
+              setWaiverInvoiceId(inv.id);
+              setShowWaiverModal(true);
+            }}
+            className="btn btn-ghost btn-sm"
+            title="Request fee discount or waiver"
+          >
+            Discount
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -470,9 +527,57 @@ export default function FinanceClient({
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] text-left text-sm">
-              <thead className="border-b border-slate-100 bg-slate-50/70 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 lg:hidden">
+            {filteredInvoices.length === 0 ? (
+              <p className="p-6 text-center text-body text-ink-2">No matching fee invoices found.</p>
+            ) : (
+              filteredInvoices.map(inv => {
+                const status = inv.balance <= 0 ? "PAID" : inv.paid > 0 ? "PARTIAL" : "UNPAID";
+                return (
+                  <article key={inv.id} className="min-w-0 p-4">
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <LearnerLink
+                        id={inv.learner.id}
+                        name={inv.learner.name}
+                        admissionNo={inv.learner.admissionNo}
+                        subtext={inv.learner.grade}
+                      />
+                      <StatusPill status={status} />
+                    </div>
+                    <p className="mt-1 text-label text-ink-2">{inv.term}</p>
+                    {inv.lines.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {inv.lines.map(l => (
+                          <span key={l.id} className="rounded bg-slate-100 px-1.5 py-0.5 text-caption font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            {l.description}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <dl className="mt-3 space-y-1 text-label">
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-ink-2">Invoiced</dt>
+                        <dd className="font-semibold text-ink tabular-nums">{kes(inv.total)}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-ink-2">Paid</dt>
+                        <dd className="font-semibold text-success tabular-nums">{kes(inv.paid)}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-ink-2">Balance</dt>
+                        <dd className="font-semibold text-ink tabular-nums">{kes(inv.balance)}</dd>
+                      </div>
+                    </dl>
+                    <div className="mt-3">{invoiceActions(inv)}</div>
+                  </article>
+                );
+              })
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto lg:block">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="border-b border-slate-100 bg-slate-50/70 text-caption uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
                 <tr>
                   <th className="px-4 py-3.5">Learner</th>
                   <th className="px-4 py-3.5">Term</th>
@@ -494,7 +599,6 @@ export default function FinanceClient({
                 ) : (
                   filteredInvoices.map(inv => {
                     const status = inv.balance <= 0 ? "PAID" : inv.paid > 0 ? "PARTIAL" : "UNPAID";
-                    const latestPayment = inv.payments[0];
                     return (
                       <tr key={inv.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                         <td className="px-4 py-3.5">
@@ -506,13 +610,10 @@ export default function FinanceClient({
                           />
                         </td>
                         <td className="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-300">{inv.term}</td>
-                        <td className="px-4 py-3.5 max-w-xs">
+                        <td className="px-4 py-3.5">
                           <div className="flex flex-wrap gap-1">
                             {inv.lines.map(l => (
-                              <span
-                                key={l.id}
-                                className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                              >
+                              <span key={l.id} className="rounded bg-slate-100 px-1.5 py-0.5 text-caption font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                                 {l.description}
                               </span>
                             ))}
@@ -524,66 +625,8 @@ export default function FinanceClient({
                         <td className="px-4 py-3.5">
                           <StatusPill status={status} />
                         </td>
-                        <td className="px-4 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {canPay && inv.balance > 0 && (
-                              <button
-                                onClick={() => {
-                                  setSelectedInvoice(inv);
-                                  setPayAmount(String(inv.balance));
-                                  setShowPaymentDrawer(true);
-                                  setPaymentSuccess(null);
-                                }}
-                                className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-emerald-700 shadow-sm"
-                              >
-                                Pay
-                              </button>
-                            )}
-
-                            {canApprove && latestPayment?.status === "PENDING" && (
-                              <button
-                                onClick={() => void confirmPayment(latestPayment)}
-                                className="rounded-lg bg-blue-700 px-2.5 py-1 text-xs font-bold text-white hover:bg-blue-800"
-                              >
-                                Confirm payment
-                              </button>
-                            )}
-
-                            {canVoid && latestPayment && latestPayment.status !== "VOIDED" && (
-                              <button
-                                onClick={() => void voidPayment(latestPayment)}
-                                className="rounded-lg border border-rose-200 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30"
-                              >
-                                Void
-                              </button>
-                            )}
-
-                            {inv.payments.length > 0 && (
-                              <a
-                                href={`/api/finance/payments/${inv.payments[0].id}/pdf`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
-                                title="Download official PDF receipt with verification QR code"
-                              >
-                                <Download size={13} />
-                                <span>Receipt PDF</span>
-                              </a>
-                            )}
-
-                            {canInvoice && (
-                              <button
-                                onClick={() => {
-                                  setWaiverInvoiceId(inv.id);
-                                  setShowWaiverModal(true);
-                                }}
-                                className="rounded-lg border border-slate-200 px-2 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 dark:border-slate-700"
-                                title="Request fee discount or waiver"
-                              >
-                                Discount
-                              </button>
-                            )}
-                          </div>
+                        <td className="px-4 py-3.5">
+                          <div className="flex justify-end">{invoiceActions(inv)}</div>
                         </td>
                       </tr>
                     );

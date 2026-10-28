@@ -156,6 +156,36 @@ export default function AssessmentWorkspace({
     void load();
   }
 
+  const rowActions = (r: Assessment) => (
+    <div className="flex flex-wrap items-center gap-2">
+      {canSubmit && ["DRAFT", "RETURNED"].includes(r.status) && (
+        <>
+          <button type="button" onClick={() => void editScore(r)} className="btn btn-secondary btn-sm">
+            Edit
+          </button>
+          <button type="button" onClick={() => void workflow(r, "submit")} className="btn btn-primary btn-sm">
+            Submit
+          </button>
+        </>
+      )}
+      {canReview && r.status === "SUBMITTED" && (
+        <>
+          <button type="button" onClick={() => void workflow(r, "approve")} className="btn btn-primary btn-sm">
+            Approve
+          </button>
+          <button type="button" onClick={() => void workflow(r, "return")} className="btn btn-secondary btn-sm">
+            Return
+          </button>
+        </>
+      )}
+      {canRelease && r.status === "APPROVED" && (
+        <button type="button" onClick={() => void workflow(r, "release")} className="btn btn-primary btn-sm">
+          Release
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Top Header & Fast Navigation */}
@@ -363,10 +393,51 @@ export default function AssessmentWorkspace({
         </ThemedCard>
       )}
 
+      {/* Marks: cards on phones, table on wide screens */}
+      <ThemedCard className="p-0 lg:hidden">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {loading ? (
+            <p className="p-6 text-center text-body text-ink-2">Loading assessments…</p>
+          ) : rows.length === 0 ? (
+            <p className="p-6 text-center text-body text-ink-2">No assessments recorded yet for {term}.</p>
+          ) : (
+            rows.map(r => (
+              <article key={r.id} className="min-w-0 p-4">
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <LearnerLink
+                    id={r.learner.id || r.learnerId || ""}
+                    name={r.learner.name}
+                    admissionNo={r.learner.admissionNo}
+                  />
+                  <StatusPill status={r.status} />
+                </div>
+                <p className="mt-1 text-label text-ink-2">{r.learner.grade} · {r.subject}</p>
+                <div className="mt-2 flex flex-wrap items-baseline gap-2">
+                  <span className="text-kpi font-semibold text-ink tabular-nums">{r.score}%</span>
+                  <span className="text-label font-semibold text-brand-ink">{r.level}</span>
+                </div>
+                {(r.strand || r.competency) && (
+                  <p className="mt-1 text-label text-ink-2 break-words">
+                    <span className="font-semibold text-ink">{r.strand || "—"}</span>
+                    {r.competency ? ` · ${r.competency}` : ""}
+                  </p>
+                )}
+                {r.reviewComment && (
+                  <span className="mt-1 inline-block rounded bg-warning-soft px-1.5 py-0.5 text-caption font-semibold text-warning">
+                    Returned: {r.reviewComment}
+                  </span>
+                )}
+                <div className="mt-3">{rowActions(r)}</div>
+              </article>
+            ))
+          )}
+        </div>
+      </ThemedCard>
+
       {/* Marks Table */}
       <ThemedCard className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px] text-left text-sm">
+        <div className="hidden overflow-x-auto lg:block">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50/70 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
               <tr>
                 <th className="px-4 py-3.5">Learner</th>

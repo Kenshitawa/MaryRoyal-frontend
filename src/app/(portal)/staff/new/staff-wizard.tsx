@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -39,6 +39,7 @@ const STEPS = [
 
 export function StaffWizard({ userRole }: StaffWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const formRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successResult, setSuccessResult] = useState<{
@@ -268,8 +269,19 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     }
   }
 
+  useEffect(() => {
+    const root = formRef.current;
+    if (!root) return;
+    root.querySelectorAll("label:not([for])").forEach((label) => {
+      const control = label.parentElement?.querySelector("input, select, textarea");
+      if (!control || control.id) return;
+      control.id = `staff-field-${Math.random().toString(36).slice(2, 9)}`;
+      label.setAttribute("for", control.id);
+    });
+  }, [currentStep]);
+
   return (
-    <div className="space-y-6">
+    <div ref={formRef} className="space-y-6">
       {/* Top Header / Progress Stepper */}
       <div className="bento-card rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -299,7 +311,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
         </div>
 
         {/* Stepper Dots */}
-        <div className="mt-6 flex items-center justify-between gap-1 overflow-x-auto pb-2 scrollbar-none">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-1 pb-2">
           {STEPS.map((step) => {
             const Icon = step.icon;
             const isCompleted = currentStep > step.id;

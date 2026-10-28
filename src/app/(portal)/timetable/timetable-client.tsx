@@ -538,10 +538,11 @@ export default function TimetableClient({
           {/* Controls: Timetable selector, Grade filter, Teacher filter */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-50 dark:bg-gray-800/60 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 flex-wrap">
-              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+              <label htmlFor="timetable-select" className="text-xs font-semibold text-gray-600 dark:text-gray-400">
                 Timetable:
               </label>
               <select
+                id="timetable-select"
                 value={selectedTimetableId}
                 onChange={(e) => setSelectedTimetableId(e.target.value)}
                 className="text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 font-medium"
@@ -553,10 +554,11 @@ export default function TimetableClient({
                 ))}
               </select>
 
-              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 ml-2">
+              <label htmlFor="timetable-class" className="text-xs font-semibold text-gray-600 dark:text-gray-400 ml-2">
                 Class:
               </label>
               <select
+                id="timetable-class"
                 value={selectedGrade}
                 onChange={(e) => setSelectedGrade(e.target.value)}
                 className="text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5"
@@ -569,10 +571,11 @@ export default function TimetableClient({
                 ))}
               </select>
 
-              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 ml-2">
+              <label htmlFor="timetable-teacher" className="text-xs font-semibold text-gray-600 dark:text-gray-400 ml-2">
                 Teacher:
               </label>
               <select
+                id="timetable-teacher"
                 value={filterTeacherId}
                 onChange={(e) => setFilterTeacherId(e.target.value)}
                 className="text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5"
@@ -637,8 +640,48 @@ export default function TimetableClient({
             )}
           </div>
 
+          {/* Day cards on phones, grid on wide screens */}
+          <div className="space-y-3 lg:hidden">
+            {DAYS.map(day => {
+              const daySlots = activeSlots.filter(
+                (slot) =>
+                  slot.day === day &&
+                  (selectedGrade === "ALL" || slot.grade.toLowerCase() === selectedGrade.toLowerCase()) &&
+                  (!filterTeacherId || slot.teacherId === filterTeacherId)
+              );
+              return (
+                <section key={day} className="card min-w-0 p-4">
+                  <h3 className="text-title font-semibold text-ink">{day}</h3>
+                  {daySlots.length === 0 ? (
+                    <p className="mt-1 text-label text-ink-2">No lessons scheduled.</p>
+                  ) : (
+                    <ul className="mt-2 space-y-2">
+                      {PERIOD_TIMES.filter(pt => !pt.isBreak).map(pt => {
+                        const matching = daySlots.filter(slot => slot.period === pt.period);
+                        if (matching.length === 0) return null;
+                        return (
+                          <li key={pt.period}>
+                            <p className="text-label font-semibold text-ink-3">{pt.label} · {pt.time}</p>
+                            <div className="mt-1 space-y-1.5">
+                              {matching.map(m => (
+                                <div key={m.id} className="rounded-lg border border-brand-line bg-brand-soft p-2">
+                                  <p className="text-body font-semibold text-ink break-words">{m.subject}</p>
+                                  <p className="text-label text-ink-2 break-words">{m.grade} · {m.teacherName || "Unassigned"}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+
           {/* Grid View */}
-          <div className="overflow-x-auto border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 shadow-sm">
+          <div className="hidden overflow-x-auto border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-900 shadow-sm lg:block">
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">

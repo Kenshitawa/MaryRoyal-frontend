@@ -114,6 +114,7 @@ export default function StaffAttendanceClient({ staff }: { staff: Staff[] }) {
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="date"
+            aria-label="Attendance date"
             value={date}
             max={today()}
             onChange={(event) => setDate(event.target.value)}
