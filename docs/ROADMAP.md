@@ -39,8 +39,7 @@ U11 was not part of the original U1-U10 brief. It is defined as a final local ac
 
 - Shared navigation, admission Back fallback, welfare privacy, local-only AI drafts, Director setup checklist completion, and grade-band/welfare reports were updated in this pass.
 - The local development database was explicitly reset to the Director-only state after implementation; it is reset again after E2E runs.
-- E2E is not yet green. A full run completed 8/9; focused navigation across all roles passes. The remaining Director scenario reached its admission PDF fetch but timed out during a later focused rerun. Rerun and debug that route before claiming full acceptance.
-- Production build completes. ESLint reports 39 warnings (unused symbols and legacy `<img>` elements). Complete the route-by-route RBAC/IDOR, file-upload privacy, authentication rate-limit/session, and all-role profile E2E audit before real student data is used.
+- Superseded by the 2026-10-28 mobile redesign status below; E2E, build and lint results are recorded in `docs/PROGRESS.md` for that pass. Complete the route-by-route RBAC/IDOR, file-upload privacy, authentication rate-limit/session, and all-role profile E2E audit before real student data is used.
 - Frontend/backend source directories contain architecture maps only. The two provided GitHub URLs have not been configured or pushed; a separate runnable backend does not exist yet because the current API is implemented as Next.js route handlers.
 
 ## Production and GitHub status — 2026-10-27

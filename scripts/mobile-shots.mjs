@@ -8,16 +8,16 @@ const width = Number(process.env.SHOT_WIDTH ?? 360);
 const roles = (process.env.SHOT_ROLES ?? "").split(",").filter(Boolean);
 
 const rolePages = {
-  director: ["/dashboard", "/accounts", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile"],
-  head_teacher: ["/dashboard", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/attendance", "/finance", "/reports", "/complaints", "/profile"],
-  deputy: ["/dashboard", "/admissions", "/learners", "/assessments", "/attendance", "/timetable", "/schemes", "/library", "/welfare"],
-  secretary: ["/dashboard", "/admissions", "/admissions/new", "/learners", "/finance", "/finance/structures", "/profile"],
-  accountant: ["/dashboard", "/learners", "/finance", "/finance/structures", "/profile"],
-  teacher: ["/dashboard", "/attendance", "/learners", "/assessments", "/assignments", "/learning-content", "/learning-videos", "/teaching-log", "/schemes", "/library", "/timetable"],
-  parent: ["/portal", "/complaints", "/profile"],
-  learner: ["/learning", "/assignments", "/learning-videos", "/profile"],
-  welfare_chair: ["/dashboard", "/welfare", "/profile"],
-  non_teaching_staff: ["/dashboard", "/welfare", "/profile"],
+  director: ["/dashboard", "/accounts", "/admissions", "/admissions/new", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
+  head_teacher: ["/dashboard", "/admissions", "/learners", "/staff", "/staff/new", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/finance", "/finance/structures", "/reports", "/audit", "/timetable", "/learning-videos", "/complaints", "/schemes", "/teaching-log", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
+  deputy: ["/dashboard", "/admissions", "/learners", "/assessments", "/assessments/exams", "/assessments/rubrics", "/attendance", "/timetable", "/learning-videos", "/schemes", "/library", "/welfare", "/profile", "/privacy", "/change-password"],
+  secretary: ["/dashboard", "/admissions", "/admissions/new", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
+  accountant: ["/dashboard", "/learners", "/finance", "/finance/structures", "/welfare", "/profile", "/privacy", "/change-password"],
+  teacher: ["/dashboard", "/attendance", "/learners", "/assessments", "/assessments/exams", "/assessments/rubrics", "/assignments", "/learning-content", "/learning-videos", "/teaching-log", "/schemes", "/library", "/welfare", "/timetable", "/profile", "/privacy", "/change-password"],
+  parent: ["/portal", "/complaints", "/profile", "/privacy", "/change-password"],
+  learner: ["/learning", "/assignments", "/learning-videos", "/portal", "/profile", "/privacy", "/change-password"],
+  welfare_chair: ["/dashboard", "/welfare", "/profile", "/privacy", "/change-password"],
+  non_teaching_staff: ["/dashboard", "/welfare", "/profile", "/privacy", "/change-password"],
 };
 
 const samplePath = path.resolve("e2e/.auth/sample-records.json");
@@ -45,6 +45,21 @@ const detailPages = {
 };
 for (const [role, routes] of Object.entries(detailPages)) {
   for (const route of routes) if (route && !rolePages[role].includes(route)) rolePages[role].push(route);
+}
+
+for (const role of ["director", "deputy", "secretary"]) {
+  for (const id of [sample.secretaryDraftId, sample.reviewDraftId]) {
+    if (id && !rolePages[role].includes(`/admissions/${id}`)) rolePages[role].push(`/admissions/${id}`);
+  }
+}
+for (const role of Object.keys(rolePages)) {
+  const id = sample[`${role}StaffId`];
+  if (id && !rolePages[role].includes(`/staff/${id}`)) rolePages[role].push(`/staff/${id}`);
+}
+for (const id of [sample.directorStaffId, sample.deputyStaffId, sample.secretaryStaffId, sample.accountantStaffId, sample.welfare_chairStaffId, sample.non_teaching_staffStaffId]) {
+  for (const role of ["director", "head_teacher"]) {
+    if (id && !rolePages[role].includes(`/staff/${id}`)) rolePages[role].push(`/staff/${id}`);
+  }
 }
 
 fs.mkdirSync(outDir, { recursive: true });

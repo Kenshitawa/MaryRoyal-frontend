@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { makeSession, makeActivitySession } from "../src/lib/session";
+import { completedAdmissionSchema } from "../src/lib/admissions";
 
 const localTestDatabaseUrl = "file:./round3-e2e.test.db";
 const db = new PrismaClient();
@@ -95,10 +96,26 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
   const payment = learner
     ? await db.feePayment.findFirst({ where: { invoice: { learnerId: learner.id } }, orderBy: { createdAt: "asc" } })
     : null;
-  const secretaryDraft = secretary
-    ? await db.admissionDraft.findFirst({ where: { createdById: secretary.id }, orderBy: { createdAt: "asc" } })
-    : null;
-  const reviewDraft = await db.admissionDraft.findFirst({ where: { status: { not: "DRAFT" } }, orderBy: { createdAt: "asc" } });
+  if (!secretary) throw new Error("The local E2E Secretary fixture is missing.");
+  const admissionPayload = JSON.stringify(completedAdmissionSchema.parse({
+    learner: { fullName: "Synthetic Mobile Learner", dateOfBirth: "2018-04-12", gender: "Female", nationality: "Kenyan", grade: "Grade 3", admissionDate: "2026-10-28", languagesSpoken: ["English", "Kiswahili"] },
+    residence: { county: "Kisumu", subCounty: "Kisumu Central", ward: "Obunga", village: "Synthetic village", physicalAddress: "Synthetic local test address" },
+    guardians: [{ fullName: "Synthetic Guardian", relationship: "Guardian", phone: "+254700000001", primaryContact: true, paysFees: true }],
+    emergencyContacts: [{ fullName: "Synthetic Contact One", relationship: "Guardian", phone: "+254700000002" }, { fullName: "Synthetic Contact Two", relationship: "Guardian", phone: "+254700000003" }],
+    pickupPersons: [], health: {}, fee: { term: "2026 Term 3", feePayerGuardian: "Synthetic Guardian", requestedOptionalItems: [] }, consent: true,
+  }));
+  const secretaryDraft = await db.admissionDraft.upsert({
+    where: { admissionNo: "E2E-MOBILE-DRAFT" }, update: {},
+    create: { admissionNo: "E2E-MOBILE-DRAFT", createdById: secretary.id, status: "DRAFT", currentStep: 1, payload: admissionPayload },
+  });
+  const reviewDraft = await db.admissionDraft.upsert({
+    where: { admissionNo: "E2E-MOBILE-SUBMITTED" }, update: {},
+    create: { admissionNo: "E2E-MOBILE-SUBMITTED", createdById: secretary.id, status: "SUBMITTED", currentStep: 7, payload: admissionPayload, submittedAt: new Date("2026-10-28T08:00:00Z") },
+  });
+  const staffUsers = await db.user.findMany({
+    where: { email: { in: roles.filter(item => !["PARENT", "LEARNER"].includes(item.role)).map(item => item.email) } },
+    select: { id: true, role: true },
+  });
 
   fs.writeFileSync(
     path.join(outDir, "sample-records.json"),
@@ -111,6 +128,7 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
         secretaryDraftId: secretaryDraft?.id ?? null,
         reviewDraftId: reviewDraft?.id ?? null,
         paymentId: payment?.id ?? null,
+        ...Object.fromEntries(staffUsers.map(user => [`${user.role.toLowerCase()}StaffId`, user.id])),
       },
       null,
       2,

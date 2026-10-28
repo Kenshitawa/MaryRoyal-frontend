@@ -399,3 +399,7 @@ Total output lines: 287
 ## Qoder UI pass: royal-blue identity -- 2026-10-28
 - Built: Royal-blue sidebar, top bar, mobile app bar and bottom nav; blue gradient PageHeader with inverted actions and a light-blue meta chip; blue-tinted KPI cards; blue accent bars on card titles. Converted the assessments, exams, rubrics, timetable, library, welfare, schemes, fee structures, profile and learner-edit headers to the shared PageHeader; white logo tiles on blue chrome; fixed a layered-CSS bug that made `text-white` buttons inherit dark text; shortened bottom-nav labels that truncated at 360px.
 - Tested: visually checked at 360px and 1440px in light and dark (login, dashboard, assessments, finance, library, timetable, welfare, profile, accounts, admissions, reports, parent portal); `npm run typecheck` and `npm run lint` passed.
+
+## Detail-page mobile acceptance — 2026-10-28
+- Built: learner invoice/results/attendance card lists, wrapping section/staff tabs, associated learner-edit labels and a labelled royal-blue receipt back bar; teacher self-profile is an authorized audit target, not a permission exception.
+- Tested: isolated mobile audit passed 20/20 collections with zero findings (360/390px × four appearances); typecheck passed. Admission packets were absent from that seed, so synthetic local-only draft/submitted fixtures and all staff self-profile targets are now added for the final expanded run.

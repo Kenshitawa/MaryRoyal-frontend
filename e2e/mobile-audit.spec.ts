@@ -63,6 +63,16 @@ detailRoutes("parent", [
   [sample.paymentId, "/receipts/{id}"],
 ]);
 detailRoutes("learner", [[sample.selfLearnerId, "/learners/{id}"]]);
+for (const role of ["director", "deputy", "secretary"]) {
+  detailRoutes(role, [[sample.secretaryDraftId, "/admissions/{id}"], [sample.reviewDraftId, "/admissions/{id}"]]);
+}
+for (const role of Object.keys(rolePages)) {
+  if (sample[`${role}StaffId`]) detailRoutes(role, [[sample[`${role}StaffId`], "/staff/{id}"]]);
+}
+for (const id of [sample.directorStaffId, sample.deputyStaffId, sample.secretaryStaffId, sample.accountantStaffId, sample.welfare_chairStaffId, sample.non_teaching_staffStaffId]) {
+  detailRoutes("director", [[id, "/staff/{id}"]]);
+  detailRoutes("head_teacher", [[id, "/staff/{id}"]]);
+}
 const allRoutes = [...new Set(Object.values(rolePages).flat())].sort();
 const collectionPath = path.resolve(process.cwd(), "test-results/mobile-failure-collection.jsonl");
 
