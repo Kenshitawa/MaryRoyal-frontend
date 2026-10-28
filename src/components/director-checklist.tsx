@@ -116,7 +116,7 @@ export function DirectorGettingStartedChecklist({
           </span>
           <div className="min-w-0">
             <h2 className="text-title font-semibold">School setup guide</h2>
-            <p className="text-caption text-white/80">
+            <p className="text-caption text-white">
               {completedCount} of {steps.length} steps complete ({progressPercent}%)
             </p>
           </div>
@@ -125,7 +125,7 @@ export function DirectorGettingStartedChecklist({
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           aria-expanded={!collapsed}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-white/15 px-3 text-label font-semibold text-white hover:bg-white/25"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-white/50 px-3 text-label font-semibold text-white hover:bg-white/15"
         >
           {collapsed ? "Show steps" : "Hide"}
           {collapsed ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}

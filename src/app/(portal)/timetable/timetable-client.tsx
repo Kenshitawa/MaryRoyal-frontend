@@ -418,7 +418,7 @@ export default function TimetableClient({
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-gray-800 gap-2 overflow-x-auto">
+      <div className="flex flex-wrap border-b border-gray-200 dark:border-gray-800 gap-2">
         {role === "TEACHER" && (
           <button
             onClick={() => setActiveTab("today")}

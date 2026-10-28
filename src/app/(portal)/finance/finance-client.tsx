@@ -55,12 +55,14 @@ export default function FinanceClient({
   canInvoice,
   canPay,
   canApprove,
-  canVoid
+  canVoid,
+  canViewWaivers
 }: {
   canInvoice: boolean;
   canPay: boolean;
   canApprove: boolean;
   canVoid: boolean;
+  canViewWaivers: boolean;
 }) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [learners, setLearners] = useState<Learner[]>([]);
@@ -103,17 +105,17 @@ export default function FinanceClient({
         fetch("/api/finance/invoices"),
         fetch("/api/learners?take=100"),
         fetch("/api/finance/structures"),
-        fetch("/api/finance/waivers")
+        canViewWaivers ? fetch("/api/finance/waivers") : Promise.resolve(null)
       ]);
 
       if (invRes.ok) setInvoices((await invRes.json()).invoices || []);
       if (learnRes.ok) setLearners((await learnRes.json()).learners || []);
       if (structRes.ok) setStructures((await structRes.json()).structures || []);
-      if (waiverRes.ok) setWaivers((await waiverRes.json()).waivers || []);
+      if (waiverRes?.ok) setWaivers((await waiverRes.json()).waivers || []);
     } catch {
       // fallback
     }
-  }, []);
+  }, [canViewWaivers]);
 
   useEffect(() => {
     void refresh();
@@ -494,6 +496,7 @@ export default function FinanceClient({
         >
           Arrears
         </button>
+        {canViewWaivers && (
         <button
           type="button"
           role="tab"
@@ -503,6 +506,7 @@ export default function FinanceClient({
         >
           Waivers ({waivers.length})
         </button>
+        )}
       </div>
 
       {/* TAB 1: Invoices & Receipts List */}
@@ -554,7 +558,7 @@ export default function FinanceClient({
                         ))}
                       </div>
                     )}
-                    <dl className="mt-3 space-y-1 text-label">
+                    <dl className="mt-3 space-y-1 text-body">
                       <div className="flex justify-between gap-3">
                         <dt className="text-ink-2">Invoiced</dt>
                         <dd className="font-semibold text-ink tabular-nums">{kes(inv.total)}</dd>

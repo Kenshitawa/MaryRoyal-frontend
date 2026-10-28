@@ -201,7 +201,7 @@ export function AdmissionsClient({
                 type="checkbox"
                 checked={allDraftsSelected}
                 onChange={toggleSelectAll}
-                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                className="h-11 w-11 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
               <span>Select all drafts ({draftRecords.length})</span>
             </label>
@@ -265,13 +265,13 @@ export function AdmissionsClient({
                       : "hover:bg-slate-50/60 dark:hover:bg-slate-800/30"
                   }`}
                 >
-                  <div className="w-5">
+                  <div className="w-11 shrink-0">
                     {canDelete && isDraft && (
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelectOne(record.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        className="h-11 w-11 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                         aria-label={`Select draft ${record.admissionNo}`}
                       />
                     )}

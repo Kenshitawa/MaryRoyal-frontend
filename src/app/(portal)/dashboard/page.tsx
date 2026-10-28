@@ -407,7 +407,7 @@ export default async function Dashboard() {
               : role === "ACCOUNTANT"
                 ? [
                     { label: "Finance", href: "/finance", note: "Invoices and payments" },
-                    { label: "Receipts", href: "/receipts", note: "Official receipts issued" },
+                    { label: "Receipts", href: "/finance", note: "Find a receipt on any invoice" },
                     { label: "Fee structures", href: "/finance/structures", note: "Term fee schedule" },
                     { label: "Learners", href: "/learners", note: "Learner accounts" },
                   ]

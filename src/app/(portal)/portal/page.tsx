@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -52,7 +52,7 @@ export default async function FamilyPortal({
 
   if (!user || user.suspended) redirect("/");
   if (user.forcePasswordChange) redirect("/change-password");
-  if (user.role !== "PARENT" && user.role !== "LEARNER") notFound();
+  if (user.role !== "PARENT" && user.role !== "LEARNER") redirect("/dashboard");
 
   if (!links.length) {
     return (

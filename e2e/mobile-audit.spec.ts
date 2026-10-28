@@ -131,14 +131,17 @@ async function inspectPage(page: Page): Promise<AuditResult> {
       if (element instanceof SVGElement || element.closest("svg")) continue;
       if (!element.children.length && !element.textContent?.trim()) continue;
       const fontSize = Number.parseFloat(getComputedStyle(element).fontSize);
-      const classList = element.className?.toString() ?? "";
-      const badgeOrTime =
-        element.matches("time,caption,figcaption,[data-badge='true'],.badge,.status-badge,.meta") ||
-        /(badge|pill|caption|(^|\s)text-xs(\s|$)|text-\[(?:8\.5|9|10|11|12)px\])/.test(classList);
-      const labelOrSecondary =
-        element.matches("label,.field-label,.text-label,[data-text='secondary']") ||
-        /(text-label|field-label|field-help|mobile-nav-item|secondary|text-sm|text-\[13(?:\.5)?px\])/.test(classList);
-      const minimum = badgeOrTime ? 12 : labelOrSecondary ? 13 : 14;
+      const tierOf = (node: Element | null | undefined) => {
+        if (!node) return null;
+        const classes = node.className?.toString() ?? "";
+        if (node.matches("time,caption,figcaption,[data-badge='true'],.badge,.status-badge,.meta") || /(badge|pill|caption|(^|\s)text-xs(\s|$)|text-\[(?:8\.5|9|10|11|12)px\])/.test(classes)) return 12;
+        if (node.matches("label,.field-label,.text-label,.chip,.mobile-nav-item,button,a[href],[data-text='secondary']") || /(text-label|field-label|field-help|mobile-nav-item|secondary|text-sm|text-\[13(?:\.5)?px\])/.test(classes)) return 13;
+        return null;
+      };
+      // Nested spans inherit the tier of their label/caption container or control.
+      const tierChain = [element, element.parentElement, element.parentElement?.parentElement];
+      const inherited = tierChain.map(tierOf).find((tier) => tier !== null) ?? null;
+      const minimum = inherited ?? 14;
       if (fontSize < minimum) notes.push({ cause: "Text below allowed sizes", detail: `${selector(element)} “${element.textContent?.trim().replace(/\s+/g, " ").slice(0, 50)}” ${fontSize.toFixed(1)}px (minimum ${minimum}px)` });
     }
     for (const scroller of horizontalScrollers) {

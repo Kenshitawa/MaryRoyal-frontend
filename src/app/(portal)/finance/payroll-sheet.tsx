@@ -332,7 +332,45 @@ export default function PayrollSheet({
               No payroll entries registered for this school yet.
             </p>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+            <>
+            <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200/80 dark:divide-slate-800 dark:border-slate-800 lg:hidden">
+              {filteredEntries.map((entry) => {
+                const isPaid = entry.status === "PAID";
+                return (
+                  <article key={entry.id} className="min-w-0 p-4">
+                    <div className="flex min-w-0 items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-body font-semibold text-ink">{entry.staff.name}</p>
+                        <p className="mt-0.5 text-label text-ink-2">{entry.period}</p>
+                      </div>
+                      <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-caption font-semibold ${isPaid ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`}>
+                        {isPaid ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                        {entry.status}
+                      </span>
+                    </div>
+                    <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-body">
+                      <div className="flex gap-1.5"><dt className="text-ink-2">Gross</dt><dd className="font-semibold text-ink tabular-nums">{kes(entry.grossAmount)}</dd></div>
+                      <div className="flex gap-1.5"><dt className="text-ink-2">Deductions</dt><dd className="font-semibold text-danger tabular-nums">{kes(entry.deductions)}</dd></div>
+                      <div className="flex gap-1.5"><dt className="text-ink-2">Net</dt><dd className="font-semibold text-success tabular-nums">{kes(entry.netAmount)}</dd></div>
+                    </dl>
+                    {entry.reference && <p className="mt-1 truncate text-label text-ink-3">Ref: {entry.reference}</p>}
+                    {canApprove && entry.status === "PENDING" && (
+                      <div className="mt-3">
+                        <button
+                          disabled={busy}
+                          onClick={() => void markPaid(entry)}
+                          className="btn btn-secondary btn-sm"
+                        >
+                          <Check size={14} />
+                          Disburse &amp; mark paid
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+            <div className="hidden overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 lg:block">
               <table className="w-full min-w-[700px] text-left text-xs">
                 <thead>
                   <tr className="bg-slate-50/80 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-900/80 dark:text-slate-400">
@@ -406,6 +444,7 @@ export default function PayrollSheet({
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
       </div>
