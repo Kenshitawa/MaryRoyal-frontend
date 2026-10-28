@@ -25,6 +25,44 @@ const rolePages: Record<string, string[]> = {
   welfare_chair: ["/dashboard", "/welfare", "/profile", "/privacy", "/change-password"],
   non_teaching_staff: ["/dashboard", "/welfare", "/profile", "/privacy", "/change-password"],
 };
+const samplePath = path.resolve(__dirname, ".auth/sample-records.json");
+const sample: Record<string, string | null> = fs.existsSync(samplePath) ? JSON.parse(fs.readFileSync(samplePath, "utf8")) : {};
+const detailRoutes = (role: string, routes: Array<[string | null, string]>) => {
+  for (const [id, template] of routes) {
+    if (!id) continue;
+    const route = template.replace("{id}", id);
+    if (!rolePages[role].includes(route)) rolePages[role].push(route);
+  }
+};
+detailRoutes("director", [
+  [sample.learnerId, "/learners/{id}"],
+  [sample.learnerId, "/learners/{id}/edit"],
+  [sample.staffId, "/staff/{id}"],
+  [sample.reviewDraftId, "/admissions/{id}"],
+  [sample.paymentId, "/receipts/{id}"],
+]);
+detailRoutes("head_teacher", [
+  [sample.learnerId, "/learners/{id}"],
+  [sample.learnerId, "/learners/{id}/edit"],
+  [sample.staffId, "/staff/{id}"],
+  [sample.reviewDraftId, "/admissions/{id}"],
+  [sample.paymentId, "/receipts/{id}"],
+]);
+detailRoutes("deputy", [[sample.learnerId, "/learners/{id}"]]);
+detailRoutes("secretary", [
+  [sample.learnerId, "/learners/{id}"],
+  [sample.secretaryDraftId, "/admissions/{id}"],
+]);
+detailRoutes("accountant", [
+  [sample.learnerId, "/learners/{id}"],
+  [sample.paymentId, "/receipts/{id}"],
+]);
+detailRoutes("teacher", [[sample.teacherLearnerId, "/learners/{id}"]]);
+detailRoutes("parent", [
+  [sample.learnerId, "/learners/{id}"],
+  [sample.paymentId, "/receipts/{id}"],
+]);
+detailRoutes("learner", [[sample.selfLearnerId, "/learners/{id}"]]);
 const allRoutes = [...new Set(Object.values(rolePages).flat())].sort();
 const collectionPath = path.resolve(process.cwd(), "test-results/mobile-failure-collection.jsonl");
 

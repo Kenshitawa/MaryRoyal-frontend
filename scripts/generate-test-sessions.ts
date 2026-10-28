@@ -74,6 +74,49 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
     fs.writeFileSync(filePath, JSON.stringify(storageState, null, 2));
   }
 
+  // Detail pages need real record ids so the mobile audit can cover every page.
+  const teacher = await db.user.findUnique({ where: { email: "teacher@maryroyal.ac.ke" }, select: { id: true } });
+  const parent = await db.user.findUnique({ where: { email: "parent@maryroyal.ac.ke" }, select: { id: true } });
+  const secretary = await db.user.findUnique({ where: { email: "secretary@maryroyal.ac.ke" }, select: { id: true } });
+  const learnerUser = await db.user.findUnique({ where: { email: "learner@maryroyal.ac.ke" }, select: { id: true } });
+  const selfLink = learnerUser
+    ? await db.guardianLink.findFirst({ where: { userId: learnerUser.id, relation: "Learner" }, orderBy: { createdAt: "asc" } })
+    : null;
+  const parentLink = parent
+    ? await db.guardianLink.findFirst({ where: { userId: parent.id }, include: { learner: true }, orderBy: { createdAt: "asc" } })
+    : null;
+  const learner = parentLink?.learner ?? (await db.learner.findFirst({ orderBy: { admissionNo: "asc" } }));
+  const teacherGrades = teacher
+    ? (await db.teacherAssignment.findMany({ where: { teacherId: teacher.id }, select: { grade: true } })).map((row) => row.grade)
+    : [];
+  const teacherLearner = teacherGrades.length
+    ? await db.learner.findFirst({ where: { grade: { in: teacherGrades } }, orderBy: { admissionNo: "asc" } })
+    : null;
+  const payment = learner
+    ? await db.feePayment.findFirst({ where: { invoice: { learnerId: learner.id } }, orderBy: { createdAt: "asc" } })
+    : null;
+  const secretaryDraft = secretary
+    ? await db.admissionDraft.findFirst({ where: { createdById: secretary.id }, orderBy: { createdAt: "asc" } })
+    : null;
+  const reviewDraft = await db.admissionDraft.findFirst({ where: { status: { not: "DRAFT" } }, orderBy: { createdAt: "asc" } });
+
+  fs.writeFileSync(
+    path.join(outDir, "sample-records.json"),
+    JSON.stringify(
+      {
+        learnerId: learner?.id ?? null,
+        teacherLearnerId: teacherLearner?.id ?? null,
+        selfLearnerId: selfLink?.learnerId ?? null,
+        staffId: teacher?.id ?? null,
+        secretaryDraftId: secretaryDraft?.id ?? null,
+        reviewDraftId: reviewDraft?.id ?? null,
+        paymentId: payment?.id ?? null,
+      },
+      null,
+      2,
+    ),
+  );
+
   console.log(`Generated Playwright storage states for all ${roles.length} roles in the isolated test environment.`);
 }
 

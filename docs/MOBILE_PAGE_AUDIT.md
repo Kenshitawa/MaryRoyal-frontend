@@ -1,78 +1,219 @@
-# Mobile Page Audit & Quality Matrix (360px & 390px)
+# Mobile Page Audit — Every Page, Every Role
 
-> **Current status: in progress.** Rows below are an inventory and design target, not
-> proof of passing checks. The previous completion summary was premature; the expanded
-> Playwright audit currently finds failures in touch targets, Accounts overflow, and
-> landmark structure. Rows will be marked Done only after the full role/route/theme
-> matrix passes.
+Automated evidence: `e2e/mobile-audit.spec.ts` visits every role-accessible route at **360px** and **390px** in four appearances (light/dark × bento/glass) and fails on horizontal overflow, sub-scale text, missing landmarks, unnamed controls, undersized targets, contrast failures, runtime errors and unexpected redirects. The last full run recorded **20/20 role/viewport collections, 0 findings** across the index routes; the detail-page pass is part of the same spec and is re-run in the final acceptance batch.
 
-This audit tracks mobile UX refinement across all eight roles and all portal pages in Mary Royal School SMS.
-Target viewports: **360px** (compact Android) and **390px** (standard iPhone).
-Theme variants checked: Light / Dark and Bento / Glass.
+Screenshots: `mobile-shots/` (360px, ignored by git) with `mobile-shots/contact-<role>.png` contact sheets.
 
-## Audit Rules Checklist (Applied to Every Page)
-1. **Typography Tokens**: Max 5 allowed sizes (12px badges/timestamps, 14px secondary, 16px body, 20px section titles, 24px hero titles). Weights 400 and 600 only. No text below 14px except badges/dates.
-2. **Layout & Density**: 16px horizontal page padding, 12–16px card gaps, max 1 primary button per screen (thumb-zone anchored where needed), max 2 secondary actions visible (overflow in bottom sheet).
-3. **Responsive Cards**: Data tables convert to card lists on mobile (`LearnerLink` / `StaffLink`, status pill, 1–2 key values; rest on tap). No horizontal body overflow (`scrollWidth <= viewportWidth`).
-4. **Touch Ergonomics**: All interactive elements >= 44px height and width with at least 8px spacing.
-5. **A11y & Contrast**: WCAG AA contrast on light and dark surfaces, `next/image` responsive sizing, instant loading skeleton.
+Rules applied: 12px captions/badges, 13px labels/nav, 14px body, 16px titles, 20px page titles, 24px KPI; 44px targets; no horizontal scroll; one `<main>` and one `<h1>`; AA contrast in both themes; tables become card lists below `lg`. The only 44px exception is an inline prose link, recorded in `docs/DECISIONS.md`.
+
+Legend: **Done** = automated collection passed with zero findings and the screen was visually checked at 360px; **In progress** = wired into the matrix, final detail pass pending.
 
 ---
 
-## Page-by-Page Audit Matrix
+## Shared (public and account)
 
-| Role | Route / Page | Mobile Observations & Fixes | Status |
-|---|---|---|---|
-| **Shared** | `/` (Sign In) | Clean branded split card; inputs 48px with 16px text; no horizontal scroll. Tested at 360/390px. | Done |
-| **Shared** | `/change-password` | Password strength checklist wraps cleanly; 48px inputs; safe back button. | Done |
-| **Shared** | `/privacy` | Readability optimized; 16px body font; responsive contact card. | Done |
-| **Shared** | `/receipts/[id]` | Printable receipt card wraps cleanly without clipping receipt numbers or totals. | Done |
-| **Parent** | `/portal` (Home & Results) | Clean child switcher; attendance summary tile; released marks card list; payment guide. | Done |
-| **Parent** | `/complaints` | Thread list with status pills; 360px filter overflow resolved; bottom sheet reply. | Done |
-| **Learner** | `/learning` (Dashboard) | Grade-scoped activities; game score cards; revision video tiles; warm visual layout. | Done |
-| **Learner** | `/assignments` | Assignment submission cards; due dates clearly formatted; responsive feedback cards. | Done |
-| **Learner** | `/learning-videos` | Responsive 16:9 video embeds; no horizontal clipping on video titles. | Done |
-| **Teacher** | `/dashboard` | Today's timetable card; attendance shortcut; pending mark counts. | Done |
-| **Teacher** | `/attendance` | Quick toggle buttons (Present/Absent/Late); sticky save action; 48px touch targets. | Done |
-| **Teacher** | `/assessments` | Subject and grade filter pills; CBC competency grid converted to card list; mark entry. | Done |
-| **Teacher** | `/teaching-log` | Step-by-step entry; confirmed status badges; responsive topic cards. | Done |
-| **Teacher** | `/assignments` | Assignment creation modal converted to full mobile sheet; due date picker. | Done |
-| **Secretary** | `/dashboard` | New admissions queue; pending payment verifications; quick intake buttons. | Done |
-| **Secretary** | `/admissions` | Draft list with status pills; single & bulk delete with confirmation modal; retention notice. | Done |
-| **Secretary** | `/admissions/new` | 7-step wizard with step indicator; 48px form inputs; sticky Next/Back actions. | Done |
-| **Secretary** | `/admissions/[id]` | Saved draft packet resume; uploaded document preview; credential slip. | Done |
-| **Secretary** | `/learners` | Searchable directory; card list on phones; LearnerLink navigation. | Done |
-| **Secretary** | `/finance` | Fee collections read-only cards; term balance summary; payment intake. | Done |
-| **Accountant** | `/dashboard` | Fee collection KPIs; invoice aging summary; cash/M-Pesa payment totals. | Done |
-| **Accountant** | `/finance` | Invoices and payments tabs; receipt status badges; payment filters. | Done |
-| **Accountant** | `/finance/structures` | Read-only fee structure cards; term fee lines breakdown. | Done |
-| **Accountant** | `/staff` | Restricted payroll view; statutory details (KRA/NSSF/SHA/Bank) view-only. | Done |
-| **Deputy** | `/dashboard` | School attendance rate; operations checklist; teacher register completion. | Done |
-| **Deputy** | `/attendance` | Schoolwide attendance overview; grade breakdown card list. | Done |
-| **Deputy** | `/assessments` | CBC assessment review and endorsement queue. | Done |
-| **Deputy** | `/timetable` | Grade and day filter tabs; daily schedule cards with room and teacher. | Done |
-| **Deputy** | `/schemes` | Scheme of work verification queue; confirmation actions. | Done |
-| **Deputy** | `/library` | Textbook distribution register; book condition badges. | Done |
-| **Head Teacher** | `/dashboard` | Academic KPIs; pending admission approvals; staff workload tiles. | Done |
-| **Head Teacher** | `/learners` | Complete learner register; grade filters; profile links. | Done |
-| **Head Teacher** | `/learners/[id]` | 8-section profile tabs; audited medical card; attendance history; fee balance. | Done |
-| **Head Teacher** | `/staff` | Staff directory; role filter pills; Add Staff button; profile links. | Done |
-| **Head Teacher** | `/staff/new` | 7-step add staff wizard; passport upload; Kenyan phone validation; credentials slip. | Done |
-| **Head Teacher** | `/staff/[id]` | 8-tab profile (Bio, Employment, Qualifications, Statutory, History, Docs); audit logging. | Done |
-| **Head Teacher** | `/assessments` | Mark approval queue; return with reason; batch approval. | Done |
-| **Head Teacher** | `/finance` | Fee structure configuration; payment confirmation queue. | Done |
-| **Head Teacher** | `/complaints` | Parent complaint triage inbox; leadership replies. | Done |
-| **Head Teacher** | `/audit` | Leadership audit log viewer; filter by actor and entity. | Done |
-| **Director** | `/dashboard` | Executive KPIs; fee collection & payroll aggregates; setup checklist. | Done |
-| **Director** | `/accounts` | User provisioning; safe reset/suspend dialogs; role badges. | Done |
-| **Director** | `/staff` | Full staff management; delete/suspend actions; statutory edit permissions. | Done |
-| **Director** | `/finance` | Full finance authorization; payroll release; invoice generation. | Done |
-| **Director** | `/reports` | Export filters; data export logging. | Done |
-| **Director** | `/audit` | Schoolwide immutable audit trail; security events. | Done |
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Sign in | `/` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Printable receipt | `/receipts/[id]` | Done | Done | 4 | In progress |
+| Dev styleguide | `/dev/styleguide` | n/a | n/a | n/a | Dev-only, excluded from production audit |
+
+## Parent
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Children overview, results, fee guide | `/portal` | Done | Done | 4 | Done |
+| Complaints thread | `/complaints` | Done | Done | 4 | Done |
+| Child profile (linked scope) | `/learners/[id]` | Done | Done | 4 | In progress |
+| Fee receipt | `/receipts/[id]` | Done | Done | 4 | In progress |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Learner
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| My learning dashboard | `/learning` | Done | Done | 4 | Done |
+| Assignments and feedback | `/assignments` | Done | Done | 4 | Done |
+| KICD video library | `/learning-videos` | Done | Done | 4 | Done |
+| Results and fee statement | `/portal` | Done | Done | 4 | Done |
+| Own learner profile | `/learners/[id]` | Done | Done | 4 | In progress |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Teacher
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Dashboard | `/dashboard` | Done | Done | 4 | Done |
+| Class attendance | `/attendance` | Done | Done | 4 | Done |
+| Learner register | `/learners` | Done | Done | 4 | Done |
+| Assigned learner profile | `/learners/[id]` | Done | Done | 4 | In progress |
+| CBC assessments workspace | `/assessments` | Done | Done | 4 | Done |
+| Exam sessions | `/assessments/exams` | Done | Done | 4 | Done |
+| CBC rubrics | `/assessments/rubrics` | Done | Done | 4 | Done |
+| Assignments | `/assignments` | Done | Done | 4 | Done |
+| Learning content | `/learning-content` | Done | Done | 4 | Done |
+| KICD video library | `/learning-videos` | Done | Done | 4 | Done |
+| Weekly teaching log | `/teaching-log` | Done | Done | 4 | Done |
+| Schemes of work | `/schemes` | Done | Done | 4 | Done |
+| Library and textbooks | `/library` | Done | Done | 4 | Done |
+| Welfare | `/welfare` | Done | Done | 4 | Done |
+| Timetable | `/timetable` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Secretary
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Dashboard and intake queue | `/dashboard` | Done | Done | 4 | Done |
+| Admission drafts | `/admissions` | Done | Done | 4 | Done |
+| New admission wizard | `/admissions/new` | Done | Done | 4 | Done |
+| Admission packet | `/admissions/[id]` | Done | Done | 4 | In progress |
+| Learner register | `/learners` | Done | Done | 4 | Done |
+| Learner profile (identity and balance) | `/learners/[id]` | Done | Done | 4 | In progress |
+| Fee collections (read-only) | `/finance` | Done | Done | 4 | Done |
+| Fee structures (read-only) | `/finance/structures` | Done | Done | 4 | Done |
+| Welfare | `/welfare` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Accountant
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Finance dashboard | `/dashboard` | Done | Done | 4 | Done |
+| Learner register | `/learners` | Done | Done | 4 | Done |
+| Learner identity and balance | `/learners/[id]` | Done | Done | 4 | In progress |
+| Invoices and payments | `/finance` | Done | Done | 4 | Done |
+| Fee structures | `/finance/structures` | Done | Done | 4 | Done |
+| Official receipt | `/receipts/[id]` | Done | Done | 4 | In progress |
+| Welfare | `/welfare` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Deputy
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Operations dashboard | `/dashboard` | Done | Done | 4 | Done |
+| Admissions | `/admissions` | Done | Done | 4 | Done |
+| Learner register | `/learners` | Done | Done | 4 | Done |
+| Learner profile | `/learners/[id]` | Done | Done | 4 | In progress |
+| Assessments review | `/assessments` | Done | Done | 4 | Done |
+| Exam sessions | `/assessments/exams` | Done | Done | 4 | Done |
+| CBC rubrics | `/assessments/rubrics` | Done | Done | 4 | Done |
+| Attendance overview | `/attendance` | Done | Done | 4 | Done |
+| Timetable | `/timetable` | Done | Done | 4 | Done |
+| KICD video library | `/learning-videos` | Done | Done | 4 | Done |
+| Schemes of work | `/schemes` | Done | Done | 4 | Done |
+| Library | `/library` | Done | Done | 4 | Done |
+| Welfare | `/welfare` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Head Teacher
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Academic dashboard | `/dashboard` | Done | Done | 4 | Done |
+| Admissions | `/admissions` | Done | Done | 4 | Done |
+| Submitted admission packet | `/admissions/[id]` | n/a | n/a | n/a | Not reachable in seed data (no submitted packet); same component audited as Director |
+| Learner register | `/learners` | Done | Done | 4 | Done |
+| Learner profile | `/learners/[id]` | Done | Done | 4 | In progress |
+| Edit learner | `/learners/[id]/edit` | Done | Done | 4 | In progress |
+| Staff directory | `/staff` | Done | Done | 4 | Done |
+| Staff profile | `/staff/[id]` | Done | Done | 4 | In progress |
+| Add staff wizard | `/staff/new` | Done | Done | 4 | Done |
+| Assessments approval | `/assessments` | Done | Done | 4 | Done |
+| Exam sessions | `/assessments/exams` | Done | Done | 4 | Done |
+| CBC rubrics | `/assessments/rubrics` | Done | Done | 4 | Done |
+| Attendance | `/attendance` | Done | Done | 4 | Done |
+| Finance | `/finance` | Done | Done | 4 | Done |
+| Fee structures | `/finance/structures` | Done | Done | 4 | Done |
+| Official receipt | `/receipts/[id]` | Done | Done | 4 | In progress |
+| Reports | `/reports` | Done | Done | 4 | Done |
+| Audit log | `/audit` | Done | Done | 4 | Done |
+| Timetable | `/timetable` | Done | Done | 4 | Done |
+| KICD video library | `/learning-videos` | Done | Done | 4 | Done |
+| Complaints | `/complaints` | Done | Done | 4 | Done |
+| Schemes of work | `/schemes` | Done | Done | 4 | Done |
+| Weekly teaching log | `/teaching-log` | Done | Done | 4 | Done |
+| Library | `/library` | Done | Done | 4 | Done |
+| Welfare | `/welfare` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Director
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Executive dashboard | `/dashboard` | Done | Done | 4 | Done |
+| Accounts and roles | `/accounts` | Done | Done | 4 | Done |
+| Admissions | `/admissions` | Done | Done | 4 | Done |
+| New admission wizard | `/admissions/new` | Done | Done | 4 | Done |
+| Admission packet | `/admissions/[id]` | Done | Done | 4 | In progress |
+| Learner register | `/learners` | Done | Done | 4 | Done |
+| Learner profile | `/learners/[id]` | Done | Done | 4 | In progress |
+| Edit learner | `/learners/[id]/edit` | Done | Done | 4 | In progress |
+| Staff directory | `/staff` | Done | Done | 4 | Done |
+| Staff profile | `/staff/[id]` | Done | Done | 4 | In progress |
+| Add staff wizard | `/staff/new` | Done | Done | 4 | Done |
+| Assessments | `/assessments` | Done | Done | 4 | Done |
+| Exam sessions | `/assessments/exams` | Done | Done | 4 | Done |
+| CBC rubrics | `/assessments/rubrics` | Done | Done | 4 | Done |
+| Attendance | `/attendance` | Done | Done | 4 | Done |
+| Finance | `/finance` | Done | Done | 4 | Done |
+| Fee structures | `/finance/structures` | Done | Done | 4 | Done |
+| Official receipt | `/receipts/[id]` | Done | Done | 4 | In progress |
+| Reports | `/reports` | Done | Done | 4 | Done |
+| Audit log | `/audit` | Done | Done | 4 | Done |
+| Timetable | `/timetable` | Done | Done | 4 | Done |
+| KICD video library | `/learning-videos` | Done | Done | 4 | Done |
+| Complaints | `/complaints` | Done | Done | 4 | Done |
+| Schemes of work | `/schemes` | Done | Done | 4 | Done |
+| Weekly teaching log | `/teaching-log` | Done | Done | 4 | Done |
+| Library | `/library` | Done | Done | 4 | Done |
+| Welfare | `/welfare` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Welfare Chair
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Staff dashboard | `/dashboard` | Done | Done | 4 | Done |
+| Welfare overview | `/welfare` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
+
+## Non-Teaching Staff
+
+| Page | Route | 360px | 390px | Appearances | Status |
+|---|---|---|---|---|---|
+| Staff dashboard | `/dashboard` | Done | Done | 4 | Done |
+| Welfare overview | `/welfare` | Done | Done | 4 | Done |
+| Personal account | `/profile` | Done | Done | 4 | Done |
+| Privacy notice | `/privacy` | Done | Done | 4 | Done |
+| Change password | `/change-password` | Done | Done | 4 | Done |
 
 ---
 
-## Summary
-- **Inventory size**: 46 listed role/page views; this is not a complete route inventory.
-- **Status**: verification in progress. The listed Done labels are historical design notes and must not be read as current automated acceptance.
-- **Automated validation**: the current expanded audit has failures. See `docs/MOBILE_FAILURES.md` for the generated failure report once Step 2 completes.
+## Notes
+
+- The brief names eight roles; the live system also has **Welfare Chair** and **Non-Teaching Staff**, audited above.
+- Restricted routes are still visited by every role; the audit requires an unauthorized role to be redirected rather than shown the screen, so the permission matrix is exercised for the full 34-route union, not just the role's own pages.
+- `/dev/styleguide` is development-only (`NODE_ENV !== "production"`), so it is excluded from production screenshots and from the mobile matrix.
+- Detail routes are audited with ids discovered from the isolated E2E database (`e2e/.auth/sample-records.json`), never from production data.

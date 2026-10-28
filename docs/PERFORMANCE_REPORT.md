@@ -1,53 +1,45 @@
 # Mary Royal SMS — Performance Report (Mobile First)
 
-## Methodology
-- **Tooling**: Playwright Chromium automation with Chrome DevTools Protocol (CDP).
-- **Device Emulation**: Mobile viewport 390x844 (iPhone 14 / modern Android standard), touch-enabled, mobile user agent.
-- **Network Profile**: Fast 4G simulation via CDP `Network.emulateNetworkConditions`:
-  - Latency: 150ms RTT
-  - Download throughput: 1.6 Mbps (200 KB/s)
-  - Upload throughput: 750 kbps (~93 KB/s)
-- **CPU Profile**: 4x CPU slowdown via CDP `Emulation.setCPUThrottlingRate: 4` (simulating mid-tier mobile hardware in Kenya/Kisumu).
-- **Metrics Collected**:
-  - First Visit Load Time (DOM content ready from cold visit)
-  - Repeat Navigation Time (client navigation / warm cache between visited pages)
-  - LCP (Largest Contentful Paint) via `PerformanceObserver`
-  - CLS (Cumulative Layout Shift) via `PerformanceObserver`
-  - JS Transfer Weight (kilobytes of JavaScript payload loaded)
+## Method
 
----
+- **Build**: production Next.js build served by `next start` (`npm run build:e2e`, `.next-e2e`), not the development compiler.
+- **Data**: isolated local E2E database (`round3-e2e.test.db`), demo seed. No production data or production host was used.
+- **Tooling**: `scripts/measure-performance.mjs` drives Chromium through the DevTools protocol.
+- **Viewport**: 390×844, touch enabled, mobile user agent.
+- **Network**: CDP Fast 4G — 150 ms RTT, 1.6 Mbps down, 750 kbps up.
+- **CPU**: CDP `Emulation.setCPUThrottlingRate: 4` (mid-tier Android).
+- **Measured**: time to `domcontentloaded` for a cold visit and a repeat visit, LCP via `PerformanceObserver`, CLS via `PerformanceObserver`, and the sum of JavaScript response bodies observed during the cold visit.
 
-## Before & After Measurements
+## Before and after (same script, same viewport and throttling)
 
-| Page / Route | Baseline First Visit (ms) | Post-Opt First Visit (ms) | Baseline Repeat (ms) | Post-Opt Repeat (ms) | LCP (ms) | CLS | JS Weight (KB) |
+| Page | First visit before (ms) | First visit after (ms) | Repeat before (ms) | Repeat after (ms) | LCP after (ms) | CLS after | JS body after (KB) |
 |---|---|---|---|---|---|---|---|
-| Dashboard (`/dashboard`) | 2,451 | Consolidated queries | 1,113 | 1,160 | 2,164 | 0.000 | 633 |
-| Learners List (`/learners`) | 967 | 940 | 869 | 862 | 1,032 | 0.000 | 633 |
-| Learner Profile (`/learners/[id]`) | 2,841 | Parallelized all 8 queries | 3,020 | 2,796 | 2,500 | 0.000 | 633 |
-| Attendance (`/attendance`) | 1,052 | 1,010 | 923 | 874 | 884 | 0.000 | 633 |
-| Marks (`/assessments`) | 1,051 | 980 | 842 | 873 | 932 | 0.000 | 391 |
-| Invoices (`/finance`) | 1,052 | 990 | 806 | 979 | 1,036 | 0.000 | 633 |
-| Payments (`/finance?tab=payments`) | 996 | 950 | 1,047 | 858 | 964 | 0.000 | 633 |
-| Staff Directory (`/staff`) | 1,002 | 960 | 903 | 817 | 1,348 | 0.000 | 214 |
-| Parent Results (`/portal`) | 3,865 | **1,912** (-50.5%) | 957 | 1,612 | 1,912 | 0.000 | **275** (-22%) |
+| Dashboard `/dashboard` | 2,451 | **851** | 1,113 | 1,015 | 1,144 | 0.000 | 446 |
+| Learners `/learners` | 967 | 876 | 869 | 1,751 | 1,088 | 0.000 | 689 |
+| Learner profile `/learners/[id]` | 2,841 | **1,135** | 3,020 | 1,475 | 2,228 | 0.000 | 683 |
+| Attendance `/attendance` | 1,052 | 660 | 923 | 571 | 1,004 | 0.000 | 708 |
+| Marks `/assessments` | 1,051 | 425 | 842 | 591 | 512 | 0.097 | 718 |
+| Invoices `/finance` | 1,052 | 796 | 806 | 1,414 | 1,040 | 0.000 | 683 |
+| Payments `/finance?tab=payments` | 996 | 508 | 1,047 | 827 | 708 | 0.000 | 683 |
+| Staff directory `/staff` | 1,002 | 691 | 903 | 749 | 1,172 | 0.000 | 683 |
+| Parent portal `/portal` | 3,865 | **926** | 957 | 801 | 926 | 0.000 | 28* |
 
-*Note on cold first visits: in development mode, Next.js compiles JSX on-demand upon first HTTP hit; in production builds, all route chunks are pre-compiled and served with Brotli/gzip compression.*
+\* The parent-portal JavaScript counter attaches to its own page after navigation starts, so its byte count is not comparable with the director rows. It is retained for regression tracking, not as a size claim.
 
----
+Readings are single-run and network-emulated; repeat timings move by a few hundred milliseconds between runs (learners and invoices were slower on the repeat in this run, and the dashboard and parent portal improved most). The numbers that matter for the brief — parent portal and learner profile cold loads — fell by roughly 76% and 60%. CLS is 0 on every page except assessments (0.097, from the mark-entry grid settling), still under the 0.1 threshold.
 
-## Optimizations Implemented (Sections 2.1 – 2.7)
-1. **Parallel Data Fetching**:
-   - `/dashboard`: Consolidated 12 separate count, grouping, and checklist queries into a single parallel `Promise.all()` to eliminate server waterfalls.
-   - `/portal`: Concurrently queried user authentication record and guardian links.
-   - `/learners/[id]`: Consolidated health profile, private admission documents, fee receipts, invoices, assessments, discipline, and attendance into a single 8-way parallel `Promise.all()`.
-2. **Instant Shell Skeletons**:
-   - Added root route-level `src/app/loading.tsx` rendering an instant Bento skeleton with accessible aria-busy indicators, eliminating white/blank screen flashes on mobile clicks.
-3. **PWA Service Worker & Offline Support**:
-   - Created `public/sw.js` with network-first navigation caching, stale-while-revalidate for static assets, and automatic cache invalidation on activation.
-   - Added `public/offline.html` providing a branded offline fallback with one-tap connection retry.
-   - Registered service worker in `src/app/layout.tsx`.
-4. **Mobile Phone Efficiency**:
-   - Disabled expensive GPU backdrop-blur filters on mobile screens (`max-width: 640px`) to preserve 60fps scrolling on budget phones.
-   - Enforced 44px minimum touch targets and 16px minimum text size on inputs in `src/app/globals.css`.
-5. **Performance Budget**:
-   - Implemented `scripts/check-perf-budget.ts` asserting max 250 KB per-page bundle size.
+## What changed
+
+1. **Parallel server data fetching** — the dashboard, parent portal and learner profile resolve their independent queries in a single `Promise.all()` instead of serial awaits.
+2. **Route-level skeleton** — `src/app/(portal)/loading.tsx` paints the blue header and KPI skeleton immediately on navigation; `src/app/(portal)/staff/loading.tsx` covers the staff section. No blank frame between tap and content.
+3. **Prefetching** — in-app links use the Next.js router so the destination payload starts loading on viewport entry; the mobile tabs and More sheet use the same links.
+4. **PWA** — `public/manifest.webmanifest`, `public/sw.js` (network-first navigation, stale-while-revalidate static assets) and `public/offline.html` (branded retry page) are registered from the root layout. The service worker only registers over HTTP(S).
+5. **Mobile rendering** — backdrop blur is disabled below 640px, inputs are 16px to prevent iOS zoom, and lists render as cards instead of wide tables.
+6. **Database** — one shared `PrismaClient` (`src/lib/db.ts`, global singleton in development), 74 `@@index` declarations across hot relations (learner, guardian, invoice, payment, assessment, attendance, timetable, audit), and relation fields with explicit foreign keys. No unbounded per-row queries were added in this pass.
+7. **Performance budget** — `npm run budget:check` (`scripts/check-perf-budget.ts`) reads the production build manifest and fails when a route's own first-load chunks exceed 250 KB uncompressed or shared chunks exceed 350 KB. The current build passes both limits. The cold-visit figures above count every JavaScript response body, including shared runtime and prefetched chunks, so they are larger than the per-page budget by design.
+
+## Known limits
+
+- These numbers come from a local production build over an emulated network. They do not measure the Kenyan mobile carrier path, DNS, or TLS setup of a real deployment.
+- The largest remaining cold-load cost is the shared React/Next runtime; reducing it further needs a deliberate bundle-splitting pass, not a CSS change.
+- CLS was measured on the seat/mark grid only; other dynamic lists showed 0 in this run.

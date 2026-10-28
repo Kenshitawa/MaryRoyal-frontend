@@ -20,6 +20,34 @@ const rolePages = {
   non_teaching_staff: ["/dashboard", "/welfare", "/profile"],
 };
 
+const samplePath = path.resolve("e2e/.auth/sample-records.json");
+const sample = fs.existsSync(samplePath) ? JSON.parse(fs.readFileSync(samplePath, "utf8")) : {};
+const detailPages = {
+  director: [
+    sample.learnerId && `/learners/${sample.learnerId}`,
+    sample.learnerId && `/learners/${sample.learnerId}/edit`,
+    sample.staffId && `/staff/${sample.staffId}`,
+    sample.reviewDraftId && `/admissions/${sample.reviewDraftId}`,
+    sample.paymentId && `/receipts/${sample.paymentId}`,
+  ],
+  head_teacher: [
+    sample.learnerId && `/learners/${sample.learnerId}`,
+    sample.learnerId && `/learners/${sample.learnerId}/edit`,
+    sample.staffId && `/staff/${sample.staffId}`,
+    sample.reviewDraftId && `/admissions/${sample.reviewDraftId}`,
+    sample.paymentId && `/receipts/${sample.paymentId}`,
+  ],
+  deputy: [sample.learnerId && `/learners/${sample.learnerId}`],
+  secretary: [sample.learnerId && `/learners/${sample.learnerId}`, sample.secretaryDraftId && `/admissions/${sample.secretaryDraftId}`],
+  accountant: [sample.learnerId && `/learners/${sample.learnerId}`, sample.paymentId && `/receipts/${sample.paymentId}`],
+  teacher: [sample.teacherLearnerId && `/learners/${sample.teacherLearnerId}`],
+  parent: [sample.learnerId && `/learners/${sample.learnerId}`, sample.paymentId && `/receipts/${sample.paymentId}`],
+  learner: [sample.selfLearnerId && `/learners/${sample.selfLearnerId}`],
+};
+for (const [role, routes] of Object.entries(detailPages)) {
+  for (const route of routes) if (route && !rolePages[role].includes(route)) rolePages[role].push(route);
+}
+
 fs.mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch({
   executablePath: fs.existsSync("C:/Program Files/Google/Chrome/Application/chrome.exe") ? "C:/Program Files/Google/Chrome/Application/chrome.exe" : undefined,

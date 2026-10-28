@@ -492,7 +492,8 @@ html[data-style="glass"] .card {
 }
 
 .page-head select {
-  color: var(--brand-ink);
+  /* The control keeps a white field in every theme, so the text must stay navy. */
+  color: #1e3a8a;
   background-color: #ffffff;
   border-color: #ffffff;
 }
