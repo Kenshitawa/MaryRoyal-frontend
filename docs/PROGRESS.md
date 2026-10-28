@@ -375,3 +375,7 @@ Total output lines: 287
 ## Mobile UI push preparation -- 2026-10-28
 - Built: Added shared mobile touch-target styling and clearer small-screen typography, corrected page landmarks and Accounts wrapping, improved dark-mode contrast, connected admission dirty-state to the leave guard, and restricted payment recording/receipt viewing to authorized finance roles. Kept the user's feature-branch scope; no production deployment was run.
 - Tested: `npm run lint` passed with 0 warnings/errors; `npm run typecheck` passed; `npm test` passed (12 files, 60/60). E2E production build completed, but the Director E2E run was stopped at the user's request and had failures before stopping; full E2E and mobile audit are not verified. Do not treat this branch as production-cleared.
+
+## Role and production-build verification -- 2026-10-28
+- Built: Stabilized role-scope E2E fixtures with a unique unassigned grade, preserved the export fallback when seeded Grade 9 is absent, and asserted that unrelated learner pages contain no profile or health data. Receipt access is checked after payment confirmation for absence of receipt or learner details.
+- Tested: `npm run lint` passed with 0 warnings/errors; `npm run typecheck` passed; `npm test` passed (12 files, 60/60); `npm run build:production` passed; isolated `e2e/director.spec.ts` passed (10/10). The full mobile audit remains waived per owner instruction. Production release remains blocked until Vercel preview, hosting environment, database backup/migration and production health gates are verified.
