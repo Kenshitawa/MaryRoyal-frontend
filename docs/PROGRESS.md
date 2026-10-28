@@ -403,3 +403,20 @@ Total output lines: 287
 ## Detail-page mobile acceptance — 2026-10-28
 - Built: learner invoice/results/attendance card lists, wrapping section/staff tabs, associated learner-edit labels and a labelled royal-blue receipt back bar; teacher self-profile is an authorized audit target, not a permission exception.
 - Tested: isolated mobile audit passed 20/20 collections with zero findings (360/390px × four appearances); typecheck passed. Admission packets were absent from that seed, so synthetic local-only draft/submitted fixtures and all staff self-profile targets are now added for the final expanded run.
+
+## Learner record navigation and safe local cleanup — 2026-10-28
+- Built: native learner-record links after disabling Next.js prefetch failed to fix the click stall; six development-browser cases passed for Director/Head Teacher/Secretary at 390/1280px, including empty search and repeated navigation with no page errors. Rebuilt full E2E is running.
+- Local-only: backed up then removed the original demo school records; retained Director and non-demo Parent credentials, school/CBC defaults and uploaded files. Verified zero learners/invoices/payments/assessments/drafts; production untouched.
+
+## Release-gate reconciliation — 2026-10-28
+- Built: restored shared safe Back/breadcrumb/unsaved-form integration, Director-only exports, required nav labels and public-static-only service-worker caching. Strict zero-warning lint, typecheck, 65 unit tests and schema parity passed before the final native-link change.
+- Checked: dependency audit reported zero vulnerabilities and the limited secret-history scanner reported zero category matches. Release/checklist/operator docs now state unfinished privacy/workflow/recovery gates; shared bundle last measured 435.4 KiB versus 350 KiB, and actual Node 26 is outside declared 20.9–22 support. No production release.
+
+## Matching profile/privacy acceptance — 2026-10-28
+- Built: basic identity before access checks, section reads only after scope authorization, no Accountant biography/guardian fetch/output, and no unused admission payload read. Direct Parent/Learner Back now stays in permitted role homes; confirmed dirty-form document navigation avoids duplicate unload prompts.
+- Tested: latest strict lint/typecheck/65 units/schema parity pass. First rebuilt full run: 31 passed, five failed; 20/20 mobile collections had only two incorrectly expected Head Teacher report-access findings. Corrected authorized inventory/stale UI selectors and shared-fixture concurrency without widening access or weakening checks; rebuilt serial 44-test suite is running.
+
+## Final serial E2E, mobile evidence and gate closure — 2026-10-28
+- Tested: rebuilt serial suite green — 44/44 passed (19.3m); mobile audit 0 findings across 20/20 collections covering all 42 route paths × ten roles at 360/390px in four appearances; all ten 360px contact sheets re-inspected visually and every MOBILE_PAGE_AUDIT row moved to Done.
+- Fixed: app bar now names the page instead of a tab sibling sharing /finance (exact-href preference, unit-locked); corrected two stale Director-spec expectations (Accountant guardian privacy, role nav labels) without widening access; enforced least privilege on GET /api/exams (school or assigned-class scope), GET /api/rubrics (school scope) and admission packet reads (owner-only DRAFT, Head Teacher denied DRAFT) with audited denials.
+- Checked after Playwright stopped: strict lint exit 0, typecheck exit 0, 66/66 unit tests, schema parity, production build exit 0, HTTP smoke (health 200, sign-in/privacy 200, unauthenticated APIs 401, dashboard 307, /dev/styleguide 404), git diff --check clean. Budget gate still fails honestly at exit 1: shared 441.6 KiB vs 350 KiB (framework floor), route-own 189.7 KiB vs 250 KiB. No production release; branch push only.
