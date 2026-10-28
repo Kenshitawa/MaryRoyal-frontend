@@ -132,8 +132,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
         <h2 className="text-base font-extrabold text-slate-900 dark:text-white">1. Core Biography</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Full Name *</label>
+            <label htmlFor="edit-field-1" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Full Name *</label>
             <input
+              id="edit-field-1"
               type="text"
               required
               value={formData.name}
@@ -142,8 +143,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Class / Grade *</label>
+            <label htmlFor="edit-field-2" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Class / Grade *</label>
             <input
+              id="edit-field-2"
               type="text"
               required
               value={formData.grade}
@@ -152,8 +154,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Stream</label>
+            <label htmlFor="edit-field-3" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Stream</label>
             <input
+              id="edit-field-3"
               type="text"
               placeholder="e.g. Blue, East"
               value={formData.stream}
@@ -162,8 +165,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Gender *</label>
+            <label htmlFor="edit-field-4" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Gender *</label>
             <select
+              id="edit-field-4"
               value={formData.gender}
               onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
               className="mt-1.5 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-medium dark:border-slate-700 dark:bg-slate-800"
@@ -174,8 +178,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Status</label>
+            <label htmlFor="edit-field-5" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Status</label>
             <select
+              id="edit-field-5"
               value={formData.admissionStatus}
               onChange={(e) => setFormData({ ...formData, admissionStatus: e.target.value })}
               className="mt-1.5 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-medium dark:border-slate-700 dark:bg-slate-800"
@@ -187,8 +192,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">UPI / NEMIS Number</label>
+            <label htmlFor="edit-field-6" className="block text-xs font-bold text-slate-700 dark:text-slate-300">UPI / NEMIS Number</label>
             <input
+              id="edit-field-6"
               type="text"
               placeholder="e.g. N12345678"
               value={formData.upiNumber}
@@ -197,8 +203,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Date of Birth</label>
+            <label htmlFor="edit-field-7" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Date of Birth</label>
             <input
+              id="edit-field-7"
               type="date"
               value={formData.dateOfBirth}
               onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
@@ -206,8 +213,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Nationality</label>
+            <label htmlFor="edit-field-8" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Nationality</label>
             <input
+              id="edit-field-8"
               type="text"
               value={formData.nationality}
               onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
@@ -215,8 +223,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Religion</label>
+            <label htmlFor="edit-field-9" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Religion</label>
             <input
+              id="edit-field-9"
               type="text"
               value={formData.religion}
               onChange={(e) => setFormData({ ...formData, religion: e.target.value })}
@@ -231,8 +240,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
         <h2 className="text-base font-extrabold text-slate-900 dark:text-white">2. Residence & Location</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">County</label>
+            <label htmlFor="edit-field-10" className="block text-xs font-bold text-slate-700 dark:text-slate-300">County</label>
             <input
+              id="edit-field-10"
               type="text"
               value={formData.county}
               onChange={(e) => setFormData({ ...formData, county: e.target.value })}
@@ -240,8 +250,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Sub-County</label>
+            <label htmlFor="edit-field-11" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Sub-County</label>
             <input
+              id="edit-field-11"
               type="text"
               value={formData.subCounty}
               onChange={(e) => setFormData({ ...formData, subCounty: e.target.value })}
@@ -249,8 +260,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Ward / Estate</label>
+            <label htmlFor="edit-field-12" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Ward / Estate</label>
             <input
+              id="edit-field-12"
               type="text"
               value={formData.ward}
               onChange={(e) => setFormData({ ...formData, ward: e.target.value })}
@@ -258,8 +270,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Village / Area</label>
+            <label htmlFor="edit-field-13" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Village / Area</label>
             <input
+              id="edit-field-13"
               type="text"
               value={formData.village}
               onChange={(e) => setFormData({ ...formData, village: e.target.value })}
@@ -267,8 +280,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Physical Address & Landmarks</label>
+            <label htmlFor="edit-field-14" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Physical Address & Landmarks</label>
             <input
+              id="edit-field-14"
               type="text"
               value={formData.physicalAddress}
               onChange={(e) => setFormData({ ...formData, physicalAddress: e.target.value })}
@@ -283,8 +297,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
         <h2 className="text-base font-extrabold text-slate-900 dark:text-white">3. Health & Special Needs (Restricted)</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Blood Group</label>
+            <label htmlFor="edit-field-15" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Blood Group</label>
             <input
+              id="edit-field-15"
               type="text"
               placeholder="e.g. O+, A-, B+"
               value={formData.bloodGroup}
@@ -293,8 +308,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Known Conditions</label>
+            <label htmlFor="edit-field-16" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Known Conditions</label>
             <input
+              id="edit-field-16"
               type="text"
               placeholder="e.g. Asthma"
               value={formData.knownConditions}
@@ -303,8 +319,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Allergies</label>
+            <label htmlFor="edit-field-17" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Allergies</label>
             <input
+              id="edit-field-17"
               type="text"
               placeholder="e.g. Peanuts, Penicillin"
               value={formData.allergies}
@@ -313,8 +330,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Current Medication</label>
+            <label htmlFor="edit-field-18" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Current Medication</label>
             <input
+              id="edit-field-18"
               type="text"
               value={formData.currentMedication}
               onChange={(e) => setFormData({ ...formData, currentMedication: e.target.value })}
@@ -322,8 +340,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Special Needs / Disabilities</label>
+            <label htmlFor="edit-field-19" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Special Needs / Disabilities</label>
             <input
+              id="edit-field-19"
               type="text"
               value={formData.specialNeeds}
               onChange={(e) => setFormData({ ...formData, specialNeeds: e.target.value })}
@@ -331,8 +350,9 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Preferred Hospital / Clinic</label>
+            <label htmlFor="edit-field-20" className="block text-xs font-bold text-slate-700 dark:text-slate-300">Preferred Hospital / Clinic</label>
             <input
+              id="edit-field-20"
               type="text"
               placeholder="e.g. Jaramogi Oginga Odinga TRH"
               value={formData.doctorOrHospital}

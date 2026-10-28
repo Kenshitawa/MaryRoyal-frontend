@@ -1557,6 +1557,9 @@ html[data-theme="dark"] .hover\:bg-white:hover {
 .text-blue-700\/80 {
   color: var(--brand);
 }
+html[data-theme="dark"] .text-blue-700\/80 {
+  color: #93c5fd;
+}
 .text-emerald-700\/80,
 .text-green-700\/80 {
   color: var(--success);

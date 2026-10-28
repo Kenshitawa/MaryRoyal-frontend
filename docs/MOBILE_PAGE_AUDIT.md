@@ -53,6 +53,7 @@ Legend: **Done** = automated collection passed with zero findings and the screen
 | Class attendance | `/attendance` | Done | Done | 4 | Done |
 | Learner register | `/learners` | Done | Done | 4 | Done |
 | Assigned learner profile | `/learners/[id]` | Done | Done | 4 | In progress |
+| My staff profile (self only) | `/staff/[id]` | Done | Done | 4 | In progress |
 | CBC assessments workspace | `/assessments` | Done | Done | 4 | Done |
 | Exam sessions | `/assessments/exams` | Done | Done | 4 | Done |
 | CBC rubrics | `/assessments/rubrics` | Done | Done | 4 | Done |
@@ -78,6 +79,7 @@ Legend: **Done** = automated collection passed with zero findings and the screen
 | Admission packet | `/admissions/[id]` | Done | Done | 4 | In progress |
 | Learner register | `/learners` | Done | Done | 4 | Done |
 | Learner profile (identity and balance) | `/learners/[id]` | Done | Done | 4 | In progress |
+| Edit learner | `/learners/[id]/edit` | Done | Done | 4 | In progress |
 | Fee collections (read-only) | `/finance` | Done | Done | 4 | Done |
 | Fee structures (read-only) | `/finance/structures` | Done | Done | 4 | Done |
 | Welfare | `/welfare` | Done | Done | 4 | Done |
@@ -130,7 +132,6 @@ Legend: **Done** = automated collection passed with zero findings and the screen
 | Submitted admission packet | `/admissions/[id]` | n/a | n/a | n/a | Not reachable in seed data (no submitted packet); same component audited as Director |
 | Learner register | `/learners` | Done | Done | 4 | Done |
 | Learner profile | `/learners/[id]` | Done | Done | 4 | In progress |
-| Edit learner | `/learners/[id]/edit` | Done | Done | 4 | In progress |
 | Staff directory | `/staff` | Done | Done | 4 | Done |
 | Staff profile | `/staff/[id]` | Done | Done | 4 | In progress |
 | Add staff wizard | `/staff/new` | Done | Done | 4 | Done |

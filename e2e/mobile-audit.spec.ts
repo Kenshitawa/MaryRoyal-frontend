@@ -36,7 +36,6 @@ const detailRoutes = (role: string, routes: Array<[string | null, string]>) => {
 };
 detailRoutes("director", [
   [sample.learnerId, "/learners/{id}"],
-  [sample.learnerId, "/learners/{id}/edit"],
   [sample.staffId, "/staff/{id}"],
   [sample.reviewDraftId, "/admissions/{id}"],
   [sample.paymentId, "/receipts/{id}"],
@@ -51,13 +50,14 @@ detailRoutes("head_teacher", [
 detailRoutes("deputy", [[sample.learnerId, "/learners/{id}"]]);
 detailRoutes("secretary", [
   [sample.learnerId, "/learners/{id}"],
+  [sample.learnerId, "/learners/{id}/edit"],
   [sample.secretaryDraftId, "/admissions/{id}"],
 ]);
 detailRoutes("accountant", [
   [sample.learnerId, "/learners/{id}"],
   [sample.paymentId, "/receipts/{id}"],
 ]);
-detailRoutes("teacher", [[sample.teacherLearnerId, "/learners/{id}"]]);
+detailRoutes("teacher", [[sample.teacherLearnerId, "/learners/{id}"], [sample.staffId, "/staff/{id}"]]);
 detailRoutes("parent", [
   [sample.learnerId, "/learners/{id}"],
   [sample.paymentId, "/receipts/{id}"],

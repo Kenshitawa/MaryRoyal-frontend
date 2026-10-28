@@ -478,7 +478,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
         {/* Top Sticky Navigation Bar */}
         <nav
           aria-label="Learner profile sections"
-          className="sticky top-16 z-20 -mx-1 flex gap-1.5 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95"
+          className="sticky top-16 z-20 -mx-1 flex flex-wrap gap-1.5 rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95"
         >
           {profileTabs.map(({ id: targetId, label, icon: TabIcon }) => (
             <a
@@ -591,7 +591,45 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 Term Invoices &amp; Breakdown
               </h3>
               {invoiceRows.length ? (
-                <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <>
+                <div className="grid gap-2 lg:hidden">
+                  {invoiceRows.map(({ invoice, total, paid, balance }) => (
+                    <div key={invoice.id} className="rounded-2xl border border-slate-200/80 p-3.5 dark:border-slate-800">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-body font-semibold text-ink">{invoice.term}</p>
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-caption font-bold ${
+                            balance === 0
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                              : paid > 0
+                              ? "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300"
+                              : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                          }`}
+                        >
+                          {balance === 0 ? "Fully Paid" : paid > 0 ? "Partially Paid" : "Unpaid"}
+                        </span>
+                      </div>
+                      <p className="mt-1.5 text-sm text-ink-2">
+                        {invoice.lines.map((l) => `${l.description} (${money(l.amount)})`).join(", ") || "Tuition & Standard"}
+                      </p>
+                      <dl className="mt-3 grid grid-cols-3 gap-2">
+                        <div>
+                          <dt className="text-caption text-ink-3">Billed</dt>
+                          <dd className="text-sm font-semibold text-ink">{money(total)}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-caption text-ink-3">Paid</dt>
+                          <dd className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{money(paid)}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-caption text-ink-3">Balance</dt>
+                          <dd className="text-sm font-semibold text-ink">{money(balance)}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden overflow-x-auto rounded-2xl border border-slate-200/80 lg:block dark:border-slate-800">
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="bg-slate-50/90 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-800/80 dark:text-slate-400">
@@ -631,8 +669,9 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                     </tbody>
                   </table>
                 </div>
+                </>
               ) : (
-                <p className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
+                <p className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
                   No fee invoices issued for this learner yet.
                 </p>
               )}
@@ -714,7 +753,39 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
             )}
 
             {/* Detailed Assessment Marksheet Table */}
-            <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+            <div className="grid gap-2 lg:hidden">
+              {assessments.length ? (
+                assessments.map((a) => (
+                  <article key={a.id} className="rounded-2xl border border-slate-200/80 p-3.5 dark:border-slate-800">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-body font-semibold text-ink">{a.subject}</p>
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-caption font-bold ${
+                          a.status === "RELEASED"
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                            : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                        }`}
+                      >
+                        {a.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-ink-2">
+                      {a.term} · <span className="font-semibold text-ink">{a.score}% · {cbcLevel(a.score)}</span>
+                    </p>
+                    <p className="mt-1.5 text-sm text-ink-2">
+                      {a.strand ? <span className="font-semibold">{a.strand}</span> : "General"}
+                      {a.competency ? ` · ${a.competency}` : ""}
+                    </p>
+                    {a.comment && <p className="mt-1.5 text-sm italic text-ink-2">&ldquo;{a.comment}&rdquo;</p>}
+                  </article>
+                ))
+              ) : (
+                <p className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
+                  No assessment marks recorded for this learner yet.
+                </p>
+              )}
+            </div>
+            <div className="hidden overflow-x-auto rounded-2xl border border-slate-200/80 lg:block dark:border-slate-800">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-slate-50/90 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-800/80 dark:text-slate-400">
@@ -801,7 +872,34 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
             </div>
 
             {/* Attendance Register Ledger */}
-            <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+            <div className="mt-6 grid gap-2 lg:hidden">
+              {attendance.length ? (
+                attendance.map((row) => (
+                  <div key={row.id} className="flex items-start justify-between gap-2 rounded-2xl border border-slate-200/80 p-3.5 dark:border-slate-800">
+                    <div>
+                      <p className="text-body font-semibold text-ink">{date(row.date)}</p>
+                      <p className="mt-0.5 text-sm text-ink-2">Daily roll-call</p>
+                    </div>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-caption font-bold ${
+                        row.status === "PRESENT"
+                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                          : row.status === "LATE"
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                          : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                      }`}
+                    >
+                      {row.status}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
+                  No attendance roll-calls recorded for this learner yet.
+                </p>
+              )}
+            </div>
+            <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-slate-200/80 lg:block dark:border-slate-800">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-slate-50/90 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-800/80 dark:text-slate-400">

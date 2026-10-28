@@ -272,7 +272,7 @@ export function StaffProfileClient({
       </section>
 
       {/* Tabs Navigation Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-slate-200 pb-2 scrollbar-none dark:border-slate-800">
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200 pb-2 dark:border-slate-800">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -289,7 +289,7 @@ export function StaffProfileClient({
               <Icon size={14} className={tab.restricted ? "text-amber-400" : ""} />
               {tab.label}
               {tab.restricted && (
-                <span className="rounded bg-amber-400/30 px-1 py-0.2 text-[9px] font-black uppercase text-amber-200">
+                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-black uppercase text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                   Restricted
                 </span>
               )}

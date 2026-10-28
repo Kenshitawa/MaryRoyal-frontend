@@ -26,3 +26,5 @@ e2e/.auth/
 tsbuildinfo
 tsconfig.tsbuildinfo
 .next-production-check/
+
+perf-results.json

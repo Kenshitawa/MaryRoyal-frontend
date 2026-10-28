@@ -25,7 +25,6 @@ const sample = fs.existsSync(samplePath) ? JSON.parse(fs.readFileSync(samplePath
 const detailPages = {
   director: [
     sample.learnerId && `/learners/${sample.learnerId}`,
-    sample.learnerId && `/learners/${sample.learnerId}/edit`,
     sample.staffId && `/staff/${sample.staffId}`,
     sample.reviewDraftId && `/admissions/${sample.reviewDraftId}`,
     sample.paymentId && `/receipts/${sample.paymentId}`,
@@ -38,9 +37,9 @@ const detailPages = {
     sample.paymentId && `/receipts/${sample.paymentId}`,
   ],
   deputy: [sample.learnerId && `/learners/${sample.learnerId}`],
-  secretary: [sample.learnerId && `/learners/${sample.learnerId}`, sample.secretaryDraftId && `/admissions/${sample.secretaryDraftId}`],
+  secretary: [sample.learnerId && `/learners/${sample.learnerId}`, sample.learnerId && `/learners/${sample.learnerId}/edit`, sample.secretaryDraftId && `/admissions/${sample.secretaryDraftId}`],
   accountant: [sample.learnerId && `/learners/${sample.learnerId}`, sample.paymentId && `/receipts/${sample.paymentId}`],
-  teacher: [sample.teacherLearnerId && `/learners/${sample.teacherLearnerId}`],
+  teacher: [sample.teacherLearnerId && `/learners/${sample.teacherLearnerId}`, sample.staffId && `/staff/${sample.staffId}`],
   parent: [sample.learnerId && `/learners/${sample.learnerId}`, sample.paymentId && `/receipts/${sample.paymentId}`],
   learner: [sample.selfLearnerId && `/learners/${sample.selfLearnerId}`],
 };
