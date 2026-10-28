@@ -357,3 +357,8 @@ Total output lines: 287
 ## Round 3, Lint cleanup -- 2026-10-28
 - Built: Removed the 56 warnings reported by the current full lint run, replaced raw images with `next/image`, centralized statutory-field response stripping without changing access scope, and set lint to fail on any warning. Restored finance payment confirm/void actions and limited exam publishing to approvers.
 - Tested: `npm run lint` passed with 0 warnings and 0 errors; `npm run typecheck` passed; `npm test` passed (9 files, 54/54 tests). Full E2E, production build, comprehensive mobile checks and deployment gates remain incomplete.
+
+## Section 1: Verification of staff, drafts, payroll, and migrations -- Antigravity
+- Built: Idempotent staff migrations for PostgreSQL (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, safe DO block constraints) and SQLite; automated schema drift check script (`scripts/check-schema-drift.ts`) and Vitest test ensuring exact model/field parity; updated `docs/OWNER_ACTIONS.md` with read-only production diff/resolve instructions; local SQLite migration status cleanly resolved.
+- Tested: `npm run schema:check` passed; `npm test` passed (10 files, 57/57 tests); `npm run typecheck` passed; `prisma migrate status` clean (8 migrations applied).
+

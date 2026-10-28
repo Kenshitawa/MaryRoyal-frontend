@@ -2,17 +2,49 @@
 
 These steps must be completed only after the Round 3 local checks are green. Do not run seeds, resets or browser write tests against production.
 
-## Before the staff schema migration
+## Safe Pre-Deploy Production Comparison & Migration Procedure
 
-1. In Supabase, create a fresh production database backup. Confirm the backup completed and is restorable. The migration `0005_staff_profiles` creates staff profile, contact, referee, document, history and draft tables; it also creates minimal empty profiles for existing staff accounts. It does not copy or alter existing staff identity or payroll values.
-2. In a trusted deployment shell, confirm the runtime and migration configuration exists by variable name only: `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `OBJECT_STORAGE_DRIVER`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_STORAGE_BUCKET`. Never paste their values into chat, logs or this repository.
-3. Confirm `DIRECT_URL` targets the intended production project, then run `npm run db:migrate:production`. Do not run `prisma db push`, `migrate dev`, `migrate reset`, or a seed command on production.
-4. Run `prisma migrate status --schema prisma/postgresql/schema.prisma` and verify the database is up to date. Check staff profile row counts without exporting personal fields.
-5. Verify `/api/health` and the staff pages using owner accounts after deployment. Do not create training or fake accounts in production.
+### 1. Production Backup Gate
+- In the Supabase dashboard (Database -> Backups), create a manual backup snapshot.
+- Confirm the backup is ready and restorable. Record its filename/timestamp and size in release records (outside the repository).
 
-## Hosting and recovery
+### 2. Verify Environment Variables (Names Only)
+- In a trusted deployment shell, confirm the runtime and migration configuration exists by variable name only:
+  `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `OBJECT_STORAGE_DRIVER`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET`.
+- Never paste or log secrets or connection values.
 
-- Keep Vercel server functions in a region near the Supabase database region to reduce request latency.
-- Store all production settings in the hosting project's encrypted environment configuration. Inspect names and target environments only; never print values.
-- If the deployment fails, use Vercel's deployment history to redeploy the last Ready production deployment. Do not roll back or edit database schema manually; the staff migration is additive.
-- Keep the successful backup outside the repository and record only its filename, timestamp and size in the release log.
+### 3. Read-Only Production Diff Check
+Before running any migration, perform a read-only comparison against production using `DIRECT_URL`:
+```bash
+# Check current migration status against production
+npx prisma migrate status --schema prisma/postgresql/schema.prisma
+
+# Diff PostgreSQL schema against the target database without making changes
+npx prisma migrate diff --from-schema-datamodel prisma/postgresql/schema.prisma --to-schema-datasource prisma/postgresql/schema.prisma
+```
+
+### 4. Handling Existing Tables (Prisma Migrate Resolve)
+If production already has the staff tables created manually or out-of-band, running `migrate deploy` could fail or conflict if not marked:
+- If `prisma migrate status` shows `0005_staff_profiles` unapplied, but `prisma migrate diff` reports no differences or only the expected tables already exist:
+  ```bash
+  npx prisma migrate resolve --applied 0005_staff_profiles --schema prisma/postgresql/schema.prisma
+  ```
+- Because migration `0005_staff_profiles` has been rewritten with `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, idempotent constraint additions, and `INSERT ... WHERE NOT EXISTS`, running `npm run db:migrate:production` is also non-destructive and safe to re-run.
+
+### 5. Applying Pending Migrations
+Apply pending migrations cleanly using:
+```bash
+npm run db:migrate:production
+```
+Never run `prisma db push`, `migrate dev`, `migrate reset`, or seed commands against production.
+
+### 6. Post-Migration Verification
+- Verify `npx prisma migrate status --schema prisma/postgresql/schema.prisma` reports "Database schema is up to date!".
+- Check staff profile row counts without exporting personal fields.
+- Verify `/api/health` and the staff pages using real owner accounts.
+
+## Hosting and Recovery
+- Keep Vercel server functions in a region near the Supabase database region to minimize request latency.
+- Store all production settings in the hosting project's encrypted environment configuration.
+- If the deployment fails, use Vercel's deployment history to promote/redeploy the last Ready production deployment.
+- Database rollbacks are not required because all migrations are additive.
