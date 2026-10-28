@@ -187,7 +187,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
       { label: "Learners", href: "/learners", icon: Users },
-      { label: "Register", href: "/attendance", icon: CalendarCheck },
+      { label: "Attendance", href: "/attendance", icon: CalendarCheck },
       { label: "Complaints", href: "/complaints", icon: MessageCircle, badgeKey: "complaints" },
     ],
     moreCategories: [
@@ -237,7 +237,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
   DEPUTY: {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
-      { label: "Register", href: "/attendance", icon: CalendarCheck },
+      { label: "Attendance", href: "/attendance", icon: CalendarCheck },
       { label: "Exams", href: "/assessments", icon: BookOpen },
       { label: "Timetable", href: "/timetable", icon: CalendarDays },
     ],
@@ -270,7 +270,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
   SECRETARY: {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
-      { label: "Intake", href: "/admissions", icon: ClipboardList },
+      { label: "Admissions", href: "/admissions", icon: ClipboardList },
       { label: "Learners", href: "/learners", icon: Users },
       { label: "Fees", href: "/finance", icon: Wallet },
     ],
@@ -332,9 +332,9 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
   TEACHER: {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
-      { label: "Register", href: "/attendance", icon: CalendarCheck },
+      { label: "Attendance", href: "/attendance", icon: CalendarCheck },
       { label: "Marks", href: "/assessments", icon: BookOpen },
-      { label: "Classes", href: "/learners", icon: Users },
+      { label: "My Classes", href: "/learners", icon: Users },
     ],
     moreCategories: [
       {
@@ -410,7 +410,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       { label: "Home", href: "/learning", icon: GraduationCap },
       { label: "Homework", href: "/assignments", icon: ClipboardList },
       { label: "Results", href: "/learning?tab=results", icon: Trophy },
-      { label: "Learning", href: "/learning-videos", icon: BookOpenCheck },
+      { label: "My Learning", href: "/learning-videos", icon: BookOpenCheck },
     ],
     moreCategories: [
       {
@@ -509,7 +509,8 @@ export function getSectionForPath(pathname: string, role: string): string {
   const path = pathname.split("?")[0];
   if (path === "/dashboard") return "Overview";
   const destinations = getMobileDestinations(role);
-  const exact = destinations.find((item) => item.href.split("?")[0] === path);
+  // Tab siblings share one pathname, so an exact href must win before a pathname-only match.
+  const exact = destinations.find((item) => item.href === pathname) ?? destinations.find((item) => item.href.split("?")[0] === path);
   if (exact) return exact.group;
   const detail = detailSections.find((item) => path.startsWith(item.prefix) && (!item.roles || item.roles.includes(role)));
   if (detail) return detail.label;

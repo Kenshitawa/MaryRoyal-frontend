@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMobileNavigation, RoleMobileNav } from "../src/lib/navigation";
+import { getMobileNavigation, getSectionForPath, RoleMobileNav } from "../src/lib/navigation";
 
 describe("Mobile Navigation (4 Tabs + More per role)", () => {
   const roles = [
@@ -53,6 +53,13 @@ describe("Mobile Navigation (4 Tabs + More per role)", () => {
     const nav = getMobileNavigation("ACCOUNTANT");
     const labels = nav.primary.map((t) => t.label);
     expect(labels).toEqual(["Home", "Invoices", "Payments", "Arrears"]);
+  });
+
+  it("names the app bar after the page rather than one of its tab siblings", () => {
+    expect(getSectionForPath("/finance", "ACCOUNTANT")).toBe("Finance");
+    expect(getSectionForPath("/finance", "SECRETARY")).toBe("Fees");
+    expect(getSectionForPath("/portal", "PARENT")).toBe("Home");
+    expect(getSectionForPath("/learning", "LEARNER")).toBe("Home");
   });
 
   it("configures exact required primary tabs for Teacher", () => {

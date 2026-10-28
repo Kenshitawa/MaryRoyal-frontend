@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import Image from "next/image";
 
 interface LearnerLinkProps {
@@ -41,20 +40,20 @@ export function LearnerLink({
   return (
     <div className={`inline-flex flex-col ${className}`}>
       {name && (
-        <Link
+        <a
           href={`/learners/${id}`}
           className="group inline-flex items-center gap-1 font-bold text-blue-700 transition hover:text-blue-900 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>{name}</span>
-        </Link>
+        </a>
       )}
       {admissionNo && showAdmissionNo && (
-        <Link
+        <a
           href={`/learners/${id}`}
           className="inline-block font-mono text-[11px] text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300"
         >
           {admissionNo}
-        </Link>
+        </a>
       )}
       {subtext && <span className="text-[11px] text-slate-400">{subtext}</span>}
     </div>
@@ -122,11 +121,11 @@ export function LearnerChip({
   }
 
   return (
-    <Link
+    <a
       href={`/learners/${id}`}
       className="inline-block transition-transform hover:-translate-y-0.5 focus-visible:rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
     >
       {content}
-    </Link>
+    </a>
   );
 }

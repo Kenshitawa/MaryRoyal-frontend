@@ -9,6 +9,7 @@ import NotificationBell from "@/components/notification-bell";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 import { CommandPalette } from "@/components/design-system/command-palette";
 import ConfirmLogoutForm from "@/components/confirm-logout-form";
+import PageNavigation from "@/components/page-navigation";
 import { getRoleNavigation, getSectionForPath } from "@/lib/navigation";
 import { PortalHeader } from "@/components/ui/portal-header";
 import { PortalNav } from "@/components/ui/portal-nav";
@@ -129,6 +130,7 @@ export function PageShell({
           </header>
 
           <PortalHeader user={user} />
+          <PageNavigation active={section} homeHref={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} userId={user.id} />
 
           <main id="main-content" tabIndex={-1} className="app-main page-main">
             {children}

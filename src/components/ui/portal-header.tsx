@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, LogOut, Moon, Search, Settings2, ShieldCheck, Sun, X } from "lucide-react";
 import NotificationBell from "@/components/notification-bell";
@@ -34,7 +34,6 @@ function readPeople(payload: unknown, kind: "learners" | "staff"): PersonResult[
 
 export function PortalHeader({ user }: { user: HeaderUser }) {
   const pathname = usePathname() ?? "/";
-  const router = useRouter();
   const section = getSectionForPath(pathname, user.role);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -48,8 +47,7 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
   const isDetail = parts.length > 1 && !isPrimaryTab;
 
   function goBack() {
-    if (window.history.length > 1) router.back();
-    else router.push(user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard");
+    window.dispatchEvent(new Event("mary-go-back"));
   }
 
   return (

@@ -101,44 +101,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
 
   const learner = await db.learner.findUnique({
     where: { id },
-    include: {
-      profile: {
-        select: {
-          dateOfBirth: true,
-          nationality: true,
-          upiNumber: true,
-          stream: true,
-          admissionDate: true,
-          previousSchool: true,
-          previousClass: true,
-          religion: true,
-          languagesSpoken: true,
-          county: true,
-          subCounty: true,
-          ward: true,
-          village: true,
-          physicalAddress: true,
-          landmark: true,
-          distanceToSchoolKm: true,
-          transportMeans: true,
-          feePayer: true,
-          specialNeeds: true,
-          updatedAt: true,
-          guardians: { orderBy: [{ primaryContact: "desc" }, { createdAt: "asc" }] },
-          emergencyContacts: true,
-          pickupPersons: true
-        }
-      },
-      admissionDraft: {
-        select: {
-          id: true,
-          payload: true,
-          createdById: true,
-          submittedAt: true,
-          documents: { where: { category: "PASSPORT_PHOTO" }, take: 1, select: { id: true } }
-        }
-      }
-    }
+    select: { id: true, name: true, admissionNo: true, grade: true, gender: true, admissionStatus: true, archivedAt: true }
   });
 
   if (!learner || learner.archivedAt) notFound();
@@ -209,6 +172,8 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
   const receiptsAllowed = canInScope(actor.role, "payments", "view", "school") || canInScope(actor.role, "payments", "view", "linked");
 
   const [
+    profile,
+    admissionDraft,
     attendance,
     assessments,
     invoices,
@@ -218,6 +183,37 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
     admissionDocuments,
     receipts
   ] = await Promise.all([
+    !identityOnly
+      ? db.learnerProfile.findUnique({
+          where: { learnerId: learner.id },
+          select: {
+            dateOfBirth: true,
+            nationality: true,
+            upiNumber: true,
+            stream: true,
+            admissionDate: true,
+            previousSchool: true,
+            previousClass: true,
+            religion: true,
+            languagesSpoken: true,
+            county: true,
+            subCounty: true,
+            ward: true,
+            village: true,
+            physicalAddress: true,
+            landmark: true,
+            distanceToSchoolKm: true,
+            transportMeans: true,
+            guardians: { orderBy: [{ primaryContact: "desc" }, { createdAt: "asc" }] },
+            emergencyContacts: true,
+            pickupPersons: true
+          }
+        })
+      : null,
+    db.admissionDraft.findUnique({
+      where: { learnerId: learner.id },
+      select: { id: true, documents: { where: { category: "PASSPORT_PHOTO" }, take: 1, select: { id: true } } }
+    }),
     !identityOnly
       ? db.attendance.findMany({
           where: { learnerId: learner.id },
@@ -290,9 +286,9 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
           }
         })
       : null,
-    learner.admissionDraft && fullProfileScope
+    fullProfileScope
       ? db.admissionDocument.findMany({
-          where: { draftId: learner.admissionDraft.id },
+          where: { draft: { learnerId: learner.id } },
           select: { id: true, category: true, originalName: true, contentType: true, sizeBytes: true }
         })
       : [],
@@ -328,9 +324,9 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
   const totalPaid = invoiceRows.reduce((sum, row) => sum + row.paid, 0);
   const outstanding = invoiceRows.reduce((sum, row) => sum + row.balance, 0);
 
-  const passportPhoto = learner.admissionDraft?.documents[0];
-  const age = learner.profile?.dateOfBirth
-    ? Math.max(0, Math.floor((Date.now() - learner.profile.dateOfBirth.getTime()) / 31_557_600_000))
+  const passportPhoto = admissionDraft?.documents[0];
+  const age = profile?.dateOfBirth
+    ? Math.max(0, Math.floor((Date.now() - profile.dateOfBirth.getTime()) / 31_557_600_000))
     : null;
 
   const releasedAssessments = assessments.filter((a) => a.status === "RELEASED");
@@ -345,7 +341,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
     }))
     .filter((row) => row.results.length > 0);
 
-  const showGuardians = !identityOnly || actor.role === "ACCOUNTANT";
+  const showGuardians = !identityOnly;
   const showResidence = fullProfileScope;
   const showEmergency = fullProfileScope || actor.role === "PARENT";
   const relationTitle = actor.role === "PARENT" ? "My child" : actor.role === "LEARNER" ? "My profile" : "Learner profile";
@@ -360,7 +356,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
     { id: "guardians", label: "Parents & Guardians", icon: Users, show: showGuardians },
     { id: "residence", label: "Residence & Transport", icon: MapPin, show: showResidence },
     { id: "health", label: "Health (Restricted)", icon: HeartPulse, show: healthAllowed },
-    { id: "documents", label: "Documents", icon: FileText, show: !!learner.admissionDraft && fullProfileScope },
+    { id: "documents", label: "Documents", icon: FileText, show: !!admissionDraft && fullProfileScope },
     { id: "discipline", label: "Discipline & Welfare", icon: ShieldAlert, show: disciplineAllowed },
     { id: "history", label: "Audit Trail", icon: History, show: fullProfileScope }
   ].filter((t) => t.show);
@@ -429,7 +425,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-4xl text-white">{learner.name}</h1>
                 <p className="mt-1.5 text-xs text-blue-100 sm:text-sm">
                   <span className="font-mono font-bold text-white">{learner.admissionNo}</span> · {learner.grade}
-                  {learner.profile?.stream ? ` · Stream ${learner.profile.stream}` : ""} ·{" "}
+                  {profile?.stream ? ` · Stream ${profile.stream}` : ""} ·{" "}
                   <span className="rounded-md bg-white/20 px-2 py-0.5 font-semibold text-white">
                     {learner.admissionStatus.toLowerCase()}
                   </span>
@@ -457,9 +453,9 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 </Link>
               )}
 
-              {learner.admissionDraft && canInScope(actor.role, "admissions", "view", "school") && (
+              {admissionDraft && canInScope(actor.role, "admissions", "view", "school") && (
                 <Link
-                  href={`/api/admissions/${learner.admissionDraft.id}/form`}
+                  href={`/api/admissions/${admissionDraft.id}/form`}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-blue-800 shadow-sm transition hover:bg-blue-50"
                 >
                   <FileDown size={14} /> Download Admission PDF
@@ -500,7 +496,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
               <Building size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
             <p className="mt-2 text-xl font-black text-slate-900 dark:text-white">
-              {learner.grade} {learner.profile?.stream ? `(${learner.profile.stream})` : ""}
+              {learner.grade} {profile?.stream ? `(${profile.stream})` : ""}
             </p>
             <p className="mt-1 text-[11px] text-slate-500">Mary Royal Register</p>
           </div>
@@ -1037,25 +1033,25 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
               <Row label="Full Name" value={learner.name} />
               <Row label="Admission Number" value={<span className="font-mono font-bold text-blue-700 dark:text-blue-400">{learner.admissionNo}</span>} />
               <Row label="Class / Grade" value={learner.grade} />
-              <Row label="Stream" value={learner.profile?.stream} />
+              <Row label="Stream" value={profile?.stream} />
               <Row label="Gender" value={learner.gender} />
-              <Row label="Date of Birth" value={date(learner.profile?.dateOfBirth ?? null)} />
+              <Row label="Date of Birth" value={date(profile?.dateOfBirth ?? null)} />
               <Row label="Age" value={age !== null ? `${age} years` : null} />
-              <Row label="Nationality" value={learner.profile?.nationality ?? "Kenyan"} />
-              <Row label="UPI / NEMIS Number" value={learner.profile?.upiNumber} />
-              <Row label="Admission Date" value={date(learner.profile?.admissionDate ?? null)} />
-              <Row label="Previous School" value={learner.profile?.previousSchool} />
-              <Row label="Previous Class" value={learner.profile?.previousClass} />
-              <Row label="Languages Spoken" value={learner.profile?.languagesSpoken || "English, Kiswahili"} />
-              <Row label="Religion" value={learner.profile?.religion} />
+              <Row label="Nationality" value={profile?.nationality ?? "Kenyan"} />
+              <Row label="UPI / NEMIS Number" value={profile?.upiNumber} />
+              <Row label="Admission Date" value={date(profile?.admissionDate ?? null)} />
+              <Row label="Previous School" value={profile?.previousSchool} />
+              <Row label="Previous Class" value={profile?.previousClass} />
+              <Row label="Languages Spoken" value={profile?.languagesSpoken || "English, Kiswahili"} />
+              <Row label="Religion" value={profile?.religion} />
             </Card>
           )}
 
           {/* Section 6: Parents & Guardians */}
           {showGuardians && (
             <Card id="guardians" title="Parents &amp; Guardians" icon={Users}>
-              {learner.profile?.guardians.length ? (
-                learner.profile.guardians.map((guardian) => (
+              {profile?.guardians.length ? (
+                profile.guardians.map((guardian) => (
                   <div key={guardian.id} className="border-b border-slate-100 py-3.5 last:border-0 dark:border-slate-800">
                     <div className="flex items-center justify-between">
                       <p className="font-bold text-slate-900 dark:text-white">
@@ -1090,10 +1086,10 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
               {showEmergency && (
                 <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
                   <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Emergency &amp; Pick-Up</h3>
-                  {learner.profile?.emergencyContacts.map((c) => (
+                  {profile?.emergencyContacts.map((c) => (
                     <Row key={c.id} label={`Emergency · ${c.relationship}`} value={`${c.fullName} (${c.phone})`} />
                   ))}
-                  {learner.profile?.pickupPersons.map((p) => (
+                  {profile?.pickupPersons.map((p) => (
                     <Row key={p.id} label={`Pick-Up · ${p.relationship}`} value={`${p.fullName} (${p.phone})`} />
                   ))}
                 </div>
@@ -1106,14 +1102,14 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
         <div className="grid gap-6 lg:grid-cols-2">
           {showResidence && (
             <Card id="residence" title="Residence &amp; Transport" icon={MapPin}>
-              <Row label="County" value={learner.profile?.county || "Kisumu"} />
-              <Row label="Sub-County" value={learner.profile?.subCounty || "Kisumu Central"} />
-              <Row label="Ward / Estate" value={learner.profile?.ward || "Railways"} />
-              <Row label="Village / Area" value={learner.profile?.village || "Obunga"} />
-              <Row label="Physical Address" value={learner.profile?.physicalAddress} />
-              <Row label="Landmark" value={learner.profile?.landmark} />
-              <Row label="Distance to School" value={learner.profile?.distanceToSchoolKm ? `${learner.profile.distanceToSchoolKm} km` : "Within walking distance"} />
-              <Row label="Means of Transport" value={learner.profile?.transportMeans || "Walking / School Bus"} />
+              <Row label="County" value={profile?.county || "Kisumu"} />
+              <Row label="Sub-County" value={profile?.subCounty || "Kisumu Central"} />
+              <Row label="Ward / Estate" value={profile?.ward || "Railways"} />
+              <Row label="Village / Area" value={profile?.village || "Obunga"} />
+              <Row label="Physical Address" value={profile?.physicalAddress} />
+              <Row label="Landmark" value={profile?.landmark} />
+              <Row label="Distance to School" value={profile?.distanceToSchoolKm ? `${profile.distanceToSchoolKm} km` : "Within walking distance"} />
+              <Row label="Means of Transport" value={profile?.transportMeans || "Walking / School Bus"} />
             </Card>
           )}
 
@@ -1138,13 +1134,13 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
         {/* Section 9, 10 & 11: Documents, Discipline & Audits */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Documents */}
-          {!identityOnly && learner.admissionDraft && fullProfileScope && (
+          {!identityOnly && admissionDraft && fullProfileScope && (
             <Card id="documents" title="Admission Documents &amp; Uploads" icon={FileText}>
               {admissionDocuments.length ? (
                 admissionDocuments.map((doc) => (
                   <a
                     key={doc.id}
-                    href={`/api/admissions/${learner.admissionDraft!.id}/documents/${doc.id}`}
+                    href={`/api/admissions/${admissionDraft!.id}/documents/${doc.id}`}
                     target="_blank"
                     rel="noreferrer"
                     className="mb-2 flex items-center justify-between rounded-xl border border-slate-100 p-3 text-xs transition hover:border-blue-300 hover:bg-blue-50/50 dark:border-slate-800 dark:hover:border-slate-700"

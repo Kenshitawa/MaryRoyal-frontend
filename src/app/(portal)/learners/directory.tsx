@@ -429,17 +429,17 @@ export default function LearnerDirectory({
                             Approve
                           </button>
                         )}
-                        <Link href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
+                        <a href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
                           View profile
-                        </Link>
+                        </a>
                       </div>
                     </>
                   )}
                   {identityOnly && (
                     <div className="mt-3">
-                      <Link href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
+                      <a href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
                         View profile
-                      </Link>
+                      </a>
                     </div>
                   )}
                 </article>
@@ -568,13 +568,13 @@ export default function LearnerDirectory({
                           )}
 
                           <td className="px-5 py-4 text-right">
-                            <Link
+                            <a
                               href={`/learners/${learner.id}`}
-                              className="inline-flex min-h-8 items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-blue-700 shadow-xs transition hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-blue-400 dark:hover:bg-slate-800"
+                              className="btn btn-secondary btn-sm"
                             >
-                              <span>View Profile</span>
-                              <ChevronRight size={13} />
-                            </Link>
+                              <span>View profile</span>
+                              <ChevronRight size={13} aria-hidden="true" />
+                            </a>
                           </td>
                         </>
                       )}
