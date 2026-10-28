@@ -344,3 +344,79 @@ Total output lines: 287
 - Replaced untyped staff API filters and payloads with Prisma and Zod schemas; removed database exception details from staff API logs.
 - Tightened the staff profile server query to select only fields needed by the page, preventing the password hash from being included in serialized user data.
 - Verified: npm run lint (0 errors; warnings remain), npm run typecheck, npm test (54/54), and npm run build:production all passed.
+
+## Round 3, Section 1 -- Staff crash and missing-profile recovery -- 2026-10-28
+- Built: Added additive SQLite and PostgreSQL staff-profile migrations, including an empty-profile backfill for existing staff; enabled RLS and revoked public roles on the PostgreSQL staff tables. Added safe server error logging and staff route error/not-found boundaries. Restricted statutory/payroll selection to authorized roles before querying.
+- Tested: Legacy SQLite migration/backfill passed on a disposable local database; `npm run typecheck` passed; `npm test` passed (9 files, 54/54 tests); targeted ESLint passed with 0 warnings. Full Playwright run passed 9/10 tests; the existing cross-role test passed including Director/Head Teacher staff routes, while the mobile navigation/breadcrumb test failed because the mobile nav was absent after viewport resize. Production build had passed earlier in the session; rerun after subsequent mobile changes.
+- Known/next: Finish the full role/profile/export verification and rerun the full suite. Production migration has not been applied.
+
+## Round 3, Sections 2–3 -- Mobile header and bottom navigation -- 2026-10-28
+- Built: Replaced the cramped phone header with a 56px title bar, back/home, page and people search, notification and profile bottom sheet (appearance, system/light/dark, password/profile, help/privacy, confirmed sign-out). Desktop sign-out now lives in its profile menu. Reworked nav contrast, active state, icons, labels, touch size and keyboard/wizard behavior; fixed complaint-filter wrapping at 360px.
+- Tested: Role-by-role Playwright navigation passed for all eight roles at 360/390/430px; profile/search/theme checks passed; focused staff-role, admission/guardian and cross-role tests passed. Targeted ESLint and type-check passed; unit tests 54/54. Full suite still needs a clean final run.
+
+## Round 3, Lint cleanup -- 2026-10-28
+- Built: Removed the 56 warnings reported by the current full lint run, replaced raw images with `next/image`, centralized statutory-field response stripping without changing access scope, and set lint to fail on any warning. Restored finance payment confirm/void actions and limited exam publishing to approvers.
+- Tested: `npm run lint` passed with 0 warnings and 0 errors; `npm run typecheck` passed; `npm test` passed (9 files, 54/54 tests). Full E2E, production build, comprehensive mobile checks and deployment gates remain incomplete.
+
+## Section 1: Verification of staff, drafts, payroll, and migrations -- Antigravity
+- Built: Idempotent staff migrations for PostgreSQL (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, safe DO block constraints) and SQLite; automated schema drift check script (`scripts/check-schema-drift.ts`) and Vitest test ensuring exact model/field parity; updated `docs/OWNER_ACTIONS.md` with read-only production diff/resolve instructions; local SQLite migration status cleanly resolved.
+- Tested: `npm run schema:check` passed; `npm test` passed (10 files, 57/57 tests); `npm run typecheck` passed; `prisma migrate status` clean (8 migrations applied).
+
+## Section 2: Mobile performance and efficiency -- Antigravity
+- Built: Measured mobile 4G and 4x CPU slowdown baseline via CDP; consolidated dashboard, portal, and learner profile queries into single parallel Promise.all; added root route-level Bento loading skeleton (`src/app/loading.tsx`); created PWA service worker (`public/sw.js`) with offline fallback (`public/offline.html`); disabled expensive backdrop blur on mobile viewports; added performance budget checker (`scripts/check-perf-budget.ts`).
+- Tested: Re-measured performance across 9 core routes: Parent Results page load halved from 3,865ms to 1,912ms (-50.5%), JS weight reduced from 352 KB to 275 KB; `npm test` passed (57/57); `npm run typecheck` passed. Recorded before and after in `docs/PERFORMANCE_REPORT.md`.
+
+
+
+## Mobile audit stabilization -- 2026-10-28
+- Built: Isolated Playwright preparation to `prisma/round3-e2e.test.db`, guarded role-session generation to that local E2E database, added remaining demo roles for audit coverage, and ignored browser auth state, `.next-e2e`, test output and mobile screenshots. Corrected the mobile page audit document to show verification is still in progress.
+- Tested: `npm run lint` passed (0 warnings, 0 errors); `npm run typecheck` passed; `npm test` passed (11 files, 59/59 tests); `npm run build:production` passed. The expanded Director mobile matrix failed, identifying undersized controls, Accounts horizontal overflow and inconsistent `<main>` landmarks; full matrix/report remains next.
+
+## Mobile UI push preparation -- 2026-10-28
+- Built: Added shared mobile touch-target styling and clearer small-screen typography, corrected page landmarks and Accounts wrapping, improved dark-mode contrast, connected admission dirty-state to the leave guard, and restricted payment recording/receipt viewing to authorized finance roles. Kept the user's feature-branch scope; no production deployment was run.
+- Tested: `npm run lint` passed with 0 warnings/errors; `npm run typecheck` passed; `npm test` passed (12 files, 60/60). E2E production build completed, but the Director E2E run was stopped at the user's request and had failures before stopping; full E2E and mobile audit are not verified. Do not treat this branch as production-cleared.
+
+## Role and production-build verification -- 2026-10-28
+- Built: Stabilized role-scope E2E fixtures with a unique unassigned grade, preserved the export fallback when seeded Grade 9 is absent, and asserted that unrelated learner pages contain no profile or health data. Receipt access is checked after payment confirmation for absence of receipt or learner details.
+- Tested: `npm run lint` passed with 0 warnings/errors; `npm run typecheck` passed; `npm test` passed (12 files, 60/60); `npm run build:production` passed; isolated `e2e/director.spec.ts` passed (10/10). The full mobile audit remains waived per owner instruction. Production release remains blocked until Vercel preview, hosting environment, database backup/migration and production health gates are verified.
+
+## Qoder UI pass: foundation and persistent shell -- 2026-10-28
+- Built: New token stylesheet with Inter self-hosted font (400/600), 12/13/14/16/20/24 scale, Bento/Glass and light/dark surfaces, shared primitives (PageShell, PageHeader, Card, StatCard, ListRow, EmptyState, Skeleton, FormStep, BottomActionBar), 44px Button/IconButton, Sheet, Toast. Moved 22 authenticated route folders into a `(portal)` route group so one layout renders the labelled header, both navs, one `<main id="main-content">` and the skip link; removed the duplicated PortalFrame shell and rewrote the dashboard on the new components.
+- Tested: `npm run typecheck` passed; `npm run lint` passed with 0 warnings and 0 errors. Browser/mobile audit rerun is pending until the remaining pages use the shared shell.
+
+## Qoder UI pass: mobile root fixes -- 2026-10-28
+- Built: Remapped legacy text utilities onto the documented 12/13/14 scale, raised buttons/skip link/help/toast/nav copy to 14px, made the skip link a 44px target, mapped legacy slate/indigo/solid-accent colours to AA tokens, and raised button variant specificity above legacy utilities. Converted the finance, learner, assessment and timetable data tables to phone card lists (tables stay on lg+), wrapped wizard/step/filter rows instead of horizontal scrollers, and fixed unlabelled staff-wizard, timetable and attendance controls.
+- Tested: `npm run typecheck` and `npm run lint` passed before the audit baseline started; full Playwright mobile audit baseline is still running, so no client pages are marked Done yet.
+- Baseline mobile audit (stale build, 20/20 collections): 135,328 findings — 132,204 text size; 1,828 contrast; 744 touch targets; 196 overflow; 155 route auth; 80 unnamed controls; 76 failed requests; 24 landmarks; 19 page errors; 2 unavailable routes. Report in `docs/MOBILE_FAILURES.md`.
+- Root-fix batch: global 12/13/14 type snap, AA colour tokens, 44px `.btn`/`.icon-btn`, skip link 44px, tables→card lists (finance, learners, assessments, timetable), wizard nav wrapping, labelled staff wizard fields, library staff options via textbooks API, audit navigation settle loop. Typecheck + lint (0 warnings) passed.
+- Root pass 2: tier inheritance in the audit, solid brand/blue-700 backgrounds, translucent-accent overrides, 44px checkbox/radio targets, finance + payroll card lists, waivers fetch gated by role, /receipts link fixed, portal staff redirect, admissions/new keeps its URL. `/finance` payroll table hidden below lg.
+- Scoped audit (director, 360px + 390px, 25 routes × 4 appearances): 0 findings. Typecheck and lint (0 warnings) passed.
+
+## Qoder UI pass: attendance, documents, welfare scope -- 2026-10-28
+- Built: Attendance header/KPI/register refresh with an always-visible PageHeader, embedded KICD video heading (single h1), and a role-scoped welfare staff directory endpoint so the Director and Welfare Chair no longer hit 403s; Head Teacher gained report/export reads.
+- Tested: `npm run typecheck` and `npm run lint` (0 warnings, 0 errors) passed after the batch.
+
+## Qoder UI pass: royal-blue identity -- 2026-10-28
+- Built: Royal-blue sidebar, top bar, mobile app bar and bottom nav; blue gradient PageHeader with inverted actions and a light-blue meta chip; blue-tinted KPI cards; blue accent bars on card titles. Converted the assessments, exams, rubrics, timetable, library, welfare, schemes, fee structures, profile and learner-edit headers to the shared PageHeader; white logo tiles on blue chrome; fixed a layered-CSS bug that made `text-white` buttons inherit dark text; shortened bottom-nav labels that truncated at 360px.
+- Tested: visually checked at 360px and 1440px in light and dark (login, dashboard, assessments, finance, library, timetable, welfare, profile, accounts, admissions, reports, parent portal); `npm run typecheck` and `npm run lint` passed.
+
+## Detail-page mobile acceptance — 2026-10-28
+- Built: learner invoice/results/attendance card lists, wrapping section/staff tabs, associated learner-edit labels and a labelled royal-blue receipt back bar; teacher self-profile is an authorized audit target, not a permission exception.
+- Tested: isolated mobile audit passed 20/20 collections with zero findings (360/390px × four appearances); typecheck passed. Admission packets were absent from that seed, so synthetic local-only draft/submitted fixtures and all staff self-profile targets are now added for the final expanded run.
+
+## Learner record navigation and safe local cleanup — 2026-10-28
+- Built: native learner-record links after disabling Next.js prefetch failed to fix the click stall; six development-browser cases passed for Director/Head Teacher/Secretary at 390/1280px, including empty search and repeated navigation with no page errors. Rebuilt full E2E is running.
+- Local-only: backed up then removed the original demo school records; retained Director and non-demo Parent credentials, school/CBC defaults and uploaded files. Verified zero learners/invoices/payments/assessments/drafts; production untouched.
+
+## Release-gate reconciliation — 2026-10-28
+- Built: restored shared safe Back/breadcrumb/unsaved-form integration, Director-only exports, required nav labels and public-static-only service-worker caching. Strict zero-warning lint, typecheck, 65 unit tests and schema parity passed before the final native-link change.
+- Checked: dependency audit reported zero vulnerabilities and the limited secret-history scanner reported zero category matches. Release/checklist/operator docs now state unfinished privacy/workflow/recovery gates; shared bundle last measured 435.4 KiB versus 350 KiB, and actual Node 26 is outside declared 20.9–22 support. No production release.
+
+## Matching profile/privacy acceptance — 2026-10-28
+- Built: basic identity before access checks, section reads only after scope authorization, no Accountant biography/guardian fetch/output, and no unused admission payload read. Direct Parent/Learner Back now stays in permitted role homes; confirmed dirty-form document navigation avoids duplicate unload prompts.
+- Tested: latest strict lint/typecheck/65 units/schema parity pass. First rebuilt full run: 31 passed, five failed; 20/20 mobile collections had only two incorrectly expected Head Teacher report-access findings. Corrected authorized inventory/stale UI selectors and shared-fixture concurrency without widening access or weakening checks; rebuilt serial 44-test suite is running.
+
+## Final serial E2E, mobile evidence and gate closure — 2026-10-28
+- Tested: rebuilt serial suite green — 44/44 passed (19.3m); mobile audit 0 findings across 20/20 collections covering all 42 route paths × ten roles at 360/390px in four appearances; all ten 360px contact sheets re-inspected visually and every MOBILE_PAGE_AUDIT row moved to Done.
+- Fixed: app bar now names the page instead of a tab sibling sharing /finance (exact-href preference, unit-locked); corrected two stale Director-spec expectations (Accountant guardian privacy, role nav labels) without widening access; enforced least privilege on GET /api/exams (school or assigned-class scope), GET /api/rubrics (school scope) and admission packet reads (owner-only DRAFT, Head Teacher denied DRAFT) with audited denials.
+- Checked after Playwright stopped: strict lint exit 0, typecheck exit 0, 66/66 unit tests, schema parity, production build exit 0, HTTP smoke (health 200, sign-in/privacy 200, unauthenticated APIs 401, dashboard 307, /dev/styleguide 404), git diff --check clean. Budget gate still fails honestly at exit 1: shared 441.6 KiB vs 350 KiB (framework floor), route-own 189.7 KiB vs 250 KiB. No production release; branch push only.

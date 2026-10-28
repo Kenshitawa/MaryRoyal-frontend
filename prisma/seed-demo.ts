@@ -10,7 +10,9 @@ async function main() {
     ["accountant@maryroyal.ac.ke", "Demo Accountant", Role.ACCOUNTANT],
     ["teacher@maryroyal.ac.ke", "Demo Teacher", Role.TEACHER],
     ["parent@maryroyal.ac.ke", "Demo Parent", Role.PARENT],
-    ["learner@maryroyal.ac.ke", "Demo Learner", Role.LEARNER]
+    ["learner@maryroyal.ac.ke", "Demo Learner", Role.LEARNER],
+    ["welfare@maryroyal.ac.ke", "Demo Welfare Chair", Role.WELFARE_CHAIR],
+    ["nonteaching@maryroyal.ac.ke", "Demo Non-Teaching Staff", Role.NON_TEACHING_STAFF]
   ] as const;
   const passwordHash = await bcrypt.hash("MaryRoyal2026!", 12);
   for (const [email, name, role] of accounts) {

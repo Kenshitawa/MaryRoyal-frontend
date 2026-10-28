@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { Role } from "@prisma/client";
 import {
   staffPersonalSchema,
-  staffEmploymentSchema,
   staffEmergencyContactSchema,
   staffStatutorySchema,
   kenyanPhoneRegex,
@@ -14,6 +13,7 @@ import {
   canViewStaffStatutory,
   canEditStaffStatutory,
 } from "../src/lib/permissions";
+import { stripStaffStatutoryFields } from "../src/lib/staff-sanitization";
 
 describe("Staff Validation & Kenyan Identifiers", () => {
   it("validates Kenyan phone numbers in international and national formats", () => {
@@ -132,5 +132,52 @@ describe("Staff Account Authorization Matrix", () => {
       expect(canManageStaffTarget(r, Role.TEACHER)).toBe(false);
       expect(canDeleteStaffAccount(r)).toBe(false);
     }
+  });
+
+  it("safely strips restricted statutory fields from profiles when user is unauthorized", () => {
+    const fullProfile = {
+      id: "prof-1",
+      userId: "usr-1",
+      department: "Mathematics",
+      employmentType: "Permanent",
+      kraPin: "A012345678Z",
+      nssfNumber: "12345678",
+      shaNumber: "SHA-001234",
+      bankName: "KCB",
+      bankAccountName: "Mildred Achieng",
+      bankAccountNumber: "1122334455",
+      bankBranch: "Kisumu",
+    };
+
+    const sanitized = stripStaffStatutoryFields(fullProfile);
+    expect(sanitized).toHaveProperty("department", "Mathematics");
+    expect(sanitized).toHaveProperty("employmentType", "Permanent");
+    expect(sanitized).not.toHaveProperty("kraPin");
+    expect(sanitized).not.toHaveProperty("nssfNumber");
+    expect(sanitized).not.toHaveProperty("shaNumber");
+    expect(sanitized).not.toHaveProperty("bankName");
+    expect(sanitized).not.toHaveProperty("bankAccountNumber");
+  });
+
+  it("handles accounts with null or empty bio/statutory data gracefully", () => {
+    const emptyProfile = {
+      id: "prof-2",
+      userId: "usr-2",
+      department: null,
+      employmentType: null,
+      kraPin: null,
+      nssfNumber: null,
+      shaNumber: null,
+      bankName: null,
+      bankAccountName: null,
+      bankAccountNumber: null,
+      bankBranch: null,
+    };
+
+    const sanitized = stripStaffStatutoryFields(emptyProfile);
+    expect(sanitized.id).toBe("prof-2");
+    expect(sanitized.department).toBeNull();
+    expect(sanitized).not.toHaveProperty("kraPin");
+    expect(sanitized).not.toHaveProperty("bankName");
   });
 });

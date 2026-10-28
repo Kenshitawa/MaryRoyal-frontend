@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const formBaselines = new Map<HTMLFormElement, string>();
 const editedForms = new Set<HTMLFormElement>();
@@ -21,7 +21,7 @@ function formSnapshot(form: HTMLFormElement) {
 }
 
 function hasUnsavedChanges() {
-  return [...editedForms].some(form => form.isConnected && formSnapshot(form) !== formBaselines.get(form));
+  return document.querySelector('form[data-unsaved="true"]') !== null || [...editedForms].some(form => form.isConnected && formSnapshot(form) !== formBaselines.get(form));
 }
 
 function readStack(key: string): string[] {
@@ -36,6 +36,7 @@ export default function PageNavigation({ active, homeHref, userId }: { active: s
   const router = useRouter();
   const storageKey = useMemo(() => `mary-navigation:${userId}`, [userId]);
   const [previousPath, setPreviousPath] = useState<string | null>(null);
+  const confirmedNavigation = useRef(false);
   const isHome = pathname === homeHref || pathname === "/dashboard" && homeHref === "/dashboard";
   const segments = pathname.split("/").filter(Boolean);
   const hasDetail = segments.length > 1;
@@ -99,13 +100,22 @@ export default function PageNavigation({ active, homeHref, userId }: { active: s
       const url = new URL(anchor.href, window.location.href);
       if (url.origin !== window.location.origin || url.pathname === pathname) return;
       rememberScroll();
-      if (hasUnsavedChanges() && !window.confirm("You have unsaved changes. Leave this page and discard them?")) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
+      if (hasUnsavedChanges()) {
+        if (!window.confirm("You have unsaved changes. Leave this page and discard them?")) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return;
+        }
+        confirmedNavigation.current = true;
+        window.setTimeout(() => { confirmedNavigation.current = false; }, 0);
       }
     };
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
       rememberScroll();
+      if (confirmedNavigation.current) {
+        confirmedNavigation.current = false;
+        return;
+      }
       if (!hasUnsavedChanges()) return;
       event.preventDefault();
       event.returnValue = "";
@@ -142,23 +152,30 @@ export default function PageNavigation({ active, homeHref, userId }: { active: s
   }, [pathname, storageKey]);
 
   const back = useCallback(() => {
-    if (hasUnsavedChanges() && !window.confirm("You have unsaved changes. Leave this page and discard them?")) return;
-    formBaselines.clear();
-    editedForms.clear();
+    if (hasUnsavedChanges()) {
+      if (!window.confirm("You have unsaved changes. Leave this page and discard them?")) return;
+      confirmedNavigation.current = true;
+      window.setTimeout(() => { confirmedNavigation.current = false; }, 0);
+    }
     if (pathname.startsWith("/admissions/")) window.location.replace("/learners");
     else {
       const segmentsNow = pathname.split("/").filter(Boolean);
       if (segmentsNow.length === 1) { window.location.replace(homeHref); return; }
       if (previousPath && previousPath !== pathname && !blockedPaths.has(previousPath) && !replaceablePaths.has(previousPath)) { router.replace(previousPath); return; }
-      const fallback = pathname.startsWith("/receipts/") ? homeHref === "/portal" ? "/portal" : "/finance" : segmentsNow.length > 1 ? `/${segmentsNow.slice(0, -1).join("/")}` : homeHref;
+      const fallback = homeHref !== "/dashboard" ? homeHref : pathname.startsWith("/receipts/") ? "/finance" : segmentsNow.length > 1 ? `/${segmentsNow.slice(0, -1).join("/")}` : homeHref;
       router.replace(fallback === pathname || blockedPaths.has(fallback) ? homeHref : fallback);
     }
   }, [homeHref, pathname, previousPath, router]);
 
+  useEffect(() => {
+    window.addEventListener("mary-go-back", back);
+    return () => window.removeEventListener("mary-go-back", back);
+  }, [back]);
+
   const homeLabel = homeHref === "/portal" ? "My children" : homeHref === "/learning" ? "My learning" : "Dashboard";
   const breadcrumb = useMemo(() => {
     if (isHome) return [{ label: active, href: homeHref }];
-    if (pathname.startsWith("/receipts/")) return [{ label: homeLabel, href: homeHref }, { label: active, href: pathname }];
+    if (pathname.startsWith("/receipts/") || homeHref !== "/dashboard" && pathname.startsWith("/learners/")) return [{ label: homeLabel, href: homeHref }, { label: active, href: pathname }];
     if (hasDetail) {
       const parent = `/${segments.slice(0, -1).join("/")}`;
       return [{ label: homeLabel, href: homeHref }, { label: humanize(segments.at(-2) ?? active), href: parent }, { label: humanize(segments.at(-1) ?? active), href: pathname }];
@@ -166,14 +183,13 @@ export default function PageNavigation({ active, homeHref, userId }: { active: s
     return [{ label: homeLabel, href: homeHref }, { label: active, href: pathname }];
   }, [active, hasDetail, homeHref, homeLabel, isHome, pathname, segments]);
 
-  return <div className="border-b border-slate-200/70 bg-white/75 px-4 py-2.5 backdrop-blur sm:px-7 lg:px-10 print:hidden">
-    {!isHome && <div className="mb-1 flex items-center gap-2 lg:hidden"><button type="button" aria-label="Go back" onClick={back} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"><ArrowLeft size={19}/></button><p className="truncate text-sm font-bold text-slate-900">{active}</p></div>}
-    <div className="flex min-h-8 items-center gap-3">
-      {!isHome && <button type="button" aria-label="Go back" onClick={back} className="hidden h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 lg:inline-flex"><ArrowLeft size={15}/> Back</button>}
-      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 overflow-x-auto text-xs text-slate-500">
-        {breadcrumb.map((item, index) => <span key={`${item.href}-${index}`} className="flex shrink-0 items-center gap-1.5">
+  return <div className="hidden border-b border-line-soft bg-surface px-6 py-2 lg:block print:hidden">
+    <div className="flex min-h-11 items-center gap-3">
+      {!isHome && <button type="button" aria-label="Go back" onClick={back} className="btn btn-secondary btn-sm shrink-0"><ArrowLeft size={15} aria-hidden="true"/> Back</button>}
+      <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-1.5 text-label text-ink-3">
+        {breadcrumb.map((item, index) => <span key={`${item.href}-${index}`} className="flex min-w-0 items-center gap-1.5">
           {index > 0 && <ChevronRight size={13} aria-hidden="true"/>}
-          {index === breadcrumb.length - 1 ? <span aria-current="page" className="max-w-48 truncate font-semibold text-slate-800">{item.label}</span> : <Link href={item.href} className="rounded px-1 py-1 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">{item.label}</Link>}
+          {index === breadcrumb.length - 1 ? <span aria-current="page" className="max-w-48 truncate font-semibold text-ink">{item.label}</span> : <Link href={item.href} className="inline-flex min-h-11 items-center rounded px-2 hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{item.label}</Link>}
         </span>)}
       </nav>
     </div>

@@ -58,7 +58,7 @@ const grants: Record<Role, string[]> = {
   [Role.SECRETARY]: [
     "dashboard:view", "staff:view", "staffAttendance:view", "learners:view", "learners:update", "admissions:view",
     "admissions:create", "admissions:update", "admissions:submit", "admissions:delete", "learnerAccounts:create", "finance:view",
-    "invoices:view", "payments:view", "payments:create", "feeStructures:view",
+    "invoices:view", "feeStructures:view",
     "welfare:view", "welfare:apply", "notifications:view", "notifications:update"
   ],
   [Role.ACCOUNTANT]: [
@@ -130,9 +130,10 @@ describe("permission matrix", () => {
     expect(can(Role.DIRECTOR, "accounts", "create")).toBe(true);
   });
 
-  it("allows Secretary and Accountant to record payments while keeping voiding restricted", () => {
+  it("keeps Secretary read-only for payments while Accountant records and manages them", () => {
     expect(can(Role.SECRETARY, "invoices", "view")).toBe(true);
-    expect(can(Role.SECRETARY, "payments", "create")).toBe(true);
+    expect(can(Role.SECRETARY, "payments", "view")).toBe(false);
+    expect(can(Role.SECRETARY, "payments", "create")).toBe(false);
     expect(can(Role.SECRETARY, "payments", "update")).toBe(false);
     expect(can(Role.ACCOUNTANT, "invoices", "create")).toBe(true);
     expect(can(Role.ACCOUNTANT, "payments", "create")).toBe(true);

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { assertCanInScope, canManageStaffTarget, canViewStaffStatutory, canEditStaffStatutory } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { staffCreateWizardSchema } from "@/lib/staff-validation";
+import { stripStaffStatutoryFields } from "@/lib/staff-sanitization";
 
 async function actor() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -127,16 +128,7 @@ export async function GET(request: Request) {
   const sanitized = staff.map((member) => {
     if (!member.staffProfile) return member;
     if (!canSeeStatutory) {
-      const {
-        kraPin,
-        nssfNumber,
-        shaNumber,
-        bankName,
-        bankAccountName,
-        bankAccountNumber,
-        bankBranch,
-        ...safeProfile
-      } = member.staffProfile;
+      const safeProfile = stripStaffStatutoryFields(member.staffProfile);
       return { ...member, staffProfile: safeProfile };
     }
     return member;

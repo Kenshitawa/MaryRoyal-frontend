@@ -2,8 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Sparkles, LayoutGrid, Sun, Moon } from "lucide-react";
+import { IconButton } from "@/components/ui/actions";
 
-export type UITheme = "light" | "dark";
+export type UITheme = "light" | "dark" | "system";
 export type UIStyle = "bento" | "glass";
 
 interface ThemeContextType {
@@ -39,13 +40,13 @@ export function ThemeProvider({
   useEffect(() => {
     // 1. Initialize Light/Dark
     const savedTheme = localStorage.getItem("mary-theme") as UITheme | null;
-    const isDark = savedTheme === "dark";
+    const isDark = savedTheme === "dark" || (savedTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
     if (isDark) {
       document.documentElement.dataset.theme = "dark";
-      setThemeState("dark");
+      setThemeState(savedTheme === "system" ? "system" : "dark");
     } else {
       document.documentElement.dataset.theme = "light";
-      setThemeState("light");
+      setThemeState(savedTheme === "system" ? "system" : "light");
     }
 
     // 2. Initialize Bento/Glass Style
@@ -55,14 +56,17 @@ export function ThemeProvider({
     );
     document.documentElement.dataset.style = initialStyle;
     setStyleState(initialStyle);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const updateSystemTheme = () => {
+      if (localStorage.getItem("mary-theme") === "system") document.documentElement.dataset.theme = media.matches ? "dark" : "light";
+    };
+    media.addEventListener("change", updateSystemTheme);
+    return () => media.removeEventListener("change", updateSystemTheme);
   }, [defaultRole]);
 
   const setTheme = (newTheme: UITheme) => {
-    if (newTheme === "dark") {
-      document.documentElement.dataset.theme = "dark";
-    } else {
-      document.documentElement.dataset.theme = "light";
-    }
+    const dark = newTheme === "dark" || (newTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
     localStorage.setItem("mary-theme", newTheme);
     setThemeState(newTheme);
   };
@@ -120,15 +124,14 @@ export function ThemeStyleControls({ compact = false }: { compact?: boolean }) {
 
       <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" aria-hidden="true" />
 
-      <button
-        type="button"
+      <IconButton
+        ariaLabel={`Switch mode (currently ${theme === "dark" ? "Dark" : "Light"})`}
         onClick={toggleTheme}
         title={`Switch mode (currently ${theme === "dark" ? "Dark" : "Light"})`}
-        aria-label={`Switch mode (currently ${theme === "dark" ? "Dark" : "Light"})`}
         className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
       >
         {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-      </button>
+      </IconButton>
     </div>
   );
 }

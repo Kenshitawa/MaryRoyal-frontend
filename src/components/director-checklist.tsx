@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Circle, ArrowRight, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
-import { ThemedCard } from "@/components/design-system/card";
 
 interface ChecklistItem {
   id: string;
@@ -29,7 +28,7 @@ export function DirectorGettingStartedChecklist({
     paymentsCount: number;
   };
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   const steps: ChecklistItem[] = [
     {
@@ -109,88 +108,63 @@ export function DirectorGettingStartedChecklist({
   if (progressPercent >= 100) return null;
 
   return (
-    <ThemedCard className="mb-6 overflow-hidden border-blue-200/80 p-0 shadow-md">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 px-6 py-4 text-white">
-        <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 text-blue-200">
-            <Sparkles size={18} />
-          </div>
-          <div>
-            <h2 className="text-base font-extrabold tracking-tight">
-              School Setup Guide &amp; Launch Order
-            </h2>
-            <p className="text-xs text-blue-200">
+    <section className="card overflow-hidden p-0" aria-label="School setup guide">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-brand px-4 py-3 text-white">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/15">
+            <Sparkles size={17} aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-title font-semibold">School setup guide</h2>
+            <p className="text-caption text-white">
               {completedCount} of {steps.length} steps complete ({progressPercent}%)
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden h-2 w-36 overflow-hidden rounded-full bg-white/20 sm:block">
-            <div
-              className="h-full rounded-full bg-emerald-400 transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-semibold text-white hover:bg-white/20"
-          >
-            {collapsed ? "Show steps" : "Hide"}
-            {collapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setCollapsed(!collapsed)}
+          aria-expanded={!collapsed}
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-white/50 px-3 text-label font-semibold text-white hover:bg-white/15"
+        >
+          {collapsed ? "Show steps" : "Hide"}
+          {collapsed ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}
+        </button>
       </div>
 
-      {/* Steps body */}
       {!collapsed && (
-        <div className="divide-y divide-slate-100 bg-white p-2 dark:divide-slate-800 dark:bg-slate-900">
-          {steps.map(step => (
-            <div
-              key={step.id}
-              className="flex flex-wrap items-center justify-between gap-3 p-3.5 transition hover:bg-slate-50/70 dark:hover:bg-slate-800/40 rounded-xl"
-            >
-              <div className="flex items-start gap-3 min-w-0 flex-1">
-                <div className="mt-0.5 shrink-0">
+        <ol className="divide-y divide-line-soft bg-surface">
+          {steps.map((step) => (
+            <li key={step.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-1 items-start gap-2.5">
+                <span className="mt-0.5 shrink-0">
                   {step.completed ? (
-                    <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
+                    <CheckCircle2 size={18} className="text-success" aria-hidden="true" />
                   ) : (
-                    <Circle size={18} className="text-slate-300 dark:text-slate-600" />
+                    <Circle size={18} className="text-ink-3" aria-hidden="true" />
                   )}
-                </div>
+                </span>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      Step {step.step}: {step.title}
-                    </span>
-                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800">
-                      {step.role}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    {step.description}
+                  <p className="text-body font-semibold text-ink">
+                    <span className="text-ink-3">Step {step.step}.</span> {step.title}
                   </p>
+                  <p className="mt-0.5 text-label text-ink-2">{step.description}</p>
+                  <p className="mt-1 text-caption text-ink-3">{step.role}</p>
                 </div>
               </div>
-
-              <div>
-                <Link
-                  href={step.href}
-                  className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                    step.completed
-                      ? "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
-                      : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-                  }`}
-                >
-                  <span>{step.actionText}</span>
-                  <ArrowRight size={13} />
-                </Link>
-              </div>
-            </div>
+              {step.completed ? null : (
+              <Link
+                href={step.href}
+                className={`btn btn-sm shrink-0 sm:self-center ${step.completed ? "btn-secondary" : "btn-primary"} w-full sm:w-auto`}
+              >
+                {step.actionText}
+                <ArrowRight size={14} aria-hidden="true" />
+              </Link>
+              )}
+            </li>
           ))}
-        </div>
+        </ol>
       )}
-    </ThemedCard>
+    </section>
   );
 }

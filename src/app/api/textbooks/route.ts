@@ -40,7 +40,11 @@ export async function GET() {
     return NextResponse.json({ textbooks: textbooks.map((b) => ({ ...b, issues: [] })), myIssues });
   }
 
-  return NextResponse.json({ textbooks, myIssues: [] });
+  const canIssue = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY"].includes(user.role);
+  const staffOptions = canIssue
+    ? await db.user.findMany({ where: { role: { in: ["TEACHER", "DEPUTY"] }, suspended: false }, select: { id: true, name: true, role: true }, orderBy: { name: "asc" } })
+    : [];
+  return NextResponse.json({ textbooks, myIssues: [], staffOptions });
 }
 
 const createSchema = z.object({

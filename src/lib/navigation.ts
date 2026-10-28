@@ -476,3 +476,44 @@ export function getMobileNavigation(role: string): RoleMobileNav {
 export function getNavigationHref(label: string, role: string): string | undefined {
   return getRoleNavigation(role).find((item) => item.label === label)?.href;
 }
+
+/** Flat list of every destination a role may open from the mobile navigation. */
+export function getMobileDestinations(role: string): (MobileNavItem & { group: string })[] {
+  const nav = getMobileNavigation(role);
+  return [
+    ...nav.primary.map((item) => ({ ...item, group: item.href === "/dashboard" ? "Overview" : item.label })),
+    ...nav.moreCategories.flatMap((category) => category.items.map((item) => ({ ...item, group: category.category }))),
+  ];
+}
+
+const detailSections: { prefix: string; roles?: string[]; label: string }[] = [
+  { prefix: "/learners/", label: "Learners" },
+  { prefix: "/staff/new", label: "Staff" },
+  { prefix: "/staff/", label: "Staff" },
+  { prefix: "/admissions/new", label: "Admissions" },
+  { prefix: "/admissions/", label: "Admissions" },
+  { prefix: "/assessments/exams", label: "Exams", roles: ["DEPUTY"] },
+  { prefix: "/assessments", label: "Academics" },
+  { prefix: "/finance/structures", label: "Finance" },
+  { prefix: "/finance", label: "Finance" },
+  { prefix: "/receipts", label: "Finance" },
+  { prefix: "/profile", label: "Settings" },
+  { prefix: "/privacy", label: "Settings" },
+  { prefix: "/audit", label: "Settings" },
+  { prefix: "/complaints", label: "Messages" },
+  { prefix: "/learning-videos", label: "Academics" },
+];
+
+/** Section label shown in the compact app bar (never duplicates the page title). */
+export function getSectionForPath(pathname: string, role: string): string {
+  const path = pathname.split("?")[0];
+  if (path === "/dashboard") return "Overview";
+  const destinations = getMobileDestinations(role);
+  // Tab siblings share one pathname, so an exact href must win before a pathname-only match.
+  const exact = destinations.find((item) => item.href === pathname) ?? destinations.find((item) => item.href.split("?")[0] === path);
+  if (exact) return exact.group;
+  const detail = detailSections.find((item) => path.startsWith(item.prefix) && (!item.roles || item.roles.includes(role)));
+  if (detail) return detail.label;
+  return "Workspace";
+}
+

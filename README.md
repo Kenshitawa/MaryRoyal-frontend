@@ -4,7 +4,7 @@ A local-first school administration portal for Mary Royal School, Obunga, Kisumu
 
 ## Local setup
 
-Install Node.js 20.9 or newer and npm. The first setup needs internet access to install packages. No cloud account or paid service is required.
+Install Node.js 20.9–22 and npm, matching `package.json` engines. Node 24/26 is outside the declared support range; rerun acceptance on Node 22 before release. On Windows use `cmd /c "npm run <script>"` or `npm.cmd` to avoid PowerShell's blocked `npm.ps1`. The first setup needs internet access to install packages. No cloud account or paid service is required.
 
 ### Windows (PowerShell)
 
@@ -59,20 +59,25 @@ Learner and parent logins are not created automatically at admission. The Secret
 
 ## Commands
 
-- `npm run setup` — install, apply local schema, create Director and school defaults
-- `npm run seed:demo` — add synthetic users and walkthrough data
-- `npm run reset:fresh` — confirm and clear local school records while restoring defaults
+- `npm run setup` — install, apply local schema, create Director and school defaults; local only
+- `npm run seed:demo` — optional synthetic data; never use on production or the cleaned development database
+- `npm run reset:fresh` — destructive local reset; requires explicit intent. `-- --demo-only` verifies the original thirty seed learners and preserves Director/non-demo accounts, credentials, defaults and uploads. Do not repeat it on the now-empty development database.
 - `npm run dev` — run the local development server
-- `npm run build` — production build
-- `npm run lint` — ESLint
+- `npm run build` — SQLite-schema application build
+- `npm run build:production` — PostgreSQL-schema application build; does not apply migrations or establish release readiness
+- `npm run lint` — ESLint with zero-warning gate
 - `npm run typecheck` — strict TypeScript check
 - `npm test` — Vitest unit suite
-- `npm run test:e2e` — seed synthetic data and run Playwright browser checks
-- `npm run backup` — copy the local SQLite database into `backups/`
+- `npm run test:e2e` — reset/seed only the dedicated isolated test database, build and run Playwright; never overlaps lint/typecheck/build
+- `npm run backup:sqlite` — local SQLite copy into ignored `backups/`
+- `npm run backup` — encrypted PostgreSQL backup; separately authorized target/configuration required
+- `npm run restore:postgres` — restore into a separately approved empty non-production PostgreSQL database; explicit confirmation required
 
 ## Backup restore
 
-Stop the app, preserve `prisma/dev.db`, and replace it with the selected file in `backups/`. Start the app and verify records. Backups contain children’s information; restrict and encrypt them.
+For local SQLite recovery, stop the app, preserve the current database, then restore the explicitly selected backup and verify it locally. Never use this procedure for production. PostgreSQL recovery and private-file preservation require the separate approved rehearsal in [owner actions](docs/OWNER_ACTIONS.md). Backups contain children’s information; restrict access, protect encryption keys separately, and never commit them.
+
+The 2026-10-28 local demo-only cleanup retained the Director and a non-demo Parent with unchanged credentials/defaults and uploaded files; no demo school records remain. Production data and deployment were untouched.
 
 ## Current status
 
