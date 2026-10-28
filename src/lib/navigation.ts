@@ -187,7 +187,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
       { label: "Learners", href: "/learners", icon: Users },
-      { label: "Attendance", href: "/attendance", icon: CalendarCheck },
+      { label: "Register", href: "/attendance", icon: CalendarCheck },
       { label: "Complaints", href: "/complaints", icon: MessageCircle, badgeKey: "complaints" },
     ],
     moreCategories: [
@@ -237,7 +237,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
   DEPUTY: {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
-      { label: "Attendance", href: "/attendance", icon: CalendarCheck },
+      { label: "Register", href: "/attendance", icon: CalendarCheck },
       { label: "Exams", href: "/assessments", icon: BookOpen },
       { label: "Timetable", href: "/timetable", icon: CalendarDays },
     ],
@@ -270,7 +270,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
   SECRETARY: {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
-      { label: "Admissions", href: "/admissions", icon: ClipboardList },
+      { label: "Intake", href: "/admissions", icon: ClipboardList },
       { label: "Learners", href: "/learners", icon: Users },
       { label: "Fees", href: "/finance", icon: Wallet },
     ],
@@ -332,9 +332,9 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
   TEACHER: {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
-      { label: "Attendance", href: "/attendance", icon: CalendarCheck },
+      { label: "Register", href: "/attendance", icon: CalendarCheck },
       { label: "Marks", href: "/assessments", icon: BookOpen },
-      { label: "My Classes", href: "/learners", icon: Users },
+      { label: "Classes", href: "/learners", icon: Users },
     ],
     moreCategories: [
       {
@@ -410,7 +410,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       { label: "Home", href: "/learning", icon: GraduationCap },
       { label: "Homework", href: "/assignments", icon: ClipboardList },
       { label: "Results", href: "/learning?tab=results", icon: Trophy },
-      { label: "My Learning", href: "/learning-videos", icon: BookOpenCheck },
+      { label: "Learning", href: "/learning-videos", icon: BookOpenCheck },
     ],
     moreCategories: [
       {

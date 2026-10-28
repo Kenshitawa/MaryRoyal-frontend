@@ -395,3 +395,7 @@ Total output lines: 287
 ## Qoder UI pass: attendance, documents, welfare scope -- 2026-10-28
 - Built: Attendance header/KPI/register refresh with an always-visible PageHeader, embedded KICD video heading (single h1), and a role-scoped welfare staff directory endpoint so the Director and Welfare Chair no longer hit 403s; Head Teacher gained report/export reads.
 - Tested: `npm run typecheck` and `npm run lint` (0 warnings, 0 errors) passed after the batch.
+
+## Qoder UI pass: royal-blue identity -- 2026-10-28
+- Built: Royal-blue sidebar, top bar, mobile app bar and bottom nav; blue gradient PageHeader with inverted actions and a light-blue meta chip; blue-tinted KPI cards; blue accent bars on card titles. Converted the assessments, exams, rubrics, timetable, library, welfare, schemes, fee structures, profile and learner-edit headers to the shared PageHeader; white logo tiles on blue chrome; fixed a layered-CSS bug that made `text-white` buttons inherit dark text; shortened bottom-nav labels that truncated at 360px.
+- Tested: visually checked at 360px and 1440px in light and dark (login, dashboard, assessments, finance, library, timetable, welfare, profile, accounts, admissions, reports, parent portal); `npm run typecheck` and `npm run lint` passed.

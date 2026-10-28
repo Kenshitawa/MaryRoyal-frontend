@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/primitives";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -119,44 +120,22 @@ export default function FeeStructuresClient({ canManage }: { canManage: boolean 
   const uniqueGrades = new Set(structures.map((s) => s.grade)).size;
 
   return (
-    <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
-      {/* Back Link */}
-      <Link
-        href="/finance"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 transition hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-      >
-        <ArrowLeft size={14} />
-        Back to Finance Overview
+    <section className="mx-auto max-w-7xl space-y-4">
+      <Link href="/finance" className="inline-flex min-h-11 items-center gap-1.5 text-label font-semibold text-brand hover:underline">
+        <ArrowLeft size={14} aria-hidden="true" /> Back to finance overview
       </Link>
-
-      {/* Header Banner */}
-      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50/80 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300">
-              <Layers size={12} />
-              Tariff Settings
-            </span>
-          </div>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-            Approved Fee Structures
-          </h1>
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-            Centrally defined tuition and auxiliary line-items per grade and term. All changes are
-            versioned.
-          </p>
-        </div>
-
-        {canManage && (
-          <button
-            onClick={() => setShowAdd(!showAdd)}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-700 px-5 text-xs font-bold text-white shadow-md shadow-blue-700/20 transition hover:brightness-110 active:scale-95"
-          >
-            <Plus size={15} />
-            {showAdd ? "Close Configuration" : "Configure Fee Structure"}
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Approved Fee Structures"
+        help="Centrally defined tuition and auxiliary line items per grade and term. All changes are versioned."
+        meta="Tariff settings"
+        action={
+          canManage ? (
+            <button onClick={() => setShowAdd(!showAdd)} className="btn btn-primary btn-sm">
+              <Plus size={15} aria-hidden="true" /> {showAdd ? "Close configuration" : "Configure fee structure"}
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* KPI Bento Grid */}
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">

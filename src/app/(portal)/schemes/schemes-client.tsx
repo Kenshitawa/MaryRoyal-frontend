@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LayoutList, Plus, CheckCircle2, XCircle, Filter, X, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/ui/primitives";
 
 type Teaching = { grade: string; subject: string };
 type Scheme = {
@@ -135,20 +136,18 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
   });
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-10">
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-white">
-            <LayoutList size={24} className="text-purple-700" /> Schemes of Work
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">{isTeacher ? "Submit and track your weekly lesson schemes" : "Review and verify teacher schemes of work"}</p>
-        </div>
-        {isTeacher && (
-          <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 rounded-xl bg-purple-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-800 shadow-sm">
-            <Plus size={15} /> Submit Scheme
-          </button>
-        )}
-      </div>
+    <div className="mx-auto max-w-5xl space-y-3">
+      <PageHeader
+        title="Schemes of Work"
+        help={isTeacher ? "Submit and track your weekly lesson schemes." : "Review and verify teacher schemes of work."}
+        action={
+          isTeacher ? (
+            <button onClick={() => setShowCreate(true)} className="btn btn-primary btn-sm">
+              <Plus size={15} aria-hidden="true" /> Submit scheme
+            </button>
+          ) : undefined
+        }
+      />
 
       {msg && (
         <div className={`mb-4 rounded-xl p-3 text-sm font-semibold ${msg.ok ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`}>{msg.text}</div>

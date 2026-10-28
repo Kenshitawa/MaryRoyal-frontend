@@ -43,6 +43,9 @@ for (const role of selected) {
     try {
       await page.goto(base + route, { waitUntil: "networkidle", timeout: 60_000 });
       await page.waitForTimeout(250);
+      // Fixed chrome would paint mid-page on a full-page capture; the nav itself is audited separately.
+      await page.addStyleTag({ content: ".mobile-nav,.sheet-backdrop{display:none!important}" });
+      await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({ path: path.join(outDir, file), fullPage: process.env.SHOT_FULL !== "0" });
       shots.push(file);
     } catch (error) {

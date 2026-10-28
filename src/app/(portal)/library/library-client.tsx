@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Library, Plus, BookOpen, Check, RotateCcw, X, AlertCircle, Loader2, Package, Sparkles } from "lucide-react";
+import { Plus, BookOpen, Check, RotateCcw, X, AlertCircle, Loader2, Package, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/ui/primitives";
 
 type Textbook = {
   id: string;
@@ -121,20 +122,18 @@ export default function LibraryClient({ role }: { role: string; userId?: string 
   const pendingConfirm = myIssues.filter((i) => i.status === "ISSUED_PENDING_CONFIRMATION" || i.status === "RETURN_REQUESTED");
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-10">
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-white">
-            <Library size={24} className="text-blue-700" /> Library &amp; Textbooks
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">{isAdmin ? "Manage textbook inventory and issuance" : "View your issued textbooks and confirm receipt"}</p>
-        </div>
-        {isAdmin && (
-          <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 shadow-sm">
-            <Plus size={15} /> Add Textbook
-          </button>
-        )}
-      </div>
+    <div className="mx-auto max-w-5xl space-y-3">
+      <PageHeader
+        title="Library & Textbooks"
+        help={isAdmin ? "Manage textbook inventory and issuance across the school." : "View your issued textbooks and confirm receipt."}
+        action={
+          isAdmin ? (
+            <button onClick={() => setShowCreate(true)} className="btn btn-primary btn-sm">
+              <Plus size={15} aria-hidden="true" /> Add textbook
+            </button>
+          ) : undefined
+        }
+      />
 
       {msg && (
         <div className={`mb-4 rounded-xl p-3 text-sm font-semibold ${msg.ok ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`}>

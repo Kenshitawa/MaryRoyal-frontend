@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, CheckCircle2, Lock, Unlock, AlertCircle } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
+import { PageHeader } from "@/components/ui/primitives";
 import { StatusPill } from "@/components/design-system/status-pill";
 
 interface ExamSession {
@@ -124,26 +125,17 @@ export default function ExamSessionsClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Exam Sessions &amp; Timetables
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Deputy Head Teacher schedules term exam sessions. Teachers can only enter marks for Active sessions.
-          </p>
-        </div>
-
-        {canManage && (
-          <button
-            onClick={() => setShowCreate(!showCreate)}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 active:scale-95"
-          >
-            <Plus size={16} />
-            <span>{showCreate ? "Cancel" : "New Exam Session"}</span>
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Exam Sessions & Timetables"
+        help="The Deputy Head Teacher schedules term exam sessions. Teachers can only enter marks for active sessions."
+        action={
+          canManage ? (
+            <button onClick={() => setShowCreate(!showCreate)} className="btn btn-primary btn-sm">
+              <Plus size={16} aria-hidden="true" /> {showCreate ? "Cancel" : "New exam session"}
+            </button>
+          ) : undefined
+        }
+      />
 
       {notice && (
         <div className="rounded-xl bg-blue-50 p-4 text-sm font-semibold text-blue-900 dark:bg-blue-950/50 dark:text-blue-200">

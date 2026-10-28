@@ -5,6 +5,7 @@ import {
   HeartHandshake, TrendingUp, PiggyBank, CreditCard, Plus, AlertCircle,
   CheckCircle2, Users, ChevronDown, ChevronUp, Banknote, Gift, X, Loader2
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/primitives";
 
 type WelfareMember = {
   id: string;
@@ -198,23 +199,18 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
   const selfActiveLoans = myMember?.loans.filter((l) => !["REJECTED", "PAID"].includes(l.status)) ?? [];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-10">
-      {/* Header */}
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <HeartHandshake size={26} className="text-rose-600" /> Staff Welfare
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">Mary Royal School — Teachers &amp; Staff Welfare Programme</p>
-        </div>
-        {canCreate && (
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => setShowEnroll(true)} className="flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 shadow-sm">
-              <Plus size={15} /> Enroll Member
+    <div className="mx-auto max-w-6xl space-y-3">
+      <PageHeader
+        title="Staff Welfare"
+        help="Mary Royal School teachers and staff welfare programme — savings, loans and contributions."
+        action={
+          canCreate ? (
+            <button onClick={() => setShowEnroll(true)} className="btn btn-primary btn-sm">
+              <Plus size={15} aria-hidden="true" /> Enroll member
             </button>
-          </div>
-        )}
-      </div>
+          ) : undefined
+        }
+      />
 
       {msg && (
         <div className={`mb-4 rounded-xl p-3 text-sm font-semibold ${msg.ok ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`}>

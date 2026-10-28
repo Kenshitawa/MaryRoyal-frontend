@@ -311,7 +311,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
         </div>
 
         {/* Stepper Dots */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-1 pb-2">
+        <div className="mt-6 grid grid-cols-4 gap-2 pb-2 sm:grid-cols-7">
           {STEPS.map((step) => {
             const Icon = step.icon;
             const isCompleted = currentStep > step.id;
@@ -324,7 +324,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
                   if (step.id < currentStep) setCurrentStep(step.id);
                 }}
                 disabled={step.id > currentStep}
-                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition shrink-0 ${
+                className={`flex min-h-11 items-center justify-center gap-2 rounded-xl px-2 py-2 text-label font-semibold transition ${
                   isCurrent
                     ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
                     : isCompleted

@@ -6,6 +6,7 @@ import { Calendar, Sparkles } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
 import { LearnerLink } from "@/components/learner-link";
+import { PageHeader } from "@/components/ui/primitives";
 
 type Learner = { id: string; name: string; admissionNo: string; grade: string };
 type Assessment = {
@@ -188,45 +189,30 @@ export default function AssessmentWorkspace({
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Fast Navigation */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            CBC Assessments &amp; Results
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Record competency-based scores, review submissions, and release official report cards.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/assessments/exams"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-          >
-            <Calendar size={14} className="text-blue-600" />
-            <span>Exam Sessions</span>
-          </Link>
-          <Link
-            href="/assessments/rubrics"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-          >
-            <Sparkles size={14} className="text-indigo-600" />
-            <span>CBC Rubrics</span>
-          </Link>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400">
+      <PageHeader
+        title="CBC Assessments & Results"
+        help="Record competency-based scores, review submissions, and release official report cards."
+        action={
+          <>
+            <Link href="/assessments/exams" className="btn btn-secondary btn-sm">
+              <Calendar size={14} aria-hidden="true" /> Exam sessions
+            </Link>
+            <Link href="/assessments/rubrics" className="btn btn-secondary btn-sm">
+              <Sparkles size={14} aria-hidden="true" /> CBC rubrics
+            </Link>
             <select
               value={term}
-              onChange={e => setTerm(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              onChange={(event) => setTerm(event.target.value)}
+              aria-label="Assessment term"
+              className="h-11 rounded-lg border border-white bg-white px-3 text-label font-semibold text-brand-ink"
             >
-              {["2026 Term 1", "2026 Term 2", "2026 Term 3"].map(t => (
-                <option key={t}>{t}</option>
+              {["2026 Term 1", "2026 Term 2", "2026 Term 3"].map((option) => (
+                <option key={option} className="text-slate-900">{option}</option>
               ))}
             </select>
-          </label>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Rubric Scale Quick Reference Strip */}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 text-xs font-bold">

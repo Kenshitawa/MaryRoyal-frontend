@@ -61,7 +61,7 @@ export function PageHeader({
           <h1 className="page-title break-words">{title}</h1>
           {help ? <p className="page-help mt-1">{help}</p> : null}
         </div>
-        {action ? <div className="flex shrink-0 items-center gap-2">{action}</div> : null}
+        {action ? <div className="flex min-w-0 flex-wrap items-center gap-2">{action}</div> : null}
       </div>
     </div>
   );
@@ -106,7 +106,7 @@ export function StatCard({
       {note ? <p className="mt-1 text-caption text-ink-3">{note}</p> : null}
     </>
   );
-  const className = "card min-w-0 p-3.5 sm:p-4";
+  const className = "card stat-card min-w-0 p-3.5 sm:p-4";
   return href ? (
     <a href={href} className={`${className} block no-underline transition hover:border-brand-line`}>
       {body}

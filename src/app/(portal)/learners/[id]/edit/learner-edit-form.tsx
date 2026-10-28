@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Save, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/primitives";
 
 interface LearnerEditFormProps {
   learner: {
@@ -98,38 +99,21 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5 dark:border-slate-800">
-        <div>
-          <Link
-            href={`/learners/${learner.id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-900 dark:text-blue-400"
-          >
-            <ArrowLeft size={14} /> Back to Profile
-          </Link>
-          <h1 className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
-            Edit Learner Profile · {learner.name}
-          </h1>
-          <p className="mt-1 text-xs text-slate-500">
-            Admission No: <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{learner.admissionNo}</span> (Secretary & Head Teacher access only)
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/learners/${learner.id}`}
-            className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          >
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            disabled={busy}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-700/20 transition hover:bg-blue-800 disabled:opacity-50"
-          >
-            {busy ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-            Save Profile
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title={`Edit Learner Profile · ${learner.name}`}
+        help={`Admission No: ${learner.admissionNo}. Secretary and Head Teacher access only.`}
+        action={
+          <>
+            <Link href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
+              <ArrowLeft size={14} aria-hidden="true" /> Back to profile
+            </Link>
+            <button type="submit" disabled={busy} className="btn btn-primary btn-sm">
+              {busy ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : <Save size={15} aria-hidden="true" />}
+              Save profile
+            </button>
+          </>
+        }
+      />
 
       {error && (
         <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-bold text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { PageHeader } from "@/components/ui/primitives";
 import {
   CalendarDays,
   Sparkles,
@@ -361,43 +362,31 @@ export default function TimetableClient({
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-7 w-7 text-blue-700 dark:text-blue-400" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              School Timetable
-            </h1>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Mary Royal School lesson scheduling, teacher workload distribution & verification
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {isAdmin && (
-            <button
-              onClick={() => {
-                setActiveTab("builder");
-                if (builderSlots.length === 0) handleGenerateAiSchedule();
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg text-sm shadow transition"
-            >
-              <Sparkles className="h-4 w-4" />
-              AI Timetable Builder
+    <div className="space-y-4">
+      <PageHeader
+        title="School Timetable"
+        help="Lesson scheduling, teacher workload distribution and verification for the whole school."
+        action={
+          <>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setActiveTab("builder");
+                  if (builderSlots.length === 0) handleGenerateAiSchedule();
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                AI timetable builder
+              </button>
+            )}
+            <button onClick={() => window.print()} className="btn btn-secondary btn-sm">
+              <Printer className="h-4 w-4" aria-hidden="true" />
+              Print
             </button>
-          )}
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition"
-          >
-            <Printer className="h-4 w-4" />
-            Print
-          </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {statusMessage && (
         <div
