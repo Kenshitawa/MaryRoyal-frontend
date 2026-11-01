@@ -1,6 +1,6 @@
 # Mary Royal SMS — remaining work
 
-This roadmap separates source implementation from verified local acceptance and owner-approved production release. Preparation is **not deployment**, permission to contact production, or permission to clean production data. No production request, migration, seed, reset, account change or release is authorized by this documentation pass.
+This roadmap separates source implementation, verified acceptance, and production release status. It does not itself authorize production changes; see the owner-directed release record below for the specific migration and deployment performed on 2026-11-01.
 
 ## Current local preparation status — 2026-10-28
 
@@ -12,7 +12,15 @@ This roadmap separates source implementation from verified local acceptance and 
 - A local backup is retained in the ignored `backups/` directory. Uploads were retained to avoid deleting files belonging to preserved accounts; orphan-file cleanup requires a separate verified retention plan. A local SQLite backup is not evidence of encrypted PostgreSQL recovery.
 - Every existing row in `docs/UI_UPGRADE_CHECKLIST.md` now distinguishes current source capability, unbuilt work and pending verification. The historic visual baseline does not certify planned functionality as shipped.
 
-## Current release-blocking gates
+## Owner-directed production release — 2026-11-01
+
+- The owner explicitly directed deployment of feature commit 02712366cfc50a00e77d0ef2ec89e6ec3c4d07da to Vercel Production while assuming unresolved gates, and deferred the encrypted production backup. This is a risk acceptance for this deployment only; it does not close the technical gates below or certify the app for real learner data.
+- Applied PostgreSQL migration 0005_staff_profiles to the Supabase maryroyal production project, recorded as migration version 20261101161641. Preflight showed all six target tables absent. Post-migration verification found all six present and, across 58 public tables, RLS enabled, no anon/authenticated table grants, and no public-schema usage for those roles.
+- Vercel created a Production deployment from the feature branch commit using the Production environment, not the staging Preview environment. Vercel reported Ready and attached portal.maryroyalschool.co.ke. Live checks returned: sign-in page 200, /api/health 200 with status ok (database SELECT 1), and unauthenticated /api/learners and /api/staff 401.
+- Current local checks: lint, type-check, 66 unit tests, schema parity, limited history secret scan, production build, and git diff --check passed. The shared JavaScript budget still fails (441.6 KiB vs 350 KiB; route-specific 189.7 KiB vs 250 KiB). The full 44-test E2E run was stopped after 25 passed; 19 were not run. Local Node 26.12.1 remains outside the declared 20.9–22 range. No authenticated production workflow was exercised.
+- Remaining gates are still open: complete privacy/IDOR and workflow verification, privacy/legal operations, durable authentication/session controls, encrypted backup/restore and private-file recovery, full E2E, compatible-runtime acceptance, and the shared-bundle budget decision. Do not call the deployment fully production-ready or enable real learner data on this evidence.
+
+## Remaining release-readiness gates (not cleared by the owner override)
 
 1. **Local acceptance:** fresh full permission/IDOR suite, rebuilt full Playwright E2E including mobile audit, production-schema build, local HTTP smoke checks and `git diff --check`. Resolve the shared-bundle failure and all required accessibility/navigation/print defects. Do not mark U11 complete without these results.
 2. **Server least privilege and child-data privacy:** reconcile every read/mutation with `src/lib/permissions.ts` and approved product rules, including nested records/files and the specific gaps below. UI hiding, styled tabs and passing unit tests are insufficient.
@@ -103,7 +111,7 @@ Deputy timetable, textbook library and schemes foundations now exist, so their e
 
 ## U11 final local acceptance
 
-U11 is the final local acceptance/hardening gate, not deployment. Require full permission/IDOR and rebuilt E2E/mobile suites, production-schema build, local smoke checks, budget acceptance, `git diff --check`, checklist reconciliation and guide/README review. Required U4/U6/U7/U9/U10 items remain incomplete or unverified; **U11 is not complete and the release remains blocked**.
+U11 is the final local acceptance/hardening gate, not deployment. Require full permission/IDOR and rebuilt E2E/mobile suites, production-schema build, local smoke checks, budget acceptance, `git diff --check`, checklist reconciliation and guide/README review. Required U4/U6/U7/U9/U10 items remain incomplete or unverified; **U11 is not complete**. The 2026-11-01 Production deployment was explicitly authorized while these gates were assumed; this is not evidence that they passed.
 
 Use the dedicated isolated local E2E database/build (`scripts/run-e2e.mjs`), never production or the preserved development accounts. No routine Director-only reset should overwrite the currently preserved non-demo Parent or credentials. Owner-approved scope reductions, if any, must be explicit; visual styling does not silently reduce acceptance requirements.
 

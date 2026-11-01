@@ -1,5 +1,8 @@
 # Decisions
 
+- 2026-11-01 (owner-directed release): The owner explicitly directed deployment of the feat/staff-drafts-mobilenav-audit branch to Vercel Production while assuming unresolved release gates, and deferred the encrypted production backup. This is a risk acceptance for this deployment, not evidence that those gates passed or a general production-readiness sign-off. Do not describe child-data privacy, legal operations, complete E2E acceptance, recovery, or the shared JavaScript budget as cleared; do not use real learner data until the remaining gates close.
+- 2026-11-01 (production migration): Applied 0005_staff_profiles to the Supabase maryroyal production database after confirming the six target tables were absent and the last recorded migration was 0004_secure_audit_function. It creates staff tables, indexes and foreign keys, backfills blank staff profiles, enables RLS, revokes PUBLIC/anon/authenticated table grants, and records migration version 20261101161641. No backup was taken, per the owner's explicit deferral.
+
 - 2026-10-25: Workspace was empty, so initialize a new app rather than adapt existing code.
 - Use SQLite for local-first setup and Prisma's provider/config split for PostgreSQL compatibility.
 - Treat the demo Director password as a one-time local seed credential and require a change on first sign-in.
