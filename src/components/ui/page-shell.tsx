@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Search, ShieldCheck, UserRound } from "lucide-react";
 import NotificationBell from "@/components/notification-bell";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
@@ -40,6 +40,21 @@ export function PageShell({
     [user.role, hiddenLabels],
   );
   const [searchOpen, setSearchOpen] = useState(false);
+  const [navBadges, setNavBadges] = useState<{ welfare?: number; pendingComplaints?: number }>({});
+
+  useEffect(() => {
+    fetch("/api/nav/badges")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setNavBadges({
+            welfare: data.welfare ?? data.welfareBadge ?? 0,
+            pendingComplaints: data.pendingComplaints ?? 0,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <ToastProvider>
@@ -58,10 +73,16 @@ export function PageShell({
           <nav aria-label="Desktop navigation" className="flex flex-col gap-0.5">
             {nav.map(({ label, href, icon: Icon }) => {
               const active = href === "/dashboard" ? pathname === "/dashboard" : pathname === href || pathname.startsWith(`${href}/`);
+              const badge = href === "/welfare" ? (navBadges.welfare ?? 0) : href === "/complaints" ? (navBadges.pendingComplaints ?? 0) : 0;
               return (
                 <Link key={label} href={href} aria-current={active ? "page" : undefined} className="side-link">
                   <Icon size={17} strokeWidth={1.9} aria-hidden="true" />
                   <span className="truncate">{label}</span>
+                  {badge > 0 && (
+                    <span className="ml-auto grid h-4 min-w-4 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white shadow-xs">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 
   // Members may see a privacy-preserving ranking, never other members' savings or contributions.
   if (scope === "leaderboard") {
-    const totals = await db.welfareContribution.groupBy({ by: ["memberId"], _sum: { amount: true }, orderBy: { _sum: { amount: "desc" } }, take: 10 });
+    const totals = await db.welfareContribution.groupBy({ by: ["memberId"], _sum: { amount: true }, orderBy: { _sum: { amount: "desc" } }, take: 3 });
     const ids = totals.map((item) => item.memberId);
     const members = await db.welfareMember.findMany({ where: { id: { in: ids } }, select: { id: true, user: { select: { name: true, role: true } } } });
     const byId = new Map(members.map((member) => [member.id, member]));
@@ -60,7 +60,23 @@ export async function GET(request: Request) {
       orderBy: { joinedAt: "asc" },
     });
     const products = await db.welfareProduct.findMany({ orderBy: { createdAt: "desc" } });
-    return NextResponse.json({ members, products });
+
+    // Aggregate statistics for Director and Welfare Chair
+    const allLoans = members.flatMap((m) => m.loans);
+    const unpaidLoans = allLoans.filter((l) => ["APPROVED", "DISBURSED", "PENDING_HEADTEACHER", "PENDING_DIRECTOR"].includes(l.status));
+    const totalLoansCount = unpaidLoans.length;
+    const totalLoanAmountOutside = unpaidLoans.reduce((sum, l) => sum + (l.principalAmount - l.repaidAmount), 0);
+    const totalSavingsAll = members.reduce((sum, m) => sum + m.totalSavings, 0);
+
+    return NextResponse.json({
+      members,
+      products,
+      stats: {
+        totalLoansCount,
+        totalLoanAmountOutside,
+        totalSavingsAll,
+      },
+    });
   }
 
   // A specific member's data (admin viewing)
@@ -102,10 +118,11 @@ const contributionSchema = z.object({
 });
 const loanSchema = z.object({
   memberId: z.string().min(1),
-  type: z.enum(["LOAN", "SALARY_ADVANCE"]),
+  type: z.enum(["LOAN", "SALARY_ADVANCE", "LOAN_TOPUP"]),
   principalAmount: z.number().int().min(100),
-  repaymentTermMonths: z.number().int().min(1).max(60),
+  repaymentTermMonths: z.number().int().min(1).max(3).optional(),
   purpose: z.string().trim().max(300).optional(),
+  isTopUp: z.boolean().optional(),
 });
 const productSchema = z.object({
   title: z.string().trim().min(3).max(80),
@@ -168,10 +185,26 @@ export async function POST(request: Request) {
   if (_action === "loan") {
     if (!canInScope(user.role as never, "welfare", "apply", "self")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const parsed = loanSchema.safeParse(rest);
-    if (!parsed.success) return NextResponse.json({ error: "Invalid loan data" }, { status: 400 });
+    if (!parsed.success) return NextResponse.json({ error: "Invalid loan data. Loan term must be 3 months maximum." }, { status: 400 });
     const member = await db.welfareMember.findUnique({ where: { id: parsed.data.memberId } });
     if (!member) return NextResponse.json({ error: "Member not found" }, { status: 404 });
     if (member.userId !== user.id && user.role !== "DIRECTOR") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    // Active loan check: once you request a loan you have 3 months to clear, and cannot add another loan without top-up
+    const activeLoan = await db.welfareLoan.findFirst({
+      where: {
+        memberId: member.id,
+        type: { in: ["LOAN", "LOAN_TOPUP"] },
+        status: { in: ["PENDING_HEADTEACHER", "PENDING_DIRECTOR", "APPROVED", "DISBURSED"] },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (activeLoan && !parsed.data.isTopUp && parsed.data.type !== "SALARY_ADVANCE") {
+      return NextResponse.json({
+        error: "You have an active loan. You must clear it within 3 months, or choose the Loan Top-Up option.",
+      }, { status: 400 });
+    }
 
     // Enforce salary advance max KES 3,000 and only after 15th
     if (parsed.data.type === "SALARY_ADVANCE") {
@@ -181,20 +214,34 @@ export async function POST(request: Request) {
     }
 
     // Loan limit: max 60% of savings
-    if (parsed.data.type === "LOAN") {
+    const activeBalance = activeLoan ? Math.max(0, activeLoan.principalAmount - activeLoan.repaidAmount) : 0;
+    if (parsed.data.type === "LOAN" || parsed.data.type === "LOAN_TOPUP") {
       const maxLoan = Math.floor(member.totalSavings * 0.6);
-      if (parsed.data.principalAmount > maxLoan) {
-        return NextResponse.json({ error: `Loan limit is 60% of your savings (KES ${maxLoan.toLocaleString()}).` }, { status: 400 });
+      if (activeBalance + parsed.data.principalAmount > maxLoan) {
+        return NextResponse.json({
+          error: `Total loan balance cannot exceed 60% of your savings (KES ${maxLoan.toLocaleString()}). You have KES ${activeBalance.toLocaleString()} active; available to borrow is KES ${Math.max(0, maxLoan - activeBalance).toLocaleString()}.`,
+        }, { status: 400 });
       }
     }
 
-    const monthlyDeduction = parsed.data.repaymentTermMonths > 0 ? Math.ceil(parsed.data.principalAmount / parsed.data.repaymentTermMonths) : parsed.data.principalAmount;
-    const loan = await db.welfareLoan.create({ data: { ...parsed.data, monthlyDeduction, status: "PENDING_HEADTEACHER" } });
+    const repaymentMonths = parsed.data.type === "SALARY_ADVANCE" ? 1 : 3; // 3 months strictly locked
+    const monthlyDeduction = Math.ceil(parsed.data.principalAmount / repaymentMonths);
+    const loan = await db.welfareLoan.create({
+      data: {
+        memberId: member.id,
+        type: parsed.data.isTopUp ? "LOAN_TOPUP" : parsed.data.type,
+        principalAmount: parsed.data.principalAmount,
+        repaymentTermMonths: repaymentMonths,
+        monthlyDeduction,
+        purpose: parsed.data.purpose ?? (parsed.data.isTopUp ? "Loan Top-Up" : null),
+        status: "PENDING_HEADTEACHER",
+      },
+    });
 
     // Notify head teacher
     const headTeachers = await db.user.findMany({ where: { role: "HEAD_TEACHER" }, select: { id: true } });
     for (const ht of headTeachers) {
-      await createNotification({ userId: ht.id, title: `Welfare ${parsed.data.type === "SALARY_ADVANCE" ? "Salary Advance" : "Loan"} Application`, message: `New ${parsed.data.type.toLowerCase().replace("_", " ")} of KES ${parsed.data.principalAmount.toLocaleString()} awaiting your approval.`, type: "ACTION", link: "/welfare", actionRequired: true });
+      await createNotification({ userId: ht.id, title: `Welfare ${parsed.data.isTopUp ? "Loan Top-Up" : parsed.data.type === "SALARY_ADVANCE" ? "Salary Advance" : "Loan"} Application`, message: `New ${parsed.data.isTopUp ? "loan top-up" : parsed.data.type.toLowerCase().replace("_", " ")} of KES ${parsed.data.principalAmount.toLocaleString()} (3-month clearance) awaiting your approval.`, type: "ACTION", link: "/welfare", actionRequired: true });
     }
     return NextResponse.json({ loan }, { status: 201 });
   }

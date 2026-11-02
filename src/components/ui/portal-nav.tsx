@@ -12,6 +12,7 @@ type Badges = {
   pendingComplaints: number;
   pendingApprovals: number;
   messages: number;
+  welfare: number;
 };
 
 export function PortalNav({ role }: { role: string }) {
@@ -19,7 +20,7 @@ export function PortalNav({ role }: { role: string }) {
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
-  const [badges, setBadges] = useState<Badges>({ unreadNotifications: 0, pendingComplaints: 0, pendingApprovals: 0, messages: 0 });
+  const [badges, setBadges] = useState<Badges>({ unreadNotifications: 0, pendingComplaints: 0, pendingApprovals: 0, messages: 0, welfare: 0 });
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const nav = useMemo(() => getMobileNavigation(role), [role]);
 
@@ -42,6 +43,7 @@ export function PortalNav({ role }: { role: string }) {
             pendingComplaints: data.pendingComplaints ?? 0,
             pendingApprovals: data.pendingApprovals ?? 0,
             messages: data.messages ?? 0,
+            welfare: data.welfare ?? data.welfareBadge ?? 0,
           });
         })
         .catch(() => undefined);
@@ -71,6 +73,7 @@ export function PortalNav({ role }: { role: string }) {
     if (key === "approvals") return badges.pendingApprovals;
     if (key === "messages") return badges.messages;
     if (key === "notifications") return badges.unreadNotifications;
+    if (key === "welfare") return badges.welfare;
     return 0;
   };
 
@@ -90,7 +93,7 @@ export function PortalNav({ role }: { role: string }) {
       items: category.items.filter((item) => item.label.toLowerCase().includes(search.trim().toLowerCase())),
     }))
     .filter((category) => category.items.length > 0);
-  const moreBadge = badges.pendingApprovals + badges.unreadNotifications;
+  const moreBadge = badges.pendingApprovals + badges.unreadNotifications + badges.welfare;
 
   if (keyboardOpen) return null;
 
@@ -99,7 +102,7 @@ export function PortalNav({ role }: { role: string }) {
       <nav aria-label="Main navigation" className="mobile-nav">
         {nav.primary.map(({ label, href, icon: Icon, badgeKey }) => {
           const active = isActive(href);
-          const count = badgeFor(badgeKey);
+          const count = badgeFor(badgeKey) || (href === "/welfare" ? badges.welfare : 0);
           return (
             <Link key={label} href={href} aria-current={active ? "page" : undefined} className="mobile-nav-item" prefetch>
               <span className="relative grid place-items-center">

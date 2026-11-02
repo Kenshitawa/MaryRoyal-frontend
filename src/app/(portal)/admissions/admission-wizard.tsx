@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check as CheckIcon, CircleAlert, Cloud, Download, FileCheck2, FileImage, LoaderCircle, Plus, Printer, ShieldCheck, Trash2, UserRoundPlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check as CheckIcon, CircleAlert, Cloud, Download, FileCheck2, FileImage, LoaderCircle, Plus, Printer, ShieldCheck, Trash2, UserRoundPlus, User, MapPin, Users, HeartPulse, FileText, Wallet, CheckCircle2, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { admissionDocumentCategoryLabels, completedAdmissionSchema, emergencyContactSchema, feeHandoffSchema, guardianSchema, healthSchema, learnerAdmissionSchema, pickupPersonSchema, residenceSchema } from "@/lib/admissions";
 import { MAX_UPLOAD_FILE_BYTES } from "@/lib/upload-limits";
@@ -14,6 +14,7 @@ type Document = { id: string; category: string; originalName: string; contentTyp
 type DraftState = { id: string; admissionNo: string; currentStep: number; status: string; learner?: { id: string; name: string; grade: string; admissionStatus: string; hasLearnerLogin?: boolean } | null; payload?: unknown; documents?: Document[] };
 
 const stepNames = ["Learner", "Residence", "Family", "Health", "Documents", "Fees", "Review"];
+const stepIcons = [User, MapPin, Users, HeartPulse, FileText, Wallet, CheckCircle2];
 const gradeOptions = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
 const categories = Object.entries(admissionDocumentCategoryLabels);
 const blankGuardian = (): Guardian => ({ fullName: "", relationship: "Mother", idNumber: "", phone: "", alternatePhone: "", whatsapp: false, email: "", occupation: "", employer: "", homeAddress: "", workAddress: "", paysFees: true, primaryContact: true });
@@ -199,8 +200,80 @@ export default function AdmissionWizard({ initialId, canCreateLearnerLogin = tru
 {guardianLoginDetails && <div className="mt-6 w-full rounded-2xl border border-blue-200 bg-blue-50 p-5"><p className="text-sm font-extrabold text-blue-950">{guardianLoginDetails.linkedExisting ? "Existing parent account linked" : "Parent credentials · shown once"}</p><p className="mt-2 text-sm text-slate-700">Sign-in email: <strong>{guardianLoginDetails.email}</strong></p>{guardianLoginDetails.temporaryPassword && <p className="mt-2 font-mono text-lg font-bold text-blue-900">Temporary password: {guardianLoginDetails.temporaryPassword}</p>}<p className="mt-2 text-xs text-slate-600">{guardianLoginDetails.linkedExisting ? "The matching parent account can now see this learner." : guardianLoginDetails.suspended ? "Access remains suspended until the learner is enrolled." : "The parent must change this password at first sign-in."} Share any new credentials privately.</p></div>}<Link href="/learners" className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50">Open learner register</Link>{canCreateAdmission && <button type="button" onClick={() => void startAnother()} className="min-h-11 rounded-xl px-4 text-sm font-bold text-blue-800 hover:bg-blue-50">Start another admission</button>}</div>{loginDetails && <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-5"><p className="flex items-center gap-2 text-sm font-extrabold text-blue-950"><ShieldCheck size={18}/> Learner credentials · shown once</p><p className="mt-3 text-sm text-slate-700">Sign-in email: <strong>{loginDetails.email}</strong></p><p className="mt-2 font-mono text-lg font-bold text-blue-900">Temporary password: {loginDetails.temporaryPassword}</p><p className="mt-2 text-xs text-slate-600">{loginDetails.suspended ? "The account remains suspended until the Head Teacher approves this admission." : "The learner must change this password at first sign-in."} Share these details privately.</p></div>}</section></section>;
 
   const docsByCategory = new Map(documents.map(document => [document.category, document]));
-  return <section className="mx-auto max-w-5xl p-4 pb-32 sm:p-6 sm:pb-32 lg:p-8"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><Link href="/admissions" className="inline-flex min-h-9 items-center gap-2 text-sm font-semibold text-blue-800 hover:underline"><ArrowLeft size={16}/> Admissions</Link><p className="mt-4 text-xs font-bold uppercase tracking-[.16em] text-blue-700">Mary Royal School · Obunga, Kisumu</p><h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-950">New learner admission</h1><p className="mt-1 text-sm text-slate-500">A simple guided record. Your progress saves automatically.</p></div><div className="rounded-xl border border-blue-100 bg-white px-4 py-3"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Admission number</p><p className="mt-1 font-mono text-lg font-extrabold text-blue-800">{draft.admissionNo}</p></div></div>
-    <form data-unsaved={dirty ? "true" : "false"} onSubmit={event => event.preventDefault()} className="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6"><div className="flex items-center justify-between gap-3"><p className="text-sm font-extrabold text-slate-900">Step {step} of 7 <span className="font-medium text-slate-500">· {stepNames[step - 1]}</span></p><p aria-live="polite" className="inline-flex items-center gap-1.5 text-xs text-slate-500">{saving ? <><Cloud size={14}/> Saving…</> : savedAt ? <><CheckIcon size={14} className="text-emerald-700"/> Saved {savedAt.toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" })}</> : "Autosaves as you go"}</p></div><div className="mt-4 grid grid-cols-7 gap-1.5" aria-label="Admission progress">{stepNames.map((name, index) => <div key={name} aria-label={`Step ${index + 1}: ${name}`} className={`h-1.5 rounded-full ${index + 1 <= step ? "bg-blue-700" : "bg-slate-100"}`}/>)}</div><nav className="mt-4 flex flex-wrap gap-1.5" aria-label="Admission steps">{stepNames.map((name, index) => <button key={name} type="button" disabled={index + 1 > step || busy} onClick={() => { if (index + 1 < step) { setStep(index + 1); setDirty(true); } }} className={`min-h-9 shrink-0 rounded-lg px-3 text-xs font-bold ${step === index + 1 ? "bg-blue-50 text-blue-800" : index + 1 < step ? "text-blue-700 hover:bg-blue-50" : "text-slate-400"}`}>{index + 1}. {name}</button>)}</nav>
+  return <section className="mx-auto max-w-5xl p-4 pb-32 sm:p-6 sm:pb-32 lg:p-8">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <Link href="/admissions" className="inline-flex min-h-9 items-center gap-2 text-xs font-bold text-blue-700 hover:text-blue-900 transition hover:underline">
+          <ArrowLeft size={14}/> Back to Admissions
+        </Link>
+        <div className="mt-2 flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-blue-800">
+            <Sparkles size={11} /> Guided Enrollment
+          </span>
+          <span className="text-xs text-slate-400">·</span>
+          <span className="text-xs font-semibold text-slate-500">Mary Royal School, Kisumu</span>
+        </div>
+        <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">New Learner Admission</h1>
+        <p className="mt-0.5 text-xs text-slate-500">Official Kenya CBE admission workflow with automatic live draft preservation.</p>
+      </div>
+
+      <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50/40 px-5 py-3 shadow-xs">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Assigned Admission No</p>
+        <p className="mt-0.5 font-mono text-xl font-black text-blue-950">{draft.admissionNo}</p>
+      </div>
+    </div>
+
+    <form data-unsaved={dirty ? "true" : "false"} onSubmit={event => event.preventDefault()} className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm sm:p-7">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="grid h-7 w-7 place-items-center rounded-xl bg-blue-700 text-xs font-black text-white shadow-xs">
+            {step}
+          </span>
+          <div>
+            <p className="text-sm font-extrabold text-slate-900">
+              Step {step} of 7: <span className="text-blue-700">{stepNames[step - 1]}</span>
+            </p>
+            <p className="text-[11px] text-slate-400">Complete each section before advancing to review</p>
+          </div>
+        </div>
+
+        <p aria-live="polite" className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 border border-slate-200/60">
+          {saving ? <><Cloud size={13} className="text-blue-600 animate-pulse"/> Saving…</> : savedAt ? <><CheckIcon size={13} className="text-emerald-700"/> Saved {savedAt.toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit" })}</> : "Autosaves live"}
+        </p>
+      </div>
+
+      {/* Stepper Navigation */}
+      <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7" aria-label="Admission steps">
+        {stepNames.map((name, index) => {
+          const StepIcon = stepIcons[index] ?? User;
+          const isCurrent = step === index + 1;
+          const isDone = index + 1 < step;
+          return (
+            <button
+              key={name}
+              type="button"
+              disabled={index + 1 > step || busy}
+              onClick={() => { if (index + 1 < step) { setStep(index + 1); setDirty(true); } }}
+              className={`flex items-center gap-2 rounded-2xl border px-3 py-2 text-left transition-all ${
+                isCurrent
+                  ? "border-blue-600 bg-blue-700 text-white shadow-sm ring-2 ring-blue-600/20"
+                  : isDone
+                  ? "border-emerald-200 bg-emerald-50/70 text-emerald-900 hover:bg-emerald-100/70"
+                  : "border-slate-200 bg-slate-50/50 text-slate-400 cursor-not-allowed opacity-60"
+              }`}
+            >
+              <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg text-xs font-bold ${
+                isCurrent ? "bg-white/20 text-white" : isDone ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
+              }`}>
+                {isDone ? <CheckIcon size={12}/> : <StepIcon size={12}/>}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[11px] font-bold leading-tight">{index + 1}. {name}</span>
+              </span>
+            </button>
+          );
+        })}
+      </nav>
       {error && <div role="alert" className="mt-4 flex gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800"><CircleAlert size={18} className="mt-0.5 shrink-0"/><p>{error}</p></div>}
       <div className="mt-6 min-h-[420px]">
         {step === 1 && <section><SectionHeading title="Learner details" description="Start with the information used in the school register."/><div className="grid gap-4 sm:grid-cols-2"><TextField label="Full names" value={String(data.learner.fullName)} onChange={value => updateSection("learner", "fullName", value)} placeholder="Names as shown on birth certificate" error={errors.fullName} required/><TextField label="Date of birth" type="date" value={String(data.learner.dateOfBirth)} onChange={value => updateSection("learner", "dateOfBirth", value)} error={errors.dateOfBirth} required/><Field label="Gender"><select value={String(data.learner.gender)} onChange={event => updateSection("learner", "gender", event.target.value)} className={selectClass}><option>Female</option><option>Male</option></select></Field><TextField label="Nationality" value={String(data.learner.nationality)} onChange={value => updateSection("learner", "nationality", value)} error={errors.nationality} required/><TextField label="UPI / NEMIS number" value={String(data.learner.upiNumber)} onChange={value => updateSection("learner", "upiNumber", value)} placeholder="Optional if not yet assigned"/><Field label="Class applied for"><select value={String(data.learner.grade)} onChange={event => updateSection("learner", "grade", event.target.value)} className={selectClass}>{gradeOptions.map(grade => <option key={grade}>{grade}</option>)}</select></Field><TextField label="Stream" value={String(data.learner.stream)} onChange={value => updateSection("learner", "stream", value)} placeholder="e.g. East or Blue"/><TextField label="Admission date" type="date" value={String(data.learner.admissionDate)} onChange={value => updateSection("learner", "admissionDate", value)} error={errors.admissionDate} required/><TextField label="Previous school" value={String(data.learner.previousSchool)} onChange={value => updateSection("learner", "previousSchool", value)}/><TextField label="Last class attended" value={String(data.learner.previousClass)} onChange={value => updateSection("learner", "previousClass", value)}/><TextField label="Religion (optional)" value={String(data.learner.religion)} onChange={value => updateSection("learner", "religion", value)}/><TextField label="Languages spoken" value={(data.learner.languagesSpoken as string[]).join(", ")} onChange={value => updateSection("learner", "languagesSpoken", value.split(",").map(part => part.trim()).filter(Boolean))} placeholder="English, Kiswahili"/></div><div className="mt-4"><AreaField label="Reason for leaving previous school" value={String(data.learner.reasonForLeaving)} onChange={value => updateSection("learner", "reasonForLeaving", value)}/></div></section>}

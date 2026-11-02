@@ -53,7 +53,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   // The packet page hides another Secretary's draft and every DRAFT packet from the Head
   // Teacher, so the API must not be a wider door than the page it serves.
-  if ((user.role === "SECRETARY" && draft.createdById !== user.id) || (user.role === "HEAD_TEACHER" && draft.status === "DRAFT")) {
+  if ((user.role === "SECRETARY" && draft.createdById !== user.id && draft.status === "DRAFT") || (user.role === "HEAD_TEACHER" && draft.status === "DRAFT")) {
     await db.auditEvent.create({
       data: { actorId: user.id, action: "ACCESS_DENIED", entity: "AdmissionDraft", entityId: id },
     });

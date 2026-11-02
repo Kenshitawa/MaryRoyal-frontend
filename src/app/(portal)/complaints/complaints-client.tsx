@@ -67,6 +67,7 @@ export default function ComplaintsClient({
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
+  const [aiTriageBusy, setAiTriageBusy] = useState<Record<string, boolean>>({});
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -165,6 +166,28 @@ export default function ComplaintsClient({
       setNotice(error instanceof Error ? error.message : "Status could not be updated.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function assessWithAI(complaint: Complaint) {
+    setAiTriageBusy((p) => ({ ...p, [complaint.id]: true }));
+    setNotice("");
+    try {
+      const res = await fetch(`/api/complaints/${complaint.id}/ai-triage`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const confirmed = window.confirm(
+        `Local AI assessment:\nSuggested Status: ${statusLabels[data.suggestedStatus]}\nReasoning: ${data.reasoning}\n\nWould you like to update the status to ${statusLabels[data.suggestedStatus]} now?`
+      );
+      if (confirmed) {
+        await setStatus(complaint, data.suggestedStatus);
+      }
+    } catch (err: unknown) {
+      setNotice(err instanceof Error ? err.message : "AI assessment could not be completed.");
+    } finally {
+      setAiTriageBusy((p) => ({ ...p, [complaint.id]: false }));
     }
   }
 
@@ -573,17 +596,30 @@ export default function ComplaintsClient({
                       </span>
 
                       {!isParent && (
-                        <select
-                          aria-label={`Update ${complaint.subject} status`}
-                          value={complaint.status}
-                          disabled={busy}
-                          onChange={(e) => void setStatus(complaint, e.target.value)}
-                          className="rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 outline-none transition focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                        >
-                          <option value="RECEIVED">Received</option>
-                          <option value="IN_REVIEW">In Review</option>
-                          <option value="RESOLVED">Resolved</option>
-                        </select>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={busy || aiTriageBusy[complaint.id]}
+                            onClick={() => void assessWithAI(complaint)}
+                            className="inline-flex items-center gap-1 rounded-xl border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 transition hover:bg-purple-100 disabled:opacity-50 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300"
+                            title="Let Local AI analyze the thread and recommend status"
+                          >
+                            <Sparkles size={12} className={aiTriageBusy[complaint.id] ? "animate-spin" : ""} />
+                            {aiTriageBusy[complaint.id] ? "Assessing..." : "AI Assess"}
+                          </button>
+
+                          <select
+                            aria-label={`Update ${complaint.subject} status`}
+                            value={complaint.status}
+                            disabled={busy}
+                            onChange={(e) => void setStatus(complaint, e.target.value)}
+                            className="rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 outline-none transition focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                          >
+                            <option value="RECEIVED">Received</option>
+                            <option value="IN_REVIEW">In Review</option>
+                            <option value="RESOLVED">Resolved</option>
+                          </select>
+                        </div>
                       )}
                     </div>
                   </div>

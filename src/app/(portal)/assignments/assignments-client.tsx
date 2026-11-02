@@ -524,12 +524,12 @@ export default function AssignmentsClient({
 
               <button
                 type="button"
-                disabled={busy || !grade || !subject || topic.trim().length < 3}
+                disabled={busy || !grade || !subject}
                 onClick={() => void assist()}
                 className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-purple-700 px-4 text-xs font-bold text-white shadow-sm transition hover:bg-purple-800 disabled:opacity-40"
               >
-                <Sparkles size={14} />
-                Draft with Local AI
+                <Sparkles size={14} className={busy ? "animate-spin" : ""} />
+                {busy ? "Drafting..." : "Draft Questions with AI"}
               </button>
             </div>
           </div>

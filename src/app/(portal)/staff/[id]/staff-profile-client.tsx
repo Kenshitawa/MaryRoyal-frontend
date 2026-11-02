@@ -21,7 +21,6 @@ import {
   Printer,
   Plus,
   Trash2,
-  BookOpen,
 } from "lucide-react";
 
 type DateLike = Date | string;
@@ -867,18 +866,6 @@ export function StaffProfileClient({
       {/* 8. RESTRICTED STATUTORY & PAYROLL */}
       {activeTab === "Payroll" && canViewStatutory && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-            <div className="flex items-center gap-2">
-              <ShieldAlert size={18} className="text-amber-600 dark:text-amber-400" />
-              <h4 className="text-xs font-bold uppercase tracking-wider">
-                Restricted Confidential Section · Statutory &amp; Payroll
-              </h4>
-            </div>
-            <p className="mt-1 text-xs">
-              This sensitive financial record is restricted to the <strong>Director</strong>, <strong>Head Teacher</strong>, and <strong>Accountant</strong>. Your access to this view has been recorded in the audit log under the Data Protection Act.
-            </p>
-          </div>
-
           {/* Statutory Tax and Bank Details */}
           <section className="bento-card rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">

@@ -25,6 +25,20 @@ type Log = {
   teacher: { name: string };
 };
 
+const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
+const STANDARD_SUBJECTS = [
+  "Mathematics",
+  "English",
+  "Kiswahili",
+  "Integrated Science",
+  "Social Studies",
+  "CRE",
+  "Creative Arts",
+  "Agriculture",
+  "Environmental Activities",
+  "Pre-Technical Studies",
+];
+
 export default function TeachingLogClient({
   role,
   assignments,
@@ -33,8 +47,20 @@ export default function TeachingLogClient({
   assignments: Assignment[];
 }) {
   const [logs, setLogs] = useState<Log[]>([]);
-  const [grade, setGrade] = useState(assignments[0]?.grade ?? "");
-  const [subject, setSubject] = useState(assignments[0]?.subject ?? "");
+
+  const availableGrades = useMemo(() => {
+    const assigned = [...new Set(assignments.map((item) => item.grade))];
+    return assigned.length > 0 ? assigned : STANDARD_GRADES;
+  }, [assignments]);
+
+  const [grade, setGrade] = useState(assignments[0]?.grade ?? availableGrades[0]);
+
+  const subjects = useMemo(() => {
+    const matching = assignments.filter((item) => item.grade === grade).map((item) => item.subject);
+    return matching.length > 0 ? matching : STANDARD_SUBJECTS;
+  }, [assignments, grade]);
+
+  const [subject, setSubject] = useState(assignments[0]?.subject ?? subjects[0]);
   const [topics, setTopics] = useState("");
   const [reflection, setReflection] = useState("");
   const [message, setMessage] = useState("");
@@ -43,12 +69,6 @@ export default function TeachingLogClient({
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
-
-  const grades = useMemo(() => [...new Set(assignments.map((item) => item.grade))], [assignments]);
-  const subjects = useMemo(
-    () => assignments.filter((item) => item.grade === grade).map((item) => item.subject),
-    [assignments, grade]
-  );
 
   // Friday 4pm deadline logic
   const fridayDeadline = useMemo(() => {
@@ -307,14 +327,14 @@ export default function TeachingLogClient({
                 required
                 value={grade}
                 onChange={(e) => {
-                  setGrade(e.target.value);
-                  setSubject(
-                    assignments.find((item) => item.grade === e.target.value)?.subject ?? ""
-                  );
+                  const newG = e.target.value;
+                  setGrade(newG);
+                  const matching = assignments.find((item) => item.grade === newG)?.subject;
+                  setSubject(matching || STANDARD_SUBJECTS[0]);
                 }}
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
-                {grades.map((item) => (
+                {availableGrades.map((item) => (
                   <option key={item}>{item}</option>
                 ))}
               </select>

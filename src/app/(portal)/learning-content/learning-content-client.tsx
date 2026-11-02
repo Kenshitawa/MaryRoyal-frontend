@@ -13,7 +13,6 @@ import {
   Tag,
   Video,
   Sparkles,
-  CheckCircle2,
 } from "lucide-react";
 
 type Assignment = { grade: string; subject: string };
@@ -295,14 +294,14 @@ export default function LearningContentClient({
                 required
                 value={grade}
                 onChange={(e) => {
-                  setGrade(e.target.value);
-                  setSubject(
-                    assignments.find((item) => item.grade === e.target.value)?.subject ?? ""
-                  );
+                  const newG = e.target.value;
+                  setGrade(newG);
+                  const matching = assignments.find((item) => item.grade === newG)?.subject;
+                  setSubject(matching || STANDARD_SUBJECTS[0]);
                 }}
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
-                {[...new Set(assignments.map((item) => item.grade))].map((item) => (
+                {availableGrades.map((item) => (
                   <option key={item}>{item}</option>
                 ))}
               </select>
@@ -356,14 +355,25 @@ export default function LearningContentClient({
           </div>
 
           <div className="mt-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Learning Objectives &amp; Description <span className="text-blue-600">*</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Learning Objectives &amp; Description <span className="text-blue-600">*</span>
+              </label>
+              <button
+                type="button"
+                disabled={aiBusy}
+                onClick={draftObjectivesWithAI}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 transition hover:bg-purple-100 disabled:opacity-50 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300"
+              >
+                <Sparkles size={13} className={aiBusy ? "animate-spin" : "text-purple-600 dark:text-purple-400"} />
+                {aiBusy ? "Drafting..." : "Draft Objectives with AI"}
+              </button>
+            </div>
             <textarea
               required
               minLength={5}
-              maxLength={500}
-              rows={2}
+              maxLength={1000}
+              rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Explain briefly what competencies learners will gain from this material…"

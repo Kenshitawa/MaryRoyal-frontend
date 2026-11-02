@@ -12,7 +12,7 @@ import {
   Briefcase,
   GraduationCap,
   HeartHandshake,
-  ShieldAlert,
+  ShieldCheck,
   FileText,
   KeyRound,
   Printer,
@@ -316,7 +316,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
       <div class="section-title">Staff Member Particulars</div>
       <div class="grid">
         <div class="item"><span class="item-label">Full Name</span><span class="item-value">${personal.name}</span></div>
-        <div class="item"><span class="item-label">Assigned Role</span><span class="item-value">${role.replaceAll("_", " ")}</span></div>
+        <div class="item"><span class="item-label">Assigned Role</span><span class="item-value">${employment.role.replaceAll("_", " ")}</span></div>
         <div class="item"><span class="item-label">Staff Number</span><span class="item-value">${employment.staffNumber || "N/A"}</span></div>
         <div class="item"><span class="item-label">TSC Number</span><span class="item-value">${employment.tscNumber || "N/A"}</span></div>
         <div class="item"><span class="item-label">Department</span><span class="item-value">${employment.department || "General"}</span></div>
@@ -378,7 +378,7 @@ Date Generated: ${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}
 
 STAFF PARTICULARS:
 - Full Name: ${personal.name}
-- Assigned Role: ${role.replaceAll("_", " ")}
+- Assigned Role: ${employment.role.replaceAll("_", " ")}
 - Staff Number: ${employment.staffNumber || "N/A"}
 - TSC Number: ${employment.tscNumber || "N/A"}
 - Department: ${employment.department || "General"}
@@ -1345,7 +1345,7 @@ Mary Royal School · Obunga, Kisumu · Hard Work Pays
                 <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
                   <span className="text-slate-500">Assigned Role:</span>
                   <span className="font-bold text-blue-700 dark:text-blue-400">
-                    {role.replaceAll("_", " ")}
+                    {employment.role.replaceAll("_", " ")}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">

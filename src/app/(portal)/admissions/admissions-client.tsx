@@ -344,7 +344,11 @@ export function AdmissionsClient({
                     )}
 
                     <Link
-                      href={`/admissions/${record.id}`}
+                      href={
+                        record.status === "ENROLLED" && record.learner?.id
+                          ? `/learners/${record.learner.id}`
+                          : `/admissions/${record.id}`
+                      }
                       className="grid h-8 w-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-blue-700 dark:hover:bg-slate-800 dark:hover:text-blue-400 transition"
                       aria-label={`Open admission ${record.admissionNo}`}
                     >

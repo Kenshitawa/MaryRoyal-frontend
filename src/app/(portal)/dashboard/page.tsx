@@ -13,7 +13,7 @@ import {
   ClipboardCheck,
   CircleDollarSign,
   Clock3,
-  TrendingUp,
+  TrendingUp,
 } from "lucide-react";
 import { DirectorGettingStartedChecklist } from "@/components/director-checklist";
 import { Card, EmptyState, PageHeader, StatCard } from "@/components/ui/primitives";
@@ -251,19 +251,44 @@ export default async function Dashboard() {
       { label: "Grade Levels", value: String(grades.length), note: "Grades with learners", iconName: "graduation", tone: "purple" },
     ];
   } else if (role === "TEACHER") {
-    assignments = await db.teacherAssignment.findMany({
-      where: { teacherId: user.id },
-      select: { grade: true, subject: true },
-    });
-    const grades = [...new Set(assignments.map((item) => item.grade))];
-    const [learners, pending, attendance, publishedTimetable] = await Promise.all([
-      db.learner.count({ where: { grade: { in: grades }, archivedAt: null } }),
+    const [teacherAssigned, classTeacherOf] = await Promise.all([
+      db.teacherAssignment.findMany({
+        where: { teacherId: user.id },
+        select: { grade: true, subject: true },
+      }),
+      db.classTeacherAssignment.findMany({
+        where: { teacherId: user.id },
+        select: { grade: true },
+      }),
+    ]);
+    assignments = teacherAssigned;
+    const assignedGrades = [
+      ...new Set([
+        ...teacherAssigned.map((item) => item.grade),
+        ...classTeacherOf.map((item) => item.grade),
+      ]),
+    ];
+    const learnerWhere = assignedGrades.length > 0
+      ? { grade: { in: assignedGrades }, archivedAt: null }
+      : { archivedAt: null };
+    const attendanceWhere = assignedGrades.length > 0
+      ? { date: today, learner: { grade: { in: assignedGrades } } }
+      : { date: today };
+
+    const [learners, pending, attendance, publishedTimetable, gradeCounts] = await Promise.all([
+      db.learner.count({ where: learnerWhere }),
       db.assessment.count({ where: { enteredById: user.id, status: { in: ["DRAFT", "RETURNED"] } } }),
-      db.attendance.count({ where: { date: today, learner: { grade: { in: grades } } } }),
+      db.attendance.count({ where: attendanceWhere }),
       db.schoolTimetable.findFirst({
         where: { status: "PUBLISHED" },
         orderBy: { createdAt: "desc" },
         select: { scheduleJson: true },
+      }),
+      db.learner.groupBy({
+        by: ["grade"],
+        where: learnerWhere,
+        _count: { id: true },
+        orderBy: { grade: "asc" },
       }),
     ]);
     if (publishedTimetable?.scheduleJson) {
@@ -276,11 +301,17 @@ export default async function Dashboard() {
         }
       } catch {}
     }
-    gradeRows = grades.map((grade) => ({ grade, _count: { id: 0 } }));
+    gradeRows = gradeCounts;
     metrics = [
-      { label: "My Learners", value: String(learners), note: "In your assigned grades", iconName: "users", tone: "blue" },
+      {
+        label: assignedGrades.length > 0 ? "My Learners" : "Active Learners",
+        value: String(learners),
+        note: assignedGrades.length > 0 ? "In your assigned classes" : "Across the school",
+        iconName: "users",
+        tone: "blue",
+      },
       { label: "Marks to Finish", value: String(pending), note: "Draft or returned to you", iconName: "book", tone: "amber" },
-      { label: "Attendance Today", value: String(attendance), note: "In your assigned grades", iconName: "calendar", tone: "emerald" },
+      { label: "Attendance Today", value: String(attendance), note: assignedGrades.length > 0 ? "In your assigned classes" : "Marked present today", iconName: "calendar", tone: "emerald" },
       { label: "My Assignments", value: String(assignments.length), note: "Grade and subject pairs", iconName: "clipboard", tone: "purple" },
     ];
   } else if (role === "SECRETARY") {

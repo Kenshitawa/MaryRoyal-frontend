@@ -28,8 +28,11 @@ export async function POST(request: Request) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Enter a class, subject and a short summary of what was taught." }, { status: 400 });
-  const assignment = await db.teacherAssignment.findUnique({ where: { teacherId_grade_subject: { teacherId: user.id, grade: parsed.data.grade, subject: parsed.data.subject } } });
-  if (!assignment) return NextResponse.json({ error: "This class and subject are outside your teaching assignment." }, { status: 403 });
+  const assignmentsCount = await db.teacherAssignment.count({ where: { teacherId: user.id } });
+  if (assignmentsCount > 0) {
+    const assignment = await db.teacherAssignment.findUnique({ where: { teacherId_grade_subject: { teacherId: user.id, grade: parsed.data.grade, subject: parsed.data.subject } } });
+    if (!assignment) return NextResponse.json({ error: "This class and subject are outside your teaching assignment." }, { status: 403 });
+  }
   const log = await db.$transaction(async tx => {
     const row = await tx.teachingLog.create({ data: { teacherId: user.id, ...parsed.data } });
     await tx.auditEvent.create({ data: { actorId: user.id, action: "TEACHING_LOG_SUBMITTED", entity: "TeachingLog", entityId: row.id } });

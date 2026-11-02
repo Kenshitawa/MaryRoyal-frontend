@@ -98,10 +98,16 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
   const [showProduct, setShowProduct] = useState(false);
   const [showEnroll, setShowEnroll] = useState(false);
   const [contribForm, setContribForm] = useState({ memberId: "", month: new Date().getMonth() + 1, year: new Date().getFullYear(), amount: "", category: "MONTHLY_SAVINGS", productTitle: "", receiptRef: "", notes: "" });
-  const [loanForm, setLoanForm] = useState({ memberId: "", type: "LOAN", principalAmount: "", repaymentTermMonths: "12", purpose: "" });
+  const [loanForm, setLoanForm] = useState({ memberId: "", type: "LOAN", principalAmount: "", repaymentTermMonths: "3", purpose: "" });
   const [productForm, setProductForm] = useState({ title: "", description: "", targetAmount: "", monthlyAmount: "" });
   const [enrollUserId, setEnrollUserId] = useState("");
   const [allStaff, setAllStaff] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [isTopUp, setIsTopUp] = useState(false);
+  const [overviewStats, setOverviewStats] = useState<{
+    totalLoansCount: number;
+    totalLoanAmountOutside: number;
+    totalSavingsAll: number;
+  } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -111,6 +117,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
           const data = await res.json();
           setMembers(data.members ?? []);
           setProducts(data.products ?? []);
+          if (data.stats) setOverviewStats(data.stats);
         }
       }
       // Always load own member record
@@ -167,8 +174,15 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
     e.preventDefault();
     const memberId = loanForm.memberId || myMember?.id;
     if (!memberId) { notify("Select a member or enroll first.", false); return; }
-    const ok = await apiPost({ _action: "loan", ...loanForm, memberId, principalAmount: Number(loanForm.principalAmount), repaymentTermMonths: Number(loanForm.repaymentTermMonths) });
-    if (ok) { notify("Application submitted!"); setShowLoan(false); void load(); }
+    const ok = await apiPost({
+      _action: "loan",
+      ...loanForm,
+      memberId,
+      principalAmount: Number(loanForm.principalAmount),
+      repaymentTermMonths: 3,
+      isTopUp,
+    });
+    if (ok) { notify(isTopUp ? "Loan top-up requested!" : "Application submitted!"); setShowLoan(false); void load(); }
   }
 
   async function handleProduct(e: React.FormEvent) {
@@ -236,7 +250,6 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
       {/* My Welfare Tab */}
       {tab === "my-welfare" && (
         <div className="space-y-6">
-          {leaderboard.length > 0 && <section className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"><h2 className="font-bold text-slate-900 dark:text-white">Welfare champions</h2><p className="mt-1 text-xs text-slate-500">Members with the most contributions. Individual contribution amounts are private.</p><ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{leaderboard.map((item) => <li key={item.rank} className="flex items-center gap-3 rounded-xl bg-blue-50/70 p-3 dark:bg-slate-800"><span className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-xs font-bold text-white">{item.rank}</span><span><span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">{item.name}</span><span className="text-[11px] text-slate-500">{item.role.replaceAll("_", " ")}</span></span></li>)}</ol></section>}
           {!myMember ? (
             <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
               <HeartHandshake size={32} className="mx-auto mb-3 text-slate-300" />
@@ -255,7 +268,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
                 <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 p-5 text-white shadow-lg">
                   <p className="text-xs font-semibold opacity-80">Active Loans</p>
                   <p className="mt-2 text-2xl font-extrabold">{selfActiveLoans.length}</p>
-                  <p className="mt-1 text-xs opacity-70">{selfActiveLoans.length ? `KES ${selfActiveLoans.reduce((a, l) => a + l.principalAmount - l.repaidAmount, 0).toLocaleString()} outstanding` : "No active loans"}</p>
+                  <p className="mt-1 text-xs opacity-70">{selfActiveLoans.length ? `KES ${selfActiveLoans.reduce((a, l) => a + l.principalAmount - l.repaidAmount, 0).toLocaleString()} outstanding · 3 mos clearance` : "No active loans"}</p>
                 </div>
                 <div className="rounded-2xl bg-gradient-to-br from-rose-400 to-rose-600 p-5 text-white shadow-lg">
                   <p className="text-xs font-semibold opacity-80">Contributions</p>
@@ -264,16 +277,51 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
                 </div>
               </div>
 
-              {/* Apply buttons */}
-              <div className="flex flex-wrap gap-3">
-                <button onClick={() => { setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "LOAN" })); setShowLoan(true); }}
-                  className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-100">
-                  <Banknote size={15} /> Apply for Loan
-                </button>
-                <button onClick={() => { setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "SALARY_ADVANCE" })); setShowLoan(true); }}
-                  className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100">
-                  <CreditCard size={15} /> Salary Advance
-                </button>
+              {/* Top 3 Highest Contributors (Smart compact widget) */}
+              {leaderboard.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-3.5 text-xs text-blue-950 dark:border-blue-950 dark:bg-blue-950/30 dark:text-blue-200">
+                  <div className="flex items-center gap-2 font-bold">
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-blue-700 text-xs text-white">★</span>
+                    <span>Top 3 Welfare Contributors:</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {leaderboard.slice(0, 3).map((item, idx) => (
+                      <span key={item.rank} className="inline-flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-white px-3 py-1 font-semibold text-slate-800 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                        <span className={`grid h-4 w-4 place-items-center rounded-full text-[9px] font-black text-white ${idx === 0 ? "bg-amber-500" : idx === 1 ? "bg-slate-400" : "bg-amber-700"}`}>
+                          {item.rank}
+                        </span>
+                        {item.name}
+                        <span className="text-[10px] text-slate-400">({item.role.replaceAll("_", " ")})</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Apply buttons with 3-month clearance rule & loan top-up */}
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  {selfActiveLoans.length === 0 ? (
+                    <button onClick={() => { setIsTopUp(false); setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "LOAN", repaymentTermMonths: "3" })); setShowLoan(true); }}
+                      className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-100">
+                      <Banknote size={15} /> Apply for Loan (3 Months)
+                    </button>
+                  ) : (
+                    <button onClick={() => { setIsTopUp(true); setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "LOAN_TOPUP", repaymentTermMonths: "3" })); setShowLoan(true); }}
+                      className="flex items-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm font-semibold text-purple-800 hover:bg-purple-100">
+                      <Banknote size={15} /> Request Loan Top-Up
+                    </button>
+                  )}
+                  <button onClick={() => { setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "SALARY_ADVANCE", repaymentTermMonths: "1" })); setShowLoan(true); }}
+                    className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100">
+                    <CreditCard size={15} /> Salary Advance
+                  </button>
+                </div>
+                {selfActiveLoans.length > 0 && (
+                  <p className="text-[11px] text-slate-500">
+                    ℹ️ You have an active loan. Under Mary Royal welfare rules, loans must be cleared within 3 months. To borrow additional funds before clearance, use <strong>Request Loan Top-Up</strong>.
+                  </p>
+                )}
               </div>
 
               {/* Contributions */}
@@ -336,6 +384,31 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
       {/* Overview Tab (Admin) */}
       {tab === "overview" && ["DIRECTOR", "WELFARE_CHAIR", "HEAD_TEACHER"].includes(role) && (
         <div className="space-y-4">
+          {/* Key Welfare & Loans Portfolio Cards for Director & Chair */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-4 dark:border-rose-950 dark:bg-rose-950/20">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">Unpaid Loans Count</p>
+              <p className="mt-1 text-2xl font-black text-rose-900 dark:text-rose-200">
+                {overviewStats ? overviewStats.totalLoansCount : members.flatMap((m) => m.loans).filter((l) => !["REJECTED", "PAID"].includes(l.status)).length}
+              </p>
+              <p className="mt-0.5 text-[11px] text-rose-600/80">Pending &amp; active staff loans</p>
+            </div>
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-950 dark:bg-amber-950/20">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Total Loans Outside</p>
+              <p className="mt-1 text-2xl font-black text-amber-900 dark:text-amber-200">
+                {fmt(overviewStats ? overviewStats.totalLoanAmountOutside : members.flatMap((m) => m.loans).filter((l) => !["REJECTED", "PAID"].includes(l.status)).reduce((a, l) => a + l.principalAmount - l.repaidAmount, 0))}
+              </p>
+              <p className="mt-0.5 text-[11px] text-amber-600/80">Outstanding loan capital to be cleared</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-950 dark:bg-emerald-950/20">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Total Fund Savings</p>
+              <p className="mt-1 text-2xl font-black text-emerald-900 dark:text-emerald-200">
+                {fmt(overviewStats ? overviewStats.totalSavingsAll : members.reduce((s, m) => s + m.totalSavings, 0))}
+              </p>
+              <p className="mt-0.5 text-[11px] text-emerald-600/80">Combined pool from {members.length} members</p>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{members.length} enrolled member(s)</p>
             {canCreate && (
@@ -538,20 +611,26 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
       )}
 
       {showLoan && (
-        <Modal title={loanForm.type === "SALARY_ADVANCE" ? "Salary Advance Request" : "Loan Application"} onClose={() => setShowLoan(false)}>
+        <Modal title={isTopUp ? "Request Loan Top-Up" : (loanForm.type === "SALARY_ADVANCE" ? "Salary Advance Request" : "Loan Application (3 Months)")} onClose={() => setShowLoan(false)}>
           <form onSubmit={handleLoan} className="space-y-4">
             {loanForm.type === "SALARY_ADVANCE" ? (
               <div className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
                 ⚡ Maximum KES 3,000 · Available from the 15th of the month
               </div>
+            ) : isTopUp ? (
+              <div className="rounded-xl bg-purple-50 p-3 text-xs text-purple-900">
+                💡 <strong>Loan Top-Up:</strong> Borrow additional funds up to 60% of your total savings ({myMember ? fmt(Math.floor(myMember.totalSavings * 0.6)) : "—"}). Repayment period is locked to 3 months to clear.
+              </div>
             ) : (
               <div className="rounded-xl bg-blue-50 p-3 text-xs text-blue-800">
-                💡 Maximum loan: 60% of your savings ({myMember ? fmt(Math.floor(myMember.totalSavings * 0.6)) : "—"})
+                💡 Maximum loan: 60% of your savings ({myMember ? fmt(Math.floor(myMember.totalSavings * 0.6)) : "—"}). Under school policy, you have strictly <strong>3 months</strong> to clear this loan.
               </div>
             )}
             <Field label="Amount (KES)" type="number" value={loanForm.principalAmount} onChange={(v) => setLoanForm((f) => ({ ...f, principalAmount: v }))} required />
-            {loanForm.type === "LOAN" && (
-              <Field label="Repayment Months" type="number" value={loanForm.repaymentTermMonths} onChange={(v) => setLoanForm((f) => ({ ...f, repaymentTermMonths: v }))} required />
+            {loanForm.type !== "SALARY_ADVANCE" && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <span className="font-bold text-slate-900 dark:text-white">Repayment Term:</span> 3 Months (Strict clearance policy)
+              </div>
             )}
             <Field label="Purpose (optional)" value={loanForm.purpose} onChange={(v) => setLoanForm((f) => ({ ...f, purpose: v }))} />
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-blue-700 py-2.5 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2">

@@ -44,6 +44,19 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const TERMS = ["2026 Term 1", "2026 Term 2", "2026 Term 3", "2027 Term 1", "2027 Term 2", "2027 Term 3"];
+const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
+const STANDARD_SUBJECTS = [
+  "Mathematics",
+  "English",
+  "Kiswahili",
+  "Integrated Science",
+  "Social Studies",
+  "CRE",
+  "Creative Arts",
+  "Agriculture",
+  "Environmental Activities",
+  "Pre-Technical Studies",
+];
 
 export default function SchemesClient({ role, teaching }: { role: string; userId?: string; teaching: Teaching[] }) {
   const isAdmin = ["DEPUTY", "HEAD_TEACHER", "DIRECTOR"].includes(role);
@@ -58,9 +71,14 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
   const [filterTerm, setFilterTerm] = useState("ALL");
   const [aiBusy, setAiBusy] = useState(false);
 
+  const grades = useMemo(() => {
+    const assigned = [...new Set(teaching.map((t) => t.grade))];
+    return assigned.length > 0 ? assigned : STANDARD_GRADES;
+  }, [teaching]);
+
   const [form, setForm] = useState({
-    grade: teaching[0]?.grade ?? "",
-    subject: teaching[0]?.subject ?? "",
+    grade: teaching[0]?.grade ?? (teaching.length > 0 ? teaching[0].grade : STANDARD_GRADES[0]),
+    subject: teaching[0]?.subject ?? (teaching.length > 0 ? teaching[0].subject : STANDARD_SUBJECTS[0]),
     term: TERMS[0],
     year: new Date().getFullYear(),
     week: 1,
@@ -75,8 +93,10 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
     reflection: "",
   });
 
-  const grades = useMemo(() => [...new Set(teaching.map((t) => t.grade))], [teaching]);
-  const subjects = useMemo(() => teaching.filter((t) => t.grade === form.grade).map((t) => t.subject), [teaching, form.grade]);
+  const subjects = useMemo(() => {
+    const matching = teaching.filter((t) => t.grade === form.grade).map((t) => t.subject);
+    return matching.length > 0 ? matching : STANDARD_SUBJECTS;
+  }, [teaching, form.grade]);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/schemes");
@@ -260,14 +280,27 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Grade</label>
-                  <select value={form.grade} onChange={(e) => setForm((f) => ({ ...f, grade: e.target.value, subject: "" }))} required className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <select
+                    value={form.grade}
+                    onChange={(e) => {
+                      const g = e.target.value;
+                      const match = teaching.find((t) => t.grade === g)?.subject;
+                      setForm((f) => ({ ...f, grade: g, subject: match || STANDARD_SUBJECTS[0] }));
+                    }}
+                    required
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
                     {grades.map((g) => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
-                  <select value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} required className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="">Select…</option>
+                  <select
+                    value={form.subject}
+                    onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+                    required
+                    className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
                     {subjects.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>

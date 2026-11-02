@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, Check, CheckCheck, X, Clock, AlertCircle, Info, Zap } from "lucide-react";
-import Link from "next/link";
+
 
 type Notification = {
   id: string;
@@ -153,7 +153,14 @@ export default function NotificationBell() {
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  className={`relative border-b border-slate-50 px-4 py-3 transition last:border-0 dark:border-slate-800 ${!n.read ? typeBg[n.type] ?? "bg-blue-50" : "bg-white dark:bg-slate-900"}`}
+                  onClick={() => {
+                    void markRead(n.id);
+                    setOpen(false);
+                    if (n.link) {
+                      window.location.href = n.link;
+                    }
+                  }}
+                  className={`relative cursor-pointer border-b border-slate-50 px-4 py-3 transition hover:bg-slate-50/80 last:border-0 dark:border-slate-800 dark:hover:bg-slate-800/60 ${!n.read ? typeBg[n.type] ?? "bg-blue-50" : "bg-white dark:bg-slate-900"}`}
                 >
                   {!n.read && <span className="absolute right-4 top-3.5 h-1.5 w-1.5 rounded-full bg-blue-600" />}
                   <div className="flex items-start gap-2">
@@ -166,18 +173,29 @@ export default function NotificationBell() {
                           <Clock size={9} />{timeAgo(n.createdAt)}
                         </span>
                         {n.link && (
-                          <Link href={n.link} onClick={() => { void markRead(n.id); setOpen(false); }}
-                            className="text-[10px] font-semibold text-blue-700 hover:underline">
-                            View →
-                          </Link>
+                          <span className="text-[10px] font-semibold text-blue-700 hover:underline">
+                            Open page →
+                          </span>
                         )}
                         {n.actionRequired && !n.actionDone && (
-                          <button onClick={() => void markDone(n.id)} className="flex items-center gap-1 rounded-md bg-blue-700 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-blue-800">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void markDone(n.id);
+                            }}
+                            className="flex items-center gap-1 rounded-md bg-blue-700 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-blue-800"
+                          >
                             <Check size={9} /> Done
                           </button>
                         )}
                         {!n.read && (
-                          <button onClick={() => void markRead(n.id)} className="text-[10px] text-slate-400 hover:text-blue-700">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void markRead(n.id);
+                            }}
+                            className="text-[10px] text-slate-400 hover:text-blue-700"
+                          >
                             Mark read
                           </button>
                         )}
