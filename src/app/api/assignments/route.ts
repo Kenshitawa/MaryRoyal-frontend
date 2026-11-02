@@ -27,6 +27,19 @@ const createSchema = z.object({
 export async function GET() {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  if ((user.role === "DIRECTOR" || user.role === "HEAD_TEACHER") && canInScope(user.role, "assignments", "view", "school")) {
+    const assignments = await db.assignment.findMany({
+      include: {
+        submissions: {
+          include: { learner: { select: { id: true, name: true, admissionNo: true } } },
+          orderBy: { submittedAt: "desc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    return NextResponse.json({ assignments });
+  }
   if (user.role === "TEACHER" && canInScope(user.role, "assignments", "view", "assigned")) {
     const assignments = await db.assignment.findMany({
       where: { teacherId: user.id },
@@ -82,13 +95,20 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  if (!canInScope(user.role, "assignments", "create", "assigned")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const isLeader = user.role === "DIRECTOR" || user.role === "HEAD_TEACHER";
+  const scope = isLeader ? "school" : "assigned";
+  if (!canInScope(user.role, "assignments", "create", scope)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
   const parsed = createSchema.safeParse(body);
   if (!parsed.success || (parsed.success && parsed.data.autoMark && !parsed.data.answerKey)) return NextResponse.json({ error: "Complete the assignment details. Auto-marking needs an answer key." }, { status: 400 });
-  const assigned = await db.teacherAssignment.findUnique({ where: { teacherId_grade_subject: { teacherId: user.id, grade: parsed.data.grade, subject: parsed.data.subject } } });
-  if (!assigned) return NextResponse.json({ error: "This class and subject are outside your teaching assignment." }, { status: 403 });
+  if (!isLeader) {
+    const assignmentsCount = await db.teacherAssignment.count({ where: { teacherId: user.id } });
+    if (assignmentsCount > 0) {
+      const assigned = await db.teacherAssignment.findUnique({ where: { teacherId_grade_subject: { teacherId: user.id, grade: parsed.data.grade, subject: parsed.data.subject } } });
+      if (!assigned) return NextResponse.json({ error: "This class and subject are outside your teaching assignment." }, { status: 403 });
+    }
+  }
   const assignment = await db.$transaction(async tx => {
     const row = await tx.assignment.create({
       data: {

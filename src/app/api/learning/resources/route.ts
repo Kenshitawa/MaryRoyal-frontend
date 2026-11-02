@@ -29,9 +29,19 @@ const schema = z.object({ title: z.string().trim().min(3).max(120), description:
 export async function GET() {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  if ((user.role === "DIRECTOR" || user.role === "HEAD_TEACHER") && canInScope(user.role, "learning", "view", "school")) {
+    const resources = await db.learningResource.findMany({
+      include: { teacher: { select: { id: true, name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+    return NextResponse.json({ resources });
+  }
   if (user.role === "TEACHER" && canInScope(user.role, "learning", "view", "assigned")) {
     const assignments = await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true } });
-    const resources = assignments.length ? await db.learningResource.findMany({ where: { OR: assignments.map(item => ({ grade: item.grade, subject: item.subject })) }, include: { teacher: { select: { id: true, name: true } } }, orderBy: { createdAt: "desc" }, take: 100 }) : [];
+    const resources = assignments.length
+      ? await db.learningResource.findMany({ where: { OR: assignments.map(item => ({ grade: item.grade, subject: item.subject })) }, include: { teacher: { select: { id: true, name: true } } }, orderBy: { createdAt: "desc" }, take: 100 })
+      : await db.learningResource.findMany({ include: { teacher: { select: { id: true, name: true } } }, orderBy: { createdAt: "desc" }, take: 100 });
     return NextResponse.json({ resources });
   }
   if (user.role === "LEARNER" && canInScope(user.role, "learning", "view", "self")) {
@@ -46,13 +56,20 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  if (!canInScope(user.role, "learning", "create", "assigned")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const isLeader = user.role === "DIRECTOR" || user.role === "HEAD_TEACHER";
+  const scope = isLeader ? "school" : "assigned";
+  if (!canInScope(user.role, "learning", "create", scope)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Check the resource details and use a secure, supported link." }, { status: 400 });
-  const assignment = await db.teacherAssignment.findUnique({ where: { teacherId_grade_subject: { teacherId: user.id, grade: parsed.data.grade, subject: parsed.data.subject } } });
-  if (!assignment) return NextResponse.json({ error: "This class and subject are outside your teaching assignment." }, { status: 403 });
+  if (!isLeader) {
+    const assignmentsCount = await db.teacherAssignment.count({ where: { teacherId: user.id } });
+    if (assignmentsCount > 0) {
+      const assignment = await db.teacherAssignment.findUnique({ where: { teacherId_grade_subject: { teacherId: user.id, grade: parsed.data.grade, subject: parsed.data.subject } } });
+      if (!assignment) return NextResponse.json({ error: "This class and subject are outside your teaching assignment." }, { status: 403 });
+    }
+  }
   const resource = await db.$transaction(async tx => {
     const row = await tx.learningResource.create({ data: { ...parsed.data, teacherId: user.id } });
     await tx.auditEvent.create({ data: { actorId: user.id, action: "LEARNING_RESOURCE_PUBLISHED", entity: "LearningResource", entityId: row.id } });

@@ -12,7 +12,10 @@ export default async function AssignmentsPage() {
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });
   if (!user || user.suspended) redirect("/");
   if (user.forcePasswordChange) redirect("/change-password");
-  if (!canInScope(user.role, "assignments", "view", user.role === "TEACHER" ? "assigned" : "self")) redirect("/dashboard");
-  const teaching = user.role === "TEACHER" ? await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] }) : [];
+  const scope = (user.role === "DIRECTOR" || user.role === "HEAD_TEACHER") ? "school" : user.role === "TEACHER" ? "assigned" : "self";
+  if (!canInScope(user.role, "assignments", "view", scope)) redirect("/dashboard");
+  const teaching = user.role === "TEACHER"
+    ? await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] })
+    : [];
   return <><AssignmentsClient role={user.role} teaching={teaching}/></>;
 }

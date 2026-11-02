@@ -18,6 +18,10 @@ import {
   X,
   CalendarCheck,
   Building,
+  Printer,
+  Plus,
+  Trash2,
+  BookOpen,
 } from "lucide-react";
 
 type DateLike = Date | string;
@@ -125,6 +129,39 @@ export function StaffProfileClient({
     bankBranch: staff.staffProfile?.bankBranch || "",
   });
 
+  // Teaching and Class assignments state
+  const [teachingAssignments, setTeachingAssignments] = useState<{ grade: string; subject: string }[]>(
+    staff.assignments || []
+  );
+  const [classTeacherGrade, setClassTeacherGrade] = useState<string>(
+    staff.classTeacherAssignments?.[0]?.grade || ""
+  );
+  const [allocGrade, setAllocGrade] = useState<string>("Grade 1");
+  const [allocSubject, setAllocSubject] = useState<string>("Mathematics");
+
+  const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
+  const STANDARD_SUBJECTS = [
+    "Mathematics",
+    "English",
+    "Kiswahili",
+    "Integrated Science",
+    "Social Studies",
+    "CRE",
+    "Creative Arts",
+    "Agriculture",
+    "Environmental Activities",
+    "Pre-Technical Studies",
+  ];
+
+  function handleAddAssignment() {
+    if (teachingAssignments.some((a) => a.grade === allocGrade && a.subject === allocSubject)) return;
+    setTeachingAssignments([...teachingAssignments, { grade: allocGrade, subject: allocSubject }]);
+  }
+
+  function handleRemoveAssignment(grade: string, subject: string) {
+    setTeachingAssignments(teachingAssignments.filter((a) => !(a.grade === grade && a.subject === subject)));
+  }
+
   // Document upload state
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docCategory, setDocCategory] = useState("ID_COPY");
@@ -143,7 +180,7 @@ export function StaffProfileClient({
     { id: "Documents", label: "Documents", icon: FileText },
     { id: "Classes", label: "Classes & Timetable", icon: Calendar },
     { id: "Attendance", label: "Attendance", icon: Clock },
-    { id: "Activity", label: "Edit History", icon: Activity },
+    ...(actor.role === "DIRECTOR" ? [{ id: "Activity", label: "Edit History", icon: Activity }] : []),
     ...(canViewStatutory ? [{ id: "Payroll", label: "Payroll & Statutory", icon: Lock, restricted: true }] : []),
   ];
 
@@ -156,7 +193,11 @@ export function StaffProfileClient({
       const res = await fetch(`/api/staff/${staff.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({
+          ...editForm,
+          teachingAssignments,
+          classTeacherGrade: classTeacherGrade || null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -173,6 +214,93 @@ export function StaffProfileClient({
     } finally {
       setEditLoading(false);
     }
+  }
+
+  function printStaffSlip() {
+    const printWindow = window.open("", "_blank", "width=750,height=850");
+    if (!printWindow) return;
+    const doc = printWindow.document;
+    doc.title = `Mary Royal School · ${staff.name} Record Slip`;
+    const style = doc.createElement("style");
+    style.textContent = `
+      body { margin: 0; padding: 40px; background: #f8fafc; font: 14px system-ui, -apple-system, sans-serif; color: #0f172a; }
+      .slip { max-width: 680px; margin: 0 auto; padding: 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+      .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1d4ed8; padding-bottom: 16px; margin-bottom: 24px; }
+      .brand h1 { margin: 0; font-size: 22px; font-weight: 800; color: #1e3a8a; }
+      .brand p { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+      .badge { display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+      .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1e40af; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin: 20px 0 12px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .item { display: flex; flex-direction: column; }
+      .item-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; }
+      .item-value { font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px; }
+      .alloc-badge { display: inline-block; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-size: 12px; margin: 2px 4px 2px 0; border: 1px solid #e2e8f0; }
+      .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; }
+      .signature-line { width: 180px; border-top: 1px solid #94a3b8; margin-top: 40px; text-align: center; padding-top: 4px; }
+      @media print {
+        body { padding: 0; background: #fff; }
+        .slip { border: none; box-shadow: none; padding: 0; }
+        .no-print { display: none; }
+      }
+    `;
+    doc.head.append(style);
+    const slip = doc.createElement("div");
+    slip.className = "slip";
+    slip.innerHTML = `
+      <div class="header">
+        <div class="brand">
+          <h1>Mary Royal School</h1>
+          <p>Obunga · Kisumu · Nurturing Excellence Through CBE</p>
+        </div>
+        <div>
+          <span class="badge">Official Staff Record</span>
+        </div>
+      </div>
+
+      <div class="section-title">Personal &amp; Employment Particulars</div>
+      <div class="grid">
+        <div class="item"><span class="item-label">Full Name</span><span class="item-value">${staff.name}</span></div>
+        <div class="item"><span class="item-label">Role / Designation</span><span class="item-value">${staff.employmentTitle || roleLabel}</span></div>
+        <div class="item"><span class="item-label">Staff Number</span><span class="item-value">${staff.staffNumber || "N/A"}</span></div>
+        <div class="item"><span class="item-label">TSC Number</span><span class="item-value">${staff.tscNumber || "N/A"}</span></div>
+        <div class="item"><span class="item-label">Department</span><span class="item-value">${staff.staffProfile?.department || "General"}</span></div>
+        <div class="item"><span class="item-label">Employment Type</span><span class="item-value">${staff.staffProfile?.employmentType || "Permanent"}</span></div>
+        <div class="item"><span class="item-label">Official Email</span><span class="item-value">${staff.email}</span></div>
+        <div class="item"><span class="item-label">Phone Contact</span><span class="item-value">${staff.phone || "Not recorded"}</span></div>
+        <div class="item"><span class="item-label">County</span><span class="item-value">${staff.staffProfile?.county || "Kisumu"}</span></div>
+        <div class="item"><span class="item-label">Physical Address</span><span class="item-value">${staff.staffProfile?.residenceAddress || "Not recorded"}</span></div>
+      </div>
+
+      <div class="section-title">CBE Teaching &amp; Class Allocation</div>
+      <div class="grid">
+        <div class="item" style="grid-column: 1 / -1;">
+          <span class="item-label">Class Teacher of</span>
+          <span class="item-value">${classTeacherGrade ? `Class Teacher: ${classTeacherGrade}` : "Not currently assigned as Class Teacher"}</span>
+        </div>
+        <div class="item" style="grid-column: 1 / -1;">
+          <span class="item-label">Assigned Teaching Subjects (${teachingAssignments.length})</span>
+          <div style="margin-top: 6px;">
+            ${teachingAssignments.length > 0
+              ? teachingAssignments.map(a => `<span class="alloc-badge"><strong>${a.grade}</strong>: ${a.subject}</span>`).join("")
+              : "<span style='color: #64748b;'>No subjects assigned yet.</span>"}
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>
+          <p>Issued by School Administration · Mary Royal School</p>
+          <p>Date Generated: ${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}</p>
+        </div>
+        <div class="signature-line">
+          Head Teacher / Director Stamp &amp; Sign
+        </div>
+      </div>
+    `;
+    doc.body.append(slip);
+    setTimeout(() => {
+      printWindow.print();
+    }, 300);
   }
 
   async function handleUploadDoc(e: React.FormEvent) {
@@ -255,6 +383,13 @@ export function StaffProfileClient({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={printStaffSlip}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-white/20"
+            >
+              <Printer size={13} /> Print Staff Slip
+            </button>
+
             {canEdit && (
               <button
                 onClick={() => {
@@ -668,7 +803,7 @@ export function StaffProfileClient({
       )}
 
       {/* 7. ACTIVITY & EDIT HISTORY */}
-      {activeTab === "Activity" && (
+      {activeTab === "Activity" && actor.role === "DIRECTOR" && (
         <section className="bento-card rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
             <Activity size={16} className="text-blue-600 dark:text-blue-400" />
@@ -687,7 +822,7 @@ export function StaffProfileClient({
                       {h.field.replace(/([A-Z])/g, " $1")}
                     </span>
                     <span className="text-[11px] text-slate-400">
-                      {toDate(h.createdAt).toLocaleDateString("en-KE", { dateStyle: "medium", timeStyle: "short" })}
+                      {toDate(h.createdAt).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" })}
                     </span>
                   </div>
                   <p className="text-slate-500 text-[11px]">
@@ -944,6 +1079,100 @@ export function StaffProfileClient({
                     onChange={(e) => setEditForm({ ...editForm, residenceAddress: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 dark:border-slate-700 dark:bg-slate-800"
                   />
+                </div>
+              </div>
+
+              {/* Teaching Classes & Class Teacher Assignment */}
+              <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/40 dark:bg-blue-950/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-blue-950 dark:text-blue-200">
+                      CBE Class &amp; Subject Allocations
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      Assign teaching subjects and Class Teacher role for this staff member.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 text-xs">
+                  <div>
+                    <label className="block font-semibold">Class Teacher Assignment</label>
+                    <select
+                      value={classTeacherGrade}
+                      onChange={(e) => setClassTeacherGrade(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 dark:border-slate-700 dark:bg-slate-800"
+                    >
+                      <option value="">None (Subject Teacher Only)</option>
+                      {STANDARD_GRADES.map((g) => (
+                        <option key={g} value={g}>
+                          Class Teacher: {g}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Assigned subjects */}
+                <div className="mt-4">
+                  <label className="block font-semibold text-xs text-slate-700 dark:text-slate-300">
+                    Teaching Subject Allocations ({teachingAssignments.length})
+                  </label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {teachingAssignments.map((a, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 shadow-xs"
+                      >
+                        <strong>{a.grade}</strong>: {a.subject}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${a.grade} ${a.subject}`}
+                          onClick={() => handleRemoveAssignment(a.grade, a.subject)}
+                          className="text-slate-400 hover:text-rose-600 ml-1"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </span>
+                    ))}
+                    {teachingAssignments.length === 0 && (
+                      <p className="text-[11px] text-slate-400">No teaching subjects assigned yet.</p>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <select
+                      aria-label="Grade level to allocate"
+                      value={allocGrade}
+                      onChange={(e) => setAllocGrade(e.target.value)}
+                      className="rounded-xl border border-slate-200 p-2 text-xs dark:border-slate-700 dark:bg-slate-800"
+                    >
+                      {STANDARD_GRADES.map((g) => (
+                        <option key={g} value={g}>
+                          {g}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      aria-label="Subject to allocate"
+                      value={allocSubject}
+                      onChange={(e) => setAllocSubject(e.target.value)}
+                      className="rounded-xl border border-slate-200 p-2 text-xs dark:border-slate-700 dark:bg-slate-800"
+                    >
+                      {STANDARD_SUBJECTS.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={handleAddAssignment}
+                      className="inline-flex items-center gap-1 rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white hover:bg-blue-800"
+                    >
+                      <Plus size={13} /> Add Allocation
+                    </button>
+                  </div>
                 </div>
               </div>
 

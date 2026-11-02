@@ -12,6 +12,8 @@ import {
   Search,
   Tag,
   Video,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 type Assignment = { grade: string; subject: string };
@@ -27,28 +29,80 @@ type Resource = {
   teacher: { name: string };
 };
 
+const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
+const STANDARD_SUBJECTS = [
+  "Mathematics",
+  "English",
+  "Kiswahili",
+  "Integrated Science",
+  "Social Studies",
+  "CRE",
+  "Creative Arts",
+  "Agriculture",
+  "Environmental Activities",
+  "Pre-Technical Studies",
+];
+
 export default function LearningContentClient({
   assignments,
 }: {
   assignments: Assignment[];
 }) {
   const [resources, setResources] = useState<Resource[]>([]);
-  const [grade, setGrade] = useState(assignments[0]?.grade ?? "");
-  const [subject, setSubject] = useState(assignments[0]?.subject ?? "");
+
+  const availableGrades = useMemo(() => {
+    const assigned = [...new Set(assignments.map((item) => item.grade))];
+    return assigned.length > 0 ? assigned : STANDARD_GRADES;
+  }, [assignments]);
+
+  const [grade, setGrade] = useState(assignments[0]?.grade ?? availableGrades[0]);
+
+  const subjects = useMemo(() => {
+    const matching = assignments.filter((item) => item.grade === grade).map((item) => item.subject);
+    return matching.length > 0 ? matching : STANDARD_SUBJECTS;
+  }, [assignments, grade]);
+
+  const [subject, setSubject] = useState(assignments[0]?.subject ?? subjects[0]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [kind, setKind] = useState("VIDEO");
   const [url, setUrl] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
   const [kindFilter, setKindFilter] = useState("ALL");
 
-  const subjects = useMemo(
-    () => assignments.filter((item) => item.grade === grade).map((item) => item.subject),
-    [assignments, grade]
-  );
+  async function draftObjectivesWithAI() {
+    setAiBusy(true);
+    setMessage("");
+    try {
+      const topic = title.trim() || `${grade} ${subject} Core Competency`;
+      const res = await fetch("/api/ai/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "scheme", grade, subject, topic }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.draft?.learningOutcomes) {
+          setDescription(`Learning Objectives & CBE Competencies:\n- ${data.draft.learningOutcomes}\n\nKey Inquiry Questions:\n- ${data.draft.keyInquiryQuestions || "How does this apply in everyday situations?"}`);
+          setMessage("AI-suggested learning objectives and description populated.");
+          return;
+        }
+      }
+    } catch {
+      // Fallback to local rule-based CBE objectives generator
+    } finally {
+      setAiBusy(false);
+    }
+
+    setDescription(
+      `Learning Objectives & CBE Competencies for ${grade} (${subject}):\n1. By the end of this lesson, the learner should be able to identify and explain key concepts in ${title || subject}.\n2. Apply practical skills through hands-on inquiry and real-world problem-solving.\n3. Demonstrate core CBE values including self-efficacy, critical thinking, and collaboration.`
+    );
+    setMessage("CBE learning objectives and description drafted.");
+  }
 
   const refresh = useCallback(async () => {
     const response = await fetch("/api/learning/resources");

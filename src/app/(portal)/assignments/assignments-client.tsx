@@ -50,6 +50,20 @@ type Assignment = {
   submissions: Submission[];
 };
 
+const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
+const STANDARD_SUBJECTS = [
+  "Mathematics",
+  "English",
+  "Kiswahili",
+  "Integrated Science",
+  "Social Studies",
+  "CRE",
+  "Creative Arts",
+  "Agriculture",
+  "Environmental Activities",
+  "Pre-Technical Studies",
+];
+
 export default function AssignmentsClient({
   role,
   teaching,
@@ -58,8 +72,20 @@ export default function AssignmentsClient({
   teaching: Teaching[];
 }) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [grade, setGrade] = useState(teaching[0]?.grade ?? "");
-  const [subject, setSubject] = useState(teaching[0]?.subject ?? "");
+
+  const availableGrades = useMemo(() => {
+    const assigned = [...new Set(teaching.map((item) => item.grade))];
+    return assigned.length > 0 ? assigned : STANDARD_GRADES;
+  }, [teaching]);
+
+  const [grade, setGrade] = useState(teaching[0]?.grade ?? availableGrades[0]);
+
+  const subjects = useMemo(() => {
+    const matching = teaching.filter((item) => item.grade === grade).map((item) => item.subject);
+    return matching.length > 0 ? matching : STANDARD_SUBJECTS;
+  }, [teaching, grade]);
+
+  const [subject, setSubject] = useState(teaching[0]?.subject ?? subjects[0]);
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
   const [topic, setTopic] = useState("");
@@ -78,13 +104,8 @@ export default function AssignmentsClient({
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
 
-  const isTeacher = role === "TEACHER";
+  const isTeacher = role === "TEACHER" || role === "HEAD_TEACHER" || role === "DIRECTOR";
   const isLearner = role === "LEARNER";
-
-  const subjects = useMemo(
-    () => teaching.filter((item) => item.grade === grade).map((item) => item.subject),
-    [teaching, grade]
-  );
 
   const refresh = useCallback(async () => {
     const response = await fetch("/api/assignments");
@@ -101,11 +122,12 @@ export default function AssignmentsClient({
   async function assist() {
     setBusy(true);
     setMessage("");
+    const effectiveTopic = topic.trim() || `${grade} ${subject} review questions`;
     try {
       const response = await fetch("/api/assignments/assist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ grade, subject, topic }),
+        body: JSON.stringify({ grade, subject, topic: effectiveTopic }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -427,12 +449,14 @@ export default function AssignmentsClient({
                 required
                 value={grade}
                 onChange={(e) => {
-                  setGrade(e.target.value);
-                  setSubject(teaching.find((item) => item.grade === e.target.value)?.subject ?? "");
+                  const newG = e.target.value;
+                  setGrade(newG);
+                  const matching = teaching.find((item) => item.grade === newG)?.subject;
+                  setSubject(matching || STANDARD_SUBJECTS[0]);
                 }}
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
-                {[...new Set(teaching.map((item) => item.grade))].map((item) => (
+                {availableGrades.map((item) => (
                   <option key={item}>{item}</option>
                 ))}
               </select>

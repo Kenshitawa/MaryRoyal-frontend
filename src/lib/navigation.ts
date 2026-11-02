@@ -66,6 +66,8 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Learners", href: "/learners", icon: Users },
     { label: "Admissions", href: "/admissions", icon: ClipboardList },
     { label: "Staff", href: "/staff", icon: Users },
+    { label: "Assignments", href: "/assignments", icon: ClipboardList },
+    { label: "Learning content", href: "/learning-content", icon: BookOpenCheck },
     { label: "Assessments", href: "/assessments", icon: BookOpen },
     { label: "Attendance", href: "/attendance", icon: CalendarCheck },
     { label: "Finance", href: "/finance", icon: Wallet },
@@ -194,6 +196,8 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       {
         category: "Academics",
         items: [
+          { label: "Assignments", href: "/assignments", icon: ClipboardList },
+          { label: "Learning Content", href: "/learning-content", icon: BookOpenCheck },
           { label: "Assessments", href: "/assessments", icon: BookOpen },
           { label: "Timetable", href: "/timetable", icon: CalendarDays },
           { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
@@ -228,7 +232,6 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
         category: "Settings",
         items: [
           { label: "Profile & Security", href: "/profile", icon: User },
-          { label: "Security Audit", href: "/audit", icon: Eye },
           { label: "Privacy Notice", href: "/privacy", icon: ShieldCheck },
         ],
       },

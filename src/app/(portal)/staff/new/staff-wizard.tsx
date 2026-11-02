@@ -16,6 +16,7 @@ import {
   FileText,
   KeyRound,
   Printer,
+  Download,
   Copy,
   Check,
   Plus,
@@ -267,6 +268,148 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     } finally {
       setLoading(false);
     }
+  }
+
+  function printDedicatedSlip() {
+    if (!successResult) return;
+    const printWindow = window.open("", "_blank", "width=750,height=850");
+    if (!printWindow) return;
+    const doc = printWindow.document;
+    doc.title = `Mary Royal School · ${personal.name} Staff Credentials Slip`;
+    const style = doc.createElement("style");
+    style.textContent = `
+      body { margin: 0; padding: 40px; background: #f8fafc; font: 14px system-ui, -apple-system, sans-serif; color: #0f172a; }
+      .slip { max-width: 680px; margin: 0 auto; padding: 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+      .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1d4ed8; padding-bottom: 16px; margin-bottom: 24px; }
+      .brand h1 { margin: 0; font-size: 22px; font-weight: 800; color: #1e3a8a; }
+      .brand p { margin: 4px 0 0; font-size: 12px; color: #64748b; }
+      .badge { display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+      .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1e40af; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin: 20px 0 12px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .item { display: flex; flex-direction: column; }
+      .item-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; }
+      .item-value { font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px; }
+      .pass-box { grid-column: 1 / -1; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px; margin: 8px 0; }
+      .pass-val { font: 800 18px monospace; color: #1e40af; }
+      .alloc-badge { display: inline-block; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-size: 12px; margin: 2px 4px 2px 0; border: 1px solid #e2e8f0; }
+      .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; }
+      .signature-line { width: 180px; border-top: 1px solid #94a3b8; margin-top: 40px; text-align: center; padding-top: 4px; }
+      @media print {
+        body { padding: 0; background: #fff; }
+        .slip { border: none; box-shadow: none; padding: 0; }
+      }
+    `;
+    doc.head.append(style);
+    const slip = doc.createElement("div");
+    slip.className = "slip";
+    slip.innerHTML = `
+      <div class="header">
+        <div class="brand">
+          <h1>Mary Royal School</h1>
+          <p>Obunga · Kisumu · Nurturing Excellence Through CBE</p>
+        </div>
+        <div>
+          <span class="badge">Staff Credentials &amp; Record Slip</span>
+        </div>
+      </div>
+
+      <div class="section-title">Staff Member Particulars</div>
+      <div class="grid">
+        <div class="item"><span class="item-label">Full Name</span><span class="item-value">${personal.name}</span></div>
+        <div class="item"><span class="item-label">Assigned Role</span><span class="item-value">${role.replaceAll("_", " ")}</span></div>
+        <div class="item"><span class="item-label">Staff Number</span><span class="item-value">${employment.staffNumber || "N/A"}</span></div>
+        <div class="item"><span class="item-label">TSC Number</span><span class="item-value">${employment.tscNumber || "N/A"}</span></div>
+        <div class="item"><span class="item-label">Department</span><span class="item-value">${employment.department || "General"}</span></div>
+        <div class="item"><span class="item-label">Employment Type</span><span class="item-value">${employment.employmentType || "Permanent"}</span></div>
+        <div class="item"><span class="item-label">Phone Contact</span><span class="item-value">${personal.phone || "Not recorded"}</span></div>
+        <div class="item"><span class="item-label">County</span><span class="item-value">${personal.county || "Kisumu"}</span></div>
+      </div>
+
+      <div class="section-title">Class Teacher &amp; Teaching Allocations</div>
+      <div class="grid">
+        <div class="item" style="grid-column: 1 / -1;">
+          <span class="item-label">Class Teacher of</span>
+          <span class="item-value">${employment.classTeacherGrade ? `Class Teacher: ${employment.classTeacherGrade}` : "Not assigned as Class Teacher"}</span>
+        </div>
+        <div class="item" style="grid-column: 1 / -1;">
+          <span class="item-label">Assigned Subjects (${employment.assignedSubjects.length})</span>
+          <div style="margin-top: 6px;">
+            ${employment.assignedSubjects.length > 0
+              ? employment.assignedSubjects.map(a => `<span class="alloc-badge"><strong>${a.grade}</strong>: ${a.subject}</span>`).join("")
+              : "<span style='color: #64748b;'>None assigned during registration.</span>"}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">System Sign-In Credentials</div>
+      <div class="grid">
+        <div class="item"><span class="item-label">Username / Email</span><span class="item-value" style="font-family: monospace;">${successResult.user.email}</span></div>
+        <div class="pass-box">
+          <span class="item-label">One-Time Temporary Password</span>
+          <div class="pass-val">${successResult.temporaryPassword}</div>
+          <p style="margin: 6px 0 0; font-size: 11px; color: #475569;">
+            * Staff member will be prompted to change this password on initial sign-in. Hand this slip in private.
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>
+          <p>Issued by School Administration · Mary Royal School</p>
+          <p>Date Generated: ${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}</p>
+        </div>
+        <div class="signature-line">
+          Head Teacher / Director Stamp &amp; Sign
+        </div>
+      </div>
+    `;
+    doc.body.append(slip);
+    setTimeout(() => {
+      printWindow.print();
+    }, 300);
+  }
+
+  function downloadStaffSlip() {
+    if (!successResult) return;
+    const content = `MARY ROYAL SCHOOL · OBUNGA, KISUMU
+OFFICIAL STAFF RECORD & CREDENTIALS SLIP
+=====================================================
+Date Generated: ${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}
+
+STAFF PARTICULARS:
+- Full Name: ${personal.name}
+- Assigned Role: ${role.replaceAll("_", " ")}
+- Staff Number: ${employment.staffNumber || "N/A"}
+- TSC Number: ${employment.tscNumber || "N/A"}
+- Department: ${employment.department || "General"}
+- Employment Type: ${employment.employmentType || "Permanent"}
+- Official Email: ${successResult.user.email}
+- Phone Contact: ${personal.phone || "Not recorded"}
+- County: ${personal.county || "Kisumu"}
+
+CBE TEACHING ALLOCATIONS:
+- Class Teacher: ${employment.classTeacherGrade ? employment.classTeacherGrade : "Not assigned"}
+- Teaching Subjects:
+${employment.assignedSubjects.map(a => `  * ${a.grade}: ${a.subject}`).join("\n") || "  * None assigned"}
+
+SYSTEM LOGIN CREDENTIALS:
+- Email / Username: ${successResult.user.email}
+- Temporary Password: ${successResult.temporaryPassword}
+
+NOTICE:
+This temporary password is provided for one-time initialization.
+Staff must change this password on first sign-in.
+Keep this document secure in school records.
+=====================================================
+Mary Royal School · Obunga, Kisumu · Hard Work Pays
+`;
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Staff_Record_${personal.name.replace(/\\s+/g, "_")}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   useEffect(() => {
@@ -897,18 +1040,18 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
             </div>
           )}
 
-          {/* STEP 5: RESTRICTED STATUTORY & PAYROLL */}
+          {/* STEP 5: STATUTORY & PAYROLL */}
           {currentStep === 5 && (
             <div className="space-y-6">
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+              <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
                 <div className="flex items-center gap-2">
-                  <ShieldAlert size={18} className="text-amber-600 dark:text-amber-400" />
+                  <ShieldCheck size={18} className="text-blue-700 dark:text-blue-400" />
                   <h3 className="text-xs font-bold uppercase tracking-wider">
-                    RESTRICTED CONFIDENTIAL SECTION · DATA PROTECTION ACT
+                    Statutory Identifiers &amp; Salary Bank Details
                   </h3>
                 </div>
-                <p className="mt-1 text-xs">
-                  Statutory identifiers and salary bank details are accessible solely by the <strong>Director</strong>, <strong>Head Teacher</strong>, and <strong>Accountant</strong>. Every view and mutation is permanently recorded in the immutable security audit log. Teachers, Parents, and Learners are strictly denied access.
+                <p className="mt-1 text-xs text-blue-800/80 dark:text-blue-300">
+                  Record KRA PIN, NSSF, SHA and bank accounts for official payroll processing.
                 </p>
               </div>
 
@@ -1168,55 +1311,111 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
 
           {/* Printable Credentials Slip Box */}
           <div className="mt-8 rounded-3xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-6 sm:p-8 dark:border-blue-900/60 dark:bg-blue-950/20">
-            <div className="flex items-center justify-between border-b border-blue-200/60 pb-4 dark:border-blue-900/60">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-blue-200/60 pb-4 dark:border-blue-900/60">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">
                   Mary Royal School · Obunga, Kisumu
                 </span>
-                <h4 className="text-base font-black text-slate-900 dark:text-white">Staff Login Credentials Slip</h4>
+                <h4 className="text-base font-black text-slate-900 dark:text-white">Official Staff Record &amp; Login Slip</h4>
               </div>
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-800"
-              >
-                <Printer size={13} /> Print Slip
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={downloadStaffSlip}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-xs font-bold text-blue-900 shadow-sm hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                >
+                  <Download size={13} /> Download Slip
+                </button>
+                <button
+                  type="button"
+                  onClick={printDedicatedSlip}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-blue-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-800"
+                >
+                  <Printer size={13} /> Print Slip
+                </button>
+              </div>
             </div>
 
-            <div className="mt-6 space-y-3 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Staff Member Name:</span>
-                <span className="font-bold text-slate-900 dark:text-white">{successResult.user.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Assigned Role:</span>
-                <span className="font-bold text-blue-700 dark:text-blue-400">
-                  {successResult.user.role.replaceAll("_", " ")}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Username / Email:</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">{successResult.user.email}</span>
-              </div>
-              <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-blue-200 dark:bg-slate-900 dark:border-blue-900">
-                <span className="text-slate-500">Temporary Password:</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-black text-blue-800 dark:text-blue-300">
-                    {successResult.temporaryPassword}
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 text-xs">
+              <div className="space-y-2">
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">Full Name:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{personal.name}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">Assigned Role:</span>
+                  <span className="font-bold text-blue-700 dark:text-blue-400">
+                    {role.replaceAll("_", " ")}
                   </span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `Mary Royal School Staff Credentials\nName: ${successResult.user.name}\nEmail: ${successResult.user.email}\nTemporary Password: ${successResult.temporaryPassword}`
-                      );
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }}
-                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-800"
-                    title="Copy Credentials"
-                  >
-                    {copied ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
-                  </button>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">Staff / TSC Number:</span>
+                  <span className="font-mono text-slate-900 dark:text-white">
+                    {employment.staffNumber || "N/A"} / {employment.tscNumber || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">Department / Type:</span>
+                  <span className="text-slate-900 dark:text-white">
+                    {employment.department || "General"} · {employment.employmentType || "Permanent"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">Phone Contact:</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{personal.phone || "Not recorded"}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">Class Teacher of:</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                    {employment.classTeacherGrade ? employment.classTeacherGrade : "None"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">Assigned Classes:</span>
+                  <span className="font-medium text-slate-900 dark:text-white">
+                    {employment.assignedSubjects.length > 0
+                      ? employment.assignedSubjects.map((a) => `${a.grade} (${a.subject})`).join(", ")
+                      : "None"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-1 dark:border-slate-800">
+                  <span className="text-slate-500">County / Address:</span>
+                  <span className="text-slate-900 dark:text-white">
+                    {personal.county || "Kisumu"} · {personal.residenceAddress || "Obunga"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="sm:col-span-2 mt-2 flex flex-col gap-2 rounded-2xl bg-white p-4 border border-blue-200 dark:bg-slate-900 dark:border-blue-900">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-semibold">Official Email / Username:</span>
+                  <span className="font-mono font-bold text-blue-900 dark:text-blue-300">{successResult.user.email}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-slate-500 font-semibold">Temporary One-Time Password:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-base font-black text-blue-800 dark:text-blue-300">
+                      {successResult.temporaryPassword}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="Copy temporary password"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `Mary Royal School Staff Credentials\nName: ${personal.name}\nEmail: ${successResult.user.email}\nTemporary Password: ${successResult.temporaryPassword}`
+                        );
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-800"
+                      title="Copy Credentials"
+                    >
+                      {copied ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
