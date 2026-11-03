@@ -1,0 +1,57 @@
+/* CSS Variables for Palette */
+        :root {
+            --color-primary: #1d4ed8;
+            --color-primary-dark: #1e3a8a;
+            --color-accent: #d97706;
+            --color-bg-light: #f8fafc;
+            --color-surface-light: #ffffff;
+        }
+
+        /* Mobile safe-area padding for notched screens */
+        .header-safe {
+            padding-top: max(0.75rem, env(safe-area-inset-top));
+        }
+
+        /* Prevent background scroll when mobile nav or modal is active */
+        body.scroll-locked {
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Parallax & Floating Animation */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+        }
+        .animate-float {
+            animation: floatSlow 6s ease-in-out infinite;
+        }
+
+        /* Modal animation */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }

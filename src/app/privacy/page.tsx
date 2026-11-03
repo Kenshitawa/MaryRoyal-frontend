@@ -5,10 +5,13 @@ import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/60 via-slate-50 to-white px-4 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:px-6 lg:px-8">
+    <>
+    <a href="#main-content" className="skip-to-content sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-blue-800 focus:px-4 focus:py-3 focus:font-semibold focus:text-white">Skip to content</a>
+    <main id="main-content" className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/60 via-slate-50 to-white px-4 py-8 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         {/* Top Header */}
-        <div className="flex items-center justify-between">
+        <header aria-label="Privacy notice header" className="flex items-center justify-between">
+          <nav aria-label="Privacy notice navigation">
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-500"
@@ -16,8 +19,9 @@ export default function PrivacyPage() {
             <ArrowLeft size={14} />
             Back to Sign In
           </Link>
+          </nav>
           <ThemeStyleControls compact />
-        </div>
+        </header>
 
         {/* Hero Section */}
         <div className="mt-8 rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-900 via-blue-950 to-slate-950 p-6 text-white shadow-xl shadow-blue-950/10 sm:p-10">
@@ -161,5 +165,6 @@ export default function PrivacyPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

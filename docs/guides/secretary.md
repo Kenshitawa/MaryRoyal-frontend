@@ -1,6 +1,6 @@
 # Secretary guide
 
-Sign in with `secretary@maryroyal.ac.ke` and the current temporary password listed in the local README. Set a private password when asked.
+Sign in with the account and private temporary credentials supplied by the Director; local demo accounts were removed. Set a private password when asked. In **Learners**, choose **View profile** to open the permitted learner record; Secretary and Head Teacher can edit learner profiles.
 
 ## Admit a learner
 

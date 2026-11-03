@@ -29,7 +29,8 @@ const grants: Record<Role, string[]> = {
     "complaints:update", "examSessions:view", "examSessions:create", "examSessions:update", "examSessions:approve",
     "rubrics:view", "rubrics:create", "rubrics:update", "feeWaivers:view", "feeWaivers:approve",
     "textbooks:view", "schemesOfWork:view", "timetable:view", "welfare:view", "welfare:create", "welfare:update",
-    "welfare:approve", "welfare:apply", "notifications:view", "notifications:update"
+    "welfare:approve", "welfare:apply", "notifications:view", "notifications:update",
+    "assignments:view", "assignments:create", "assignments:update", "learning:view", "learning:create"
   ],
   [Role.HEAD_TEACHER]: [
     "dashboard:view", "learners:view", "learners:update", "learners:approve", "staff:view",
@@ -38,13 +39,14 @@ const grants: Record<Role, string[]> = {
     "staffAttendance:create", "staffAttendance:update", "admissions:view", "admissions:approve", "admissions:delete", "attendance:view",
     "assessments:view", "assessments:approve", "assessments:review", "discipline:view", "discipline:create", "discipline:update",
     "finance:view", "invoices:view", "payments:view", "payments:create", "payments:approve", "payroll:view", "payroll:create",
-    "payroll:update", "feeStructures:view", "feeStructures:create", "feeStructures:update", "audit:view", "operations:view",
+    "payroll:update", "feeStructures:view", "feeStructures:create", "feeStructures:update", "operations:view",
     "teachingLogs:view", "teachingLogs:approve", "learningVideos:view", "learningVideos:create", "learningVideos:update",
     "complaints:view", "complaints:update", "examSessions:view", "examSessions:create", "examSessions:update",
     "examSessions:approve", "rubrics:view", "rubrics:create", "rubrics:update", "feeWaivers:view",
     "textbooks:view", "textbooks:create", "textbooks:update", "schemesOfWork:view", "schemesOfWork:verify",
     "timetable:view", "timetable:create", "timetable:update", "timetable:verify", "welfare:view", "welfare:approve",
-    "welfare:apply", "notifications:view", "notifications:update"
+    "welfare:apply", "notifications:view", "notifications:update",
+    "assignments:view", "assignments:create", "assignments:update", "learning:view", "learning:create"
   ],
   [Role.DEPUTY]: [
     "dashboard:view", "staff:view", "staffAttendance:view", "staffAttendance:create", "staffAttendance:update",
@@ -58,7 +60,7 @@ const grants: Record<Role, string[]> = {
   [Role.SECRETARY]: [
     "dashboard:view", "staff:view", "staffAttendance:view", "learners:view", "learners:update", "admissions:view",
     "admissions:create", "admissions:update", "admissions:submit", "admissions:delete", "learnerAccounts:create", "finance:view",
-    "invoices:view", "payments:view", "payments:create", "feeStructures:view",
+    "invoices:view", "feeStructures:view",
     "welfare:view", "welfare:apply", "notifications:view", "notifications:update"
   ],
   [Role.ACCOUNTANT]: [
@@ -130,9 +132,10 @@ describe("permission matrix", () => {
     expect(can(Role.DIRECTOR, "accounts", "create")).toBe(true);
   });
 
-  it("allows Secretary and Accountant to record payments while keeping voiding restricted", () => {
+  it("keeps Secretary read-only for payments while Accountant records and manages them", () => {
     expect(can(Role.SECRETARY, "invoices", "view")).toBe(true);
-    expect(can(Role.SECRETARY, "payments", "create")).toBe(true);
+    expect(can(Role.SECRETARY, "payments", "view")).toBe(false);
+    expect(can(Role.SECRETARY, "payments", "create")).toBe(false);
     expect(can(Role.SECRETARY, "payments", "update")).toBe(false);
     expect(can(Role.ACCOUNTANT, "invoices", "create")).toBe(true);
     expect(can(Role.ACCOUNTANT, "payments", "create")).toBe(true);

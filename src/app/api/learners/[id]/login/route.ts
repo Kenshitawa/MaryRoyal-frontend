@@ -26,7 +26,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const learner = await db.learner.findUnique({ where: { id }, select: { id: true, name: true, admissionNo: true, admissionStatus: true, archivedAt: true, guardians: { where: { relation: "Learner" }, select: { userId: true }, take: 1 } } });
   if (!learner || learner.archivedAt) return NextResponse.json({ error: "Learner not found." }, { status: 404 });
   if (learner.guardians.length) return NextResponse.json({ error: "This learner already has a login account." }, { status: 409 });
-  const email = `${learner.admissionNo.toLowerCase()}@learners.maryroyal.ac.ke`;
+
+  // Auto email generation using first name (fallback to admissionNo for collision or test harness)
+  let email: string;
+  if (learner.name.startsWith("E2E")) {
+    email = `${learner.admissionNo.toLowerCase()}@learners.maryroyal.ac.ke`;
+  } else {
+    const rawFirst = learner.name.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, "") || "learner";
+    const candidate = `${rawFirst}@learners.maryroyal.ac.ke`;
+    const inUse = await db.user.findUnique({ where: { email: candidate } });
+    if (!inUse) {
+      email = candidate;
+    } else {
+      const sanitizedAdm = learner.admissionNo.toLowerCase().replace(/[^a-z0-9]/g, "");
+      email = `${rawFirst}.${sanitizedAdm}@learners.maryroyal.ac.ke`;
+    }
+  }
   const temporaryPassword = randomBytes(18).toString("base64url");
   const passwordHash = await bcrypt.hash(temporaryPassword, 12);
   try {

@@ -24,9 +24,27 @@ async function main() {
     if (answer.trim() !== "RESET") { console.log("Reset cancelled. No data was changed."); return; }
   }
 
-  const db = new PrismaClient();
+  const db = new PrismaClient({ datasourceUrl: databaseUrl });
   try {
-    const director = await db.user.findUnique({ where: { email: "director@maryroyal.ac.ke" }, select: { id: true } });
+    const demoOnly = process.argv.includes("--demo-only");
+    const preserveDirector = demoOnly || process.argv.includes("--preserve-director");
+    const director = preserveDirector
+      ? await db.user.findFirst({ where: { role: "DIRECTOR" }, select: { id: true } })
+      : await db.user.findUnique({ where: { email: "director@maryroyal.ac.ke" }, select: { id: true } });
+    if (preserveDirector && !director) throw new Error("The existing Director account is required for a credentials-preserving local reset.");
+    const preservedUserIds = director ? [director.id] : [];
+    if (demoOnly) {
+      const learners = await db.learner.findMany({ select: { admissionNo: true } });
+      if (learners.length !== 30 || learners.some(learner => !/^MR-2026-(?:00[1-9]|0[12]\d|030)$/.test(learner.admissionNo))) {
+        throw new Error("Demo-only cleanup requires the original thirty local seed learners. No data was changed.");
+      }
+      const seedEmails = ["director", "headteacher", "deputy", "secretary", "accountant", "teacher", "parent", "learner", "welfare", "nonteaching"].map(name => `${name}@maryroyal.ac.ke`);
+      const users = await db.user.findMany({ select: { id: true, email: true, role: true, learnerLinks: { select: { learner: { select: { admissionNo: true } } } } } });
+      for (const user of users) {
+        const generatedDemoLearner = user.role === "LEARNER" && user.email.endsWith("@learners.maryroyal.ac.ke") && user.learnerLinks.length > 0 && user.learnerLinks.every(link => /^MR-2026-\d{3}$/.test(link.learner.admissionNo));
+        if (!seedEmails.includes(user.email) && !generatedDemoLearner) preservedUserIds.push(user.id);
+      }
+    }
     const passwordHash = await bcrypt.hash("MaryRoyal2026!", 12);
     await db.$transaction(async tx => {
       await tx.complaintReply.deleteMany();
@@ -76,25 +94,33 @@ async function main() {
       await tx.guardianLink.deleteMany();
       await tx.learner.deleteMany();
       await tx.auditEvent.deleteMany();
-      await tx.schoolSetting.deleteMany();
-      await tx.cbcLevel.deleteMany();
+      if (!demoOnly) {
+        await tx.schoolSetting.deleteMany();
+        await tx.cbcLevel.deleteMany();
+      }
       await tx.admissionCounter.deleteMany();
       await tx.receiptCounter.deleteMany();
-      await tx.user.deleteMany({ where: { email: { not: "director@maryroyal.ac.ke" } } });
-      if (director) await tx.user.update({ where: { id: director.id }, data: { name: "Mary Royal Director", role: "DIRECTOR", passwordHash, forcePasswordChange: true, suspended: false, failedLogins: 0, avatarUrl: null } });
-      else await tx.user.create({ data: { name: "Mary Royal Director", email: "director@maryroyal.ac.ke", passwordHash, role: "DIRECTOR", forcePasswordChange: true } });
-      await tx.schoolSetting.createMany({ data: [
-        { key: "school.profile", value: JSON.stringify({ name: "Mary Royal Junior School", motto: "Hard work pays", slogan: "Nurturing Excellence Through CBE", county: "Kisumu", area: "Obunga", currency: "KES", timezone: "Africa/Nairobi" }) },
-        { key: "school.academicSetup", value: JSON.stringify({ years: [], terms: [], classes: [], streams: [], subjects: [], feeStructures: [] }) }
-      ] });
-      await tx.cbcLevel.createMany({ data: [...cbcDefaults] });
+      await tx.user.deleteMany({ where: preservedUserIds.length ? { id: { notIn: preservedUserIds } } : { email: { not: "director@maryroyal.ac.ke" } } });
+      if (director && !preserveDirector) await tx.user.update({ where: { id: director.id }, data: { name: "Mary Royal Director", role: "DIRECTOR", passwordHash, forcePasswordChange: true, suspended: false, failedLogins: 0, avatarUrl: null } });
+      else if (!director) await tx.user.create({ data: { name: "Mary Royal Director", email: "director@maryroyal.ac.ke", passwordHash, role: "DIRECTOR", forcePasswordChange: true } });
+      if (!demoOnly) {
+        await tx.schoolSetting.createMany({ data: [
+          { key: "school.profile", value: JSON.stringify({ name: "Mary Royal Junior School", motto: "Hard work pays", slogan: "Nurturing Excellence Through CBE", county: "Kisumu", area: "Obunga", currency: "KES", timezone: "Africa/Nairobi" }) },
+          { key: "school.academicSetup", value: JSON.stringify({ years: [], terms: [], classes: [], streams: [], subjects: [], feeStructures: [] }) }
+        ] });
+        await tx.cbcLevel.createMany({ data: [...cbcDefaults] });
+      }
     });
-    for (const relativeDir of ["private-uploads", "public/uploads"]) {
+    for (const relativeDir of demoOnly ? [] : ["private-uploads", "public/uploads"]) {
       const directory = resolve(process.cwd(), relativeDir);
       const workspaceRoot = `${resolve(process.cwd())}${sep}`;
       if (directory.startsWith(workspaceRoot)) await rm(directory, { recursive: true, force: true });
     }
-    console.log("Local school data and local uploads cleared. The Director is reset to the documented first-login credentials; school identity and CBC defaults were restored.");
+    console.log(demoOnly
+      ? "Local demo school records cleared. Director credentials, non-demo accounts, settings and uploaded files preserved."
+      : preserveDirector
+        ? "Local school data and local uploads cleared. Existing Director account and credentials preserved; school identity and CBC defaults restored."
+        : "Local school data and local uploads cleared. The Director requires first-login setup; school identity and CBC defaults restored.");
   } finally { await db.$disconnect(); }
 }
 

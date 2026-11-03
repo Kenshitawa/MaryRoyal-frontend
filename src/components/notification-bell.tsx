@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, Check, CheckCheck, X, Clock, AlertCircle, Info, Zap } from "lucide-react";
-import Link from "next/link";
+
 
 type Notification = {
   id: string;
@@ -98,9 +98,9 @@ export default function NotificationBell() {
         id="notification-bell"
         aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
         onClick={() => { setOpen((o) => !o); if (!open) void load(); }}
-        className="relative grid h-9 w-9 place-items-center rounded-xl text-slate-600 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        className="relative grid h-11 w-11 place-items-center rounded-xl text-slate-700 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-slate-200 dark:hover:bg-slate-800"
       >
-        <Bell size={17} />
+        <Bell size={20} />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold leading-none text-white">
             {unread > 99 ? "99+" : unread}
@@ -127,7 +127,7 @@ export default function NotificationBell() {
                   <CheckCheck size={12} /> All read
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-slate-100">
+              <button type="button" aria-label="Close notifications" onClick={() => setOpen(false)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-slate-100">
                 <X size={13} />
               </button>
             </div>
@@ -153,7 +153,14 @@ export default function NotificationBell() {
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  className={`relative border-b border-slate-50 px-4 py-3 transition last:border-0 dark:border-slate-800 ${!n.read ? typeBg[n.type] ?? "bg-blue-50" : "bg-white dark:bg-slate-900"}`}
+                  onClick={() => {
+                    void markRead(n.id);
+                    setOpen(false);
+                    if (n.link) {
+                      window.location.href = n.link;
+                    }
+                  }}
+                  className={`relative cursor-pointer border-b border-slate-50 px-4 py-3 transition hover:bg-slate-50/80 last:border-0 dark:border-slate-800 dark:hover:bg-slate-800/60 ${!n.read ? typeBg[n.type] ?? "bg-blue-50" : "bg-white dark:bg-slate-900"}`}
                 >
                   {!n.read && <span className="absolute right-4 top-3.5 h-1.5 w-1.5 rounded-full bg-blue-600" />}
                   <div className="flex items-start gap-2">
@@ -166,18 +173,29 @@ export default function NotificationBell() {
                           <Clock size={9} />{timeAgo(n.createdAt)}
                         </span>
                         {n.link && (
-                          <Link href={n.link} onClick={() => { void markRead(n.id); setOpen(false); }}
-                            className="text-[10px] font-semibold text-blue-700 hover:underline">
-                            View →
-                          </Link>
+                          <span className="text-[10px] font-semibold text-blue-700 hover:underline">
+                            Open page →
+                          </span>
                         )}
                         {n.actionRequired && !n.actionDone && (
-                          <button onClick={() => void markDone(n.id)} className="flex items-center gap-1 rounded-md bg-blue-700 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-blue-800">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void markDone(n.id);
+                            }}
+                            className="flex items-center gap-1 rounded-md bg-blue-700 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-blue-800"
+                          >
                             <Check size={9} /> Done
                           </button>
                         )}
                         {!n.read && (
-                          <button onClick={() => void markRead(n.id)} className="text-[10px] text-slate-400 hover:text-blue-700">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void markRead(n.id);
+                            }}
+                            className="text-[10px] text-slate-400 hover:text-blue-700"
+                          >
                             Mark read
                           </button>
                         )}

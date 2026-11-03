@@ -2,21 +2,13 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
-  ArrowLeft,
-  Bell,
-  LogOut,
   MoreHorizontal,
   Search,
   X,
-  ChevronRight,
-  ShieldCheck,
-  User,
 } from "lucide-react";
-import { getMobileNavigation, MobileNavItem, RoleMobileNav } from "@/lib/navigation";
-import { ThemeStyleControls } from "@/components/design-system/theme-provider";
+import { getMobileNavigation, RoleMobileNav } from "@/lib/navigation";
 
 type MobileNavProps = {
   role: string;
@@ -30,7 +22,6 @@ type MobileNavProps = {
 
 export default function MobileNav({ role, active, user }: MobileNavProps) {
   const pathname = usePathname() ?? "";
-  const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
@@ -52,16 +43,8 @@ export default function MobileNav({ role, active, user }: MobileNavProps) {
 
   const navConfig: RoleMobileNav = useMemo(() => getMobileNavigation(role), [role]);
 
-  // Check if current route is a full-screen wizard
+  // Do not cover the focused form flow with persistent navigation.
   const isWizard = pathname.startsWith("/admissions/new") || pathname.startsWith("/staff/new");
-  const wizardBackHref = pathname.startsWith("/admissions/new")
-    ? "/admissions"
-    : pathname.startsWith("/staff/new")
-    ? "/staff"
-    : "/dashboard";
-  const wizardTitle = pathname.startsWith("/admissions/new")
-    ? "Exit Admission Form"
-    : "Exit Staff Onboarding";
 
   // Fetch real-time numeric badges
   const loadBadges = useCallback(async () => {
@@ -93,7 +76,9 @@ export default function MobileNav({ role, active, user }: MobileNavProps) {
 
     const handleResize = () => {
       // If viewport height is noticeably smaller than screen height, keyboard is open
-      const keyboardShowing = viewport.height < window.innerHeight * 0.78;
+      const activeElement = document.activeElement;
+      const textEntryFocused = activeElement instanceof HTMLElement && activeElement.matches("input, textarea, select, [contenteditable='true']");
+      const keyboardShowing = textEntryFocused && viewport.height < window.screen.height * 0.72;
       setIsKeyboardOpen(keyboardShowing);
     };
 
@@ -155,6 +140,7 @@ export default function MobileNav({ role, active, user }: MobileNavProps) {
   const moreBadgeCount =
     (badges.unreadNotifications > 0 ? 1 : 0) +
     (badges.pendingApprovals > 0 ? badges.pendingApprovals : 0);
+  const isMoreCurrent = navConfig.moreCategories.some((group) => group.items.some((item) => pathname.startsWith(item.href.split("?")[0]) && item.href !== "/"));
 
   // Filtered categories for More bottom sheet search
   const filteredCategories = useMemo(() => {
@@ -174,34 +160,16 @@ export default function MobileNav({ role, active, user }: MobileNavProps) {
   }, [navConfig.moreCategories, searchQuery]);
 
   // If keyboard is open, do not show the mobile bottom bar to prevent overlaying inputs
-  if (isKeyboardOpen) {
+  if (isKeyboardOpen || isWizard) {
     return null;
-  }
-
-  // Inside full-screen wizards, render an ergonomic docked back bar instead of 5 tabs
-  if (isWizard) {
-    return (
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(15,35,70,0.08)] backdrop-blur lg:hidden dark:border-slate-800 dark:bg-slate-950/95">
-        <div className="flex items-center justify-between">
-          <Link
-            href={wizardBackHref}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          >
-            <ArrowLeft size={16} />
-            <span>{wizardTitle}</span>
-          </Link>
-          <span className="text-[11px] font-semibold text-slate-400">Step In Progress</span>
-        </div>
-      </div>
-    );
   }
 
   return (
     <>
       {/* 5-Slot Bottom Bar */}
       <nav
-        aria-label="Mobile bottom navigation"
-        className="mobile-nav fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-slate-200/80 bg-white/95 px-1 pb-[max(0.6rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_24px_rgba(15,35,70,0.07)] backdrop-blur lg:hidden dark:border-slate-800 dark:bg-slate-950/95"
+        aria-label="Mobile navigation"
+        className="mobile-nav fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-slate-200 bg-white px-1 pb-[max(0.6rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-8px_24px_rgba(15,35,70,0.12)] lg:hidden dark:border-slate-800 dark:bg-slate-950"
       >
         {/* 4 Primary Tabs */}
         {navConfig.primary.map(({ label, href, icon: Icon, badgeKey }) => {
@@ -216,21 +184,21 @@ export default function MobileNav({ role, active, user }: MobileNavProps) {
               key={label}
               href={href}
               aria-current={isCurrent ? "page" : undefined}
-              className={`relative flex min-h-[48px] min-w-[48px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-[10.5px] font-bold transition active:scale-95 ${
+              className={`relative flex min-h-[52px] min-w-[48px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-xs font-semibold transition active:scale-95 ${
                 isCurrent
-                  ? "text-blue-700 dark:text-blue-400"
-                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  ? "bg-blue-50 text-blue-800 dark:bg-blue-950/60 dark:text-blue-200"
+                  : "text-slate-700 hover:text-blue-800 dark:text-slate-200 dark:hover:text-white"
               }`}
             >
               <div className="relative">
-                <Icon size={20} className={isCurrent ? "stroke-[2.5]" : "stroke-[1.75]"} />
+              <Icon size={24} className={isCurrent ? "stroke-[2.5]" : "stroke-[1.8]"} />
                 {badgeCount > 0 && (
                   <span className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-black text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
                     {badgeCount > 99 ? "99+" : badgeCount}
                   </span>
                 )}
               </div>
-              <span className="truncate max-w-[64px] text-center">{label}</span>
+              <span className="max-w-[72px] truncate text-center leading-4">{label}</span>
               {isCurrent && (
                 <span className="absolute bottom-0.5 h-1 w-6 rounded-full bg-blue-600 dark:bg-blue-400" />
               )}
@@ -244,14 +212,15 @@ export default function MobileNav({ role, active, user }: MobileNavProps) {
           onClick={() => setSheetOpen(true)}
           aria-label="Open more pages and actions menu"
           aria-expanded={sheetOpen}
-          className={`relative flex min-h-[48px] min-w-[48px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-[10.5px] font-bold transition active:scale-95 ${
-            sheetOpen
-              ? "text-blue-700 dark:text-blue-400"
-              : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+          aria-current={isMoreCurrent ? "page" : undefined}
+              className={`relative flex min-h-[52px] min-w-[48px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-xs font-semibold transition active:scale-95 ${
+            sheetOpen || isMoreCurrent
+              ? "bg-blue-50 text-blue-800 dark:bg-blue-950/60 dark:text-blue-200"
+              : "text-slate-700 hover:text-blue-800 dark:text-slate-200 dark:hover:text-white"
           }`}
         >
           <div className="relative">
-            <MoreHorizontal size={20} className={sheetOpen ? "stroke-[2.5]" : "stroke-[1.75]"} />
+            <MoreHorizontal size={24} className={sheetOpen ? "stroke-[2.5]" : "stroke-[1.8]"} />
             {moreBadgeCount > 0 && (
               <span className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-black text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
                 {moreBadgeCount}
@@ -378,32 +347,6 @@ export default function MobileNav({ role, active, user }: MobileNavProps) {
               )}
             </div>
 
-            {/* Bottom Actions: Theme, Notifications, Profile, Sign Out */}
-            <div className="border-t border-slate-100 bg-slate-50/70 px-5 pt-3 dark:border-slate-800 dark:bg-slate-900/50">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
-                <div className="flex items-center gap-2">
-                  <ThemeStyleControls compact />
-                  <Link
-                    href="/profile"
-                    onClick={() => setSheetOpen(false)}
-                    className="inline-flex min-h-[36px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-                  >
-                    <User size={14} />
-                    <span>Profile</span>
-                  </Link>
-                </div>
-
-                <form action="/api/logout" method="post">
-                  <button
-                    type="submit"
-                    className="inline-flex min-h-[36px] items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 shadow-sm transition hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300"
-                  >
-                    <LogOut size={14} />
-                    <span>Sign Out</span>
-                  </button>
-                </form>
-              </div>
-            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
@@ -8,7 +9,7 @@ import { PrintButton } from "./print-button";
 import PageNavigation from "@/components/page-navigation";
 import { LearnerLink } from "@/components/learner-link";
 import { generateQrSvg } from "@/lib/qr";
-import { CheckCircle2, ShieldCheck, AlertCircle, FileText } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldCheck, AlertCircle, FileText } from "lucide-react";
 
 const kes = (n: number) =>
   new Intl.NumberFormat("en-KE", {
@@ -31,6 +32,14 @@ export default async function ReceiptPage({
   if (user.forcePasswordChange) redirect("/change-password");
 
   const { id } = await params;
+  const schoolPaymentsAllowed = canInScope(user.role, "payments", "view", "school");
+  const linkedPaymentsAllowed = canInScope(user.role, "payments", "view", "linked");
+  if (!schoolPaymentsAllowed && !linkedPaymentsAllowed) {
+    await db.auditEvent.create({
+      data: { actorId: user.id, action: "ACCESS_DENIED", entity: "FeePayment", entityId: id }
+    });
+    notFound();
+  }
   const payment = await db.feePayment.findUnique({
     where: { id },
     include: {
@@ -45,13 +54,7 @@ export default async function ReceiptPage({
 
   if (!payment || payment.status === "PENDING") notFound();
 
-  if (!canInScope(user.role, "payments", "view", "school")) {
-    if (!canInScope(user.role, "payments", "view", "linked")) {
-      await db.auditEvent.create({
-        data: { actorId: user.id, action: "ACCESS_DENIED", entity: "FeePayment", entityId: id }
-      });
-      notFound();
-    }
+  if (!schoolPaymentsAllowed && linkedPaymentsAllowed) {
     const link = await db.guardianLink.findUnique({
       where: {
         userId_learnerId: {
@@ -74,8 +77,25 @@ export default async function ReceiptPage({
 
   return (
     <>
-      <PageNavigation active="Fee receipt" homeHref={homeHref} userId={user.id} />
-      <main className="mx-auto my-8 max-w-2xl px-4 sm:px-6 print:my-0 print:max-w-none print:px-0">
+      <a href="#receipt" className="skip-link">
+        Skip to content
+      </a>
+      <header aria-label="Receipt navigation" className="print:hidden">
+        <nav aria-label="Receipt breadcrumbs">
+          <div className="flex items-center gap-2 bg-blue-800 px-4 py-2 text-white lg:hidden">
+            <Link
+              href={homeHref}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+              {user.role === "PARENT" ? "Back to portal" : "Back to finance"}
+            </Link>
+            <span className="ml-auto text-sm font-semibold text-blue-100">Fee receipt</span>
+          </div>
+          <PageNavigation active="Fee receipt" homeHref={homeHref} userId={user.id} />
+        </nav>
+      </header>
+      <main id="receipt" className="mx-auto my-8 max-w-2xl px-4 sm:px-6 print:my-0 print:max-w-none print:px-0">
         <div className="bento-card overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl shadow-blue-950/5 print:border-0 print:shadow-none dark:border-slate-800 dark:bg-slate-900">
           {/* Header banner */}
           <div className="border-b border-slate-100 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 px-6 py-6 text-white sm:px-8">

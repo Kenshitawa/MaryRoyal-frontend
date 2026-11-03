@@ -11,10 +11,25 @@ async function actor() {
   return user && !user.suspended && !user.forcePasswordChange ? user : null;
 }
 
-// GET /api/notifications — list unread + recent
+// GET /api/notifications — list unread + recent (auto-delete read older than 5 days)
 export async function GET() {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+
+  // Automatically purge read notifications older than 5 days
+  const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+  try {
+    await db.notification.deleteMany({
+      where: {
+        userId: user.id,
+        read: true,
+        createdAt: { lt: fiveDaysAgo },
+      },
+    });
+  } catch (err) {
+    console.error("Failed to prune old notifications:", err);
+  }
+
   const notifications = await db.notification.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },

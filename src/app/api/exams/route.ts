@@ -39,13 +39,23 @@ const examSessionSchema = z.object({
 export async function GET(request: Request) {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  const schoolWide = canInScope(user.role, "examSessions", "view", "school");
+  const assignedOnly = !schoolWide && canInScope(user.role, "examSessions", "view", "assigned");
+  if (!schoolWide && !assignedOnly) {
+    await db.auditEvent.create({ data: { actorId: user.id, action: "ACCESS_DENIED", entity: "ExamSession" } });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const url = new URL(request.url);
   const statusFilter = url.searchParams.get("status");
 
-  // Teachers see active exams for their classes
   const where: Record<string, unknown> = {};
   if (statusFilter) where.status = statusFilter;
+
+  // Assigned-scope readers only get exam sessions that cover one of their own classes.
+  const assignedGrades = assignedOnly
+    ? (await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true } })).map((row) => row.grade)
+    : null;
 
   const exams = await db.examSession.findMany({
     where,
@@ -57,14 +67,19 @@ export async function GET(request: Request) {
     take: 100
   });
 
-  // Calculate submission progress per class/subject for leadership
-  const activeExamsWithProgress = await Promise.all(
-    exams.map(async (exam) => {
+  const visible = exams
+    .map((exam) => {
       let classes: string[] = [];
       let subjects: string[] = [];
       try { classes = JSON.parse(exam.classesJson); } catch {}
       try { subjects = JSON.parse(exam.subjectsJson); } catch {}
+      return { exam, classes, subjects };
+    })
+    .filter(({ classes }) => !assignedGrades || classes.some((grade) => assignedGrades.includes(grade)));
 
+  // Calculate submission progress per class/subject for leadership
+  const activeExamsWithProgress = await Promise.all(
+    visible.map(async ({ exam, classes, subjects }) => {
       // Count total expected marks vs submitted
       const learnerCount = await db.learner.count({
         where: { grade: { in: classes }, archivedAt: null }

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { canInScope, canManageStaffTarget, canDeleteStaffAccount, canViewStaffStatutory, canEditStaffStatutory } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { staffEmergencyContactSchema, staffRefereeSchema } from "@/lib/staff-validation";
+import { stripStaffStatutoryFields } from "@/lib/staff-sanitization";
 
 const dateInput = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable();
 const textInput = (max = 250) => z.string().trim().max(max).optional().nullable();
@@ -42,6 +43,11 @@ const staffUpdateSchema = z.object({
   bankAccountName: textInput(120),
   bankAccountNumber: textInput(50),
   bankBranch: textInput(100),
+  teachingAssignments: z.array(z.object({
+    grade: z.string().trim().min(1).max(20),
+    subject: z.string().trim().min(1).max(60),
+  })).max(30).optional(),
+  classTeacherGrade: z.string().trim().max(20).optional().nullable(),
   emergencyContacts: z.array(staffEmergencyContactSchema).max(10).optional(),
   referees: z.array(staffRefereeSchema).max(5).optional(),
 }).strict();
@@ -144,16 +150,7 @@ export async function GET(
   // Strip restricted statutory fields if not permitted
   const responseStaff = staff.staffProfile && !canSeeStatutory
     ? (() => {
-    const {
-      kraPin,
-      nssfNumber,
-      shaNumber,
-      bankName,
-      bankAccountName,
-      bankAccountNumber,
-      bankBranch,
-      ...safeProfile
-    } = staff.staffProfile;
+    const safeProfile = stripStaffStatutoryFields(staff.staffProfile);
     return { ...staff, staffProfile: safeProfile };
   })()
     : staff;
@@ -360,6 +357,41 @@ export async function PATCH(
               },
             });
           }
+        }
+      }
+
+      // Teaching and Class Teacher assignments update if provided (Head Teacher & Director)
+      if (Array.isArray(body.teachingAssignments)) {
+        await tx.teacherAssignment.deleteMany({ where: { teacherId: id } });
+        for (const asgn of body.teachingAssignments) {
+          if (asgn.grade && asgn.subject) {
+            await tx.teacherAssignment.create({
+              data: {
+                teacherId: id,
+                grade: asgn.grade,
+                subject: asgn.subject,
+              },
+            });
+          }
+        }
+        changes.push({
+          field: "teachingAssignments",
+          oldVal: "Previous assignments",
+          newVal: `${body.teachingAssignments.length} class-subject pairs`,
+        });
+      }
+
+      if (body.classTeacherGrade !== undefined) {
+        await tx.classTeacherAssignment.deleteMany({ where: { teacherId: id } });
+        if (body.classTeacherGrade) {
+          await tx.classTeacherAssignment.upsert({
+            where: { grade: body.classTeacherGrade },
+            create: { teacherId: id, grade: body.classTeacherGrade },
+            update: { teacherId: id },
+          });
+          changes.push({ field: "classTeacherGrade", oldVal: null, newVal: body.classTeacherGrade });
+        } else {
+          changes.push({ field: "classTeacherGrade", oldVal: "Removed", newVal: null });
         }
       }
 

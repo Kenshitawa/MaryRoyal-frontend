@@ -35,6 +35,12 @@ const rubricBatchSchema = z.object({
 export async function GET() {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  if (!canInScope(user.role, "rubrics", "view", "school")) {
+    await db.auditEvent.create({
+      data: { actorId: user.id, action: "ACCESS_DENIED", entity: "CbcRubric" }
+    });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const rubrics = await db.cbcRubric.findMany({
     where: { active: true },

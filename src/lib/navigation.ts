@@ -66,6 +66,8 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Learners", href: "/learners", icon: Users },
     { label: "Admissions", href: "/admissions", icon: ClipboardList },
     { label: "Staff", href: "/staff", icon: Users },
+    { label: "Assignments", href: "/assignments", icon: ClipboardList },
+    { label: "Learning content", href: "/learning-content", icon: BookOpenCheck },
     { label: "Assessments", href: "/assessments", icon: BookOpen },
     { label: "Attendance", href: "/attendance", icon: CalendarCheck },
     { label: "Finance", href: "/finance", icon: Wallet },
@@ -194,6 +196,8 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       {
         category: "Academics",
         items: [
+          { label: "Assignments", href: "/assignments", icon: ClipboardList },
+          { label: "Learning Content", href: "/learning-content", icon: BookOpenCheck },
           { label: "Assessments", href: "/assessments", icon: BookOpen },
           { label: "Timetable", href: "/timetable", icon: CalendarDays },
           { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
@@ -228,7 +232,6 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
         category: "Settings",
         items: [
           { label: "Profile & Security", href: "/profile", icon: User },
-          { label: "Security Audit", href: "/audit", icon: Eye },
           { label: "Privacy Notice", href: "/privacy", icon: ShieldCheck },
         ],
       },
@@ -476,3 +479,44 @@ export function getMobileNavigation(role: string): RoleMobileNav {
 export function getNavigationHref(label: string, role: string): string | undefined {
   return getRoleNavigation(role).find((item) => item.label === label)?.href;
 }
+
+/** Flat list of every destination a role may open from the mobile navigation. */
+export function getMobileDestinations(role: string): (MobileNavItem & { group: string })[] {
+  const nav = getMobileNavigation(role);
+  return [
+    ...nav.primary.map((item) => ({ ...item, group: item.href === "/dashboard" ? "Overview" : item.label })),
+    ...nav.moreCategories.flatMap((category) => category.items.map((item) => ({ ...item, group: category.category }))),
+  ];
+}
+
+const detailSections: { prefix: string; roles?: string[]; label: string }[] = [
+  { prefix: "/learners/", label: "Learners" },
+  { prefix: "/staff/new", label: "Staff" },
+  { prefix: "/staff/", label: "Staff" },
+  { prefix: "/admissions/new", label: "Admissions" },
+  { prefix: "/admissions/", label: "Admissions" },
+  { prefix: "/assessments/exams", label: "Exams", roles: ["DEPUTY"] },
+  { prefix: "/assessments", label: "Academics" },
+  { prefix: "/finance/structures", label: "Finance" },
+  { prefix: "/finance", label: "Finance" },
+  { prefix: "/receipts", label: "Finance" },
+  { prefix: "/profile", label: "Settings" },
+  { prefix: "/privacy", label: "Settings" },
+  { prefix: "/audit", label: "Settings" },
+  { prefix: "/complaints", label: "Messages" },
+  { prefix: "/learning-videos", label: "Academics" },
+];
+
+/** Section label shown in the compact app bar (never duplicates the page title). */
+export function getSectionForPath(pathname: string, role: string): string {
+  const path = pathname.split("?")[0];
+  if (path === "/dashboard") return "Overview";
+  const destinations = getMobileDestinations(role);
+  // Tab siblings share one pathname, so an exact href must win before a pathname-only match.
+  const exact = destinations.find((item) => item.href === pathname) ?? destinations.find((item) => item.href.split("?")[0] === path);
+  if (exact) return exact.group;
+  const detail = detailSections.find((item) => path.startsWith(item.prefix) && (!item.roles || item.roles.includes(role)));
+  if (detail) return detail.label;
+  return "Workspace";
+}
+

@@ -8,15 +8,23 @@ export async function POST(request: Request) {
  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
  const now = Date.now(); const bucket = (globalThis as typeof globalThis & { loginBuckets?: Map<string, { count: number; start: number }> }).loginBuckets ?? new Map();
  (globalThis as typeof globalThis & { loginBuckets?: Map<string, { count: number; start: number }> }).loginBuckets = bucket;
- const state = bucket.get(ip); if (state && now - state.start < 60_000 && state.count >= 12) return NextResponse.json({ error: "Too many attempts. Try again in one minute." }, { status: 429 });
+ const state = bucket.get(ip); if (state && now - state.start < 60_000 && state.count >= 12) return NextResponse.json({ error: "Too many failed attempts. Please wait one minute then try again." }, { status: 429 });
  let body: unknown; try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
  const parsed = schema.safeParse(body); if (!parsed.success) return NextResponse.json({ error: "Enter a valid email and password." }, { status: 400 });
  const user = await db.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
- if (!user || user.suspended || user.failedLogins >= 8 || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
+ // Evaluate password before checking lockout so we can give a more specific lockout message,
+ // but only after a valid credential match attempt — avoids leaking user existence either way.
+ const passwordOk = user ? await bcrypt.compare(parsed.data.password, user.passwordHash) : false;
+ if (!user || user.suspended || user.failedLogins >= 8 || !passwordOk) {
   bucket.set(ip, { count: (state?.count ?? 0) + 1, start: state?.start ?? now });
   if (user) await db.user.update({ where: { id: user.id }, data: { failedLogins: { increment: 1 } } });
   await db.auditEvent.create({ data: { actorId: user?.id, action: "LOGIN_FAILED", entity: "User", entityId: user?.id } });
-  return NextResponse.json({ error: "Email or password is incorrect." }, { status: 401 });
+  // Give a specific message for locked / suspended accounts so the user can contact admin,
+  // but keep the same HTTP 401 status to avoid leaking existence via status code.
+  if (user && (user.suspended || user.failedLogins >= 8)) {
+   return NextResponse.json({ error: "This account has been locked. Please contact the school administrator." }, { status: 401 });
+  }
+  return NextResponse.json({ error: "Wrong password or email address. Please check your details and try again." }, { status: 401 });
  }
  await db.user.update({ where: { id: user.id }, data: { failedLogins: 0 } });
  await db.auditEvent.create({ data: { actorId: user.id, action: "LOGIN_SUCCEEDED", entity: "User", entityId: user.id } });
