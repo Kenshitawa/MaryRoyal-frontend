@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check as CheckIcon, CircleAlert, Cloud, Download, FileCheck2, FileImage, LoaderCircle, Plus, Printer, ShieldCheck, Trash2, UserRoundPlus, User, MapPin, Users, HeartPulse, FileText, Wallet, CheckCircle2, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -196,30 +197,64 @@ export default function AdmissionWizard({ initialId, canCreateLearnerLogin = tru
 
   if (!ready || !draft) return <section className="mx-auto max-w-5xl p-5 pb-28 md:p-8"><div className="animate-pulse rounded-3xl border border-slate-200 bg-white p-8"><div className="h-6 w-40 rounded bg-slate-200"/><div className="mt-5 h-3 w-full rounded bg-slate-100"/><div className="mt-8 grid gap-4 sm:grid-cols-2"><div className="h-16 rounded-xl bg-slate-100"/><div className="h-16 rounded-xl bg-slate-100"/><div className="h-16 rounded-xl bg-slate-100"/><div className="h-16 rounded-xl bg-slate-100"/></div></div></section>;
 
-  if (draft.status !== "DRAFT") return <section className="mx-auto max-w-4xl p-5 pb-28 md:p-8"><section className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-9"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><CheckIcon size={28}/></div><p className="mt-5 text-xs font-bold uppercase tracking-[.16em] text-emerald-700">Admission {draft.status === "ENROLLED" ? "approved" : "submitted"}</p><h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">{draft.learner?.name ?? data.learner.fullName}</h1><p className="mt-2 text-slate-600">Admission number <strong className="text-blue-800">{draft.admissionNo}</strong> · {draft.learner?.grade ?? data.learner.grade}</p><p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">{draft.status === "SUBMITTED" ? "The admission has been sent to the Head Teacher for approval. The Director can review the submitted record." : "The Head Teacher approved this admission. The Director can review the complete record and audit history."}</p><div className="mt-6 flex flex-wrap gap-3"><a href={`/api/admissions/${draft.id}/form`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-blue-800"><Download size={17}/> Download admission PDF</a><a href={`/api/admissions/${draft.id}/form?download=0`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50"><Printer size={17}/> Print form</a>{canCreateLearnerLogin && draft.learner && !draft.learner.hasLearnerLogin && !loginDetails && <button type="button" disabled={loginBusy} onClick={() => void createLearnerLogin()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-800 disabled:opacity-60">{loginBusy ? <LoaderCircle className="animate-spin" size={17}/> : <UserRoundPlus size={17}/>} Create learner login</button>}{canCreateAdmission && draft.learner && data.guardians.length > 0 && !guardianLoginDetails && <div className="flex min-h-11 flex-wrap items-center gap-2"><select aria-label="Parent or guardian for account" value={guardianIndex} onChange={event => setGuardianIndex(event.target.value)} className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"><option value="">Select a guardian</option>{data.guardians.map((guardian, index) => <option key={`${index}-${guardian.phone}`} value={index}>{guardian.fullName || `Guardian ${index + 1}`} · {guardian.relationship}</option>)}</select><button type="button" disabled={loginBusy || guardianIndex === ""} onClick={() => void createGuardianLogin()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-800 disabled:cursor-not-allowed disabled:opacity-50">{loginBusy ? <LoaderCircle className="animate-spin" size={16}/> : <UserRoundPlus size={16}/>} Create/link parent login</button></div>}
-{guardianLoginDetails && <div className="mt-6 w-full rounded-2xl border border-blue-200 bg-blue-50 p-5"><p className="text-sm font-extrabold text-blue-950">{guardianLoginDetails.linkedExisting ? "Existing parent account linked" : "Parent credentials · shown once"}</p><p className="mt-2 text-sm text-slate-700">Sign-in email: <strong>{guardianLoginDetails.email}</strong></p>{guardianLoginDetails.temporaryPassword && <p className="mt-2 font-mono text-lg font-bold text-blue-900">Temporary password: {guardianLoginDetails.temporaryPassword}</p>}<p className="mt-2 text-xs text-slate-600">{guardianLoginDetails.linkedExisting ? "The matching parent account can now see this learner." : guardianLoginDetails.suspended ? "Access remains suspended until the learner is enrolled." : "The parent must change this password at first sign-in."} Share any new credentials privately.</p></div>}<Link href="/learners" className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50">Open learner register</Link>{canCreateAdmission && <button type="button" onClick={() => void startAnother()} className="min-h-11 rounded-xl px-4 text-sm font-bold text-blue-800 hover:bg-blue-50">Start another admission</button>}</div>{loginDetails && <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-5"><p className="flex items-center gap-2 text-sm font-extrabold text-blue-950"><ShieldCheck size={18}/> Learner credentials · shown once</p><p className="mt-3 text-sm text-slate-700">Sign-in email: <strong>{loginDetails.email}</strong></p><p className="mt-2 font-mono text-lg font-bold text-blue-900">Temporary password: {loginDetails.temporaryPassword}</p><p className="mt-2 text-xs text-slate-600">{loginDetails.suspended ? "The account remains suspended until the Head Teacher approves this admission." : "The learner must change this password at first sign-in."} Share these details privately.</p></div>}</section></section>;
+  if (draft.status !== "DRAFT") return <section className="mx-auto max-w-4xl p-5 pb-28 md:p-8"><section className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-9">
+    <div className="mb-6 flex items-center gap-3.5 border-b border-slate-100 pb-5">
+      <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white p-1.5 shadow-sm border border-slate-200">
+        <Image src="/mary-royal-logo.png" width={48} height={48} alt="Mary Royal School Crest" className="h-full w-full object-contain" />
+      </div>
+      <div>
+        <h2 className="text-lg font-black text-slate-900">Mary Royal School</h2>
+        <p className="text-xs text-slate-500">Obunga, Kisumu · Official Kenya CBE Enrollment Record</p>
+      </div>
+    </div>
+    <div className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><CheckIcon size={28}/></div>
+    <p className="mt-5 text-xs font-bold uppercase tracking-[.16em] text-emerald-700">Admission {draft.status === "ENROLLED" ? "approved" : "submitted"}</p>
+    <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">{draft.learner?.name ?? data.learner.fullName}</h1>
+    <p className="mt-2 text-slate-600">Admission number <strong className="text-blue-800">{draft.admissionNo}</strong> · {draft.learner?.grade ?? data.learner.grade}</p>
+    <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">{draft.status === "SUBMITTED" ? "The admission has been sent to the Head Teacher for approval. The Director can review the submitted record." : "The Head Teacher approved this admission. The Director can review the complete record and audit history."}</p>
+    <div className="mt-6 flex flex-wrap gap-3">
+      <a href={`/api/admissions/${draft.id}/form`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-blue-800"><Download size={17}/> Download admission PDF</a>
+      <a href={`/api/admissions/${draft.id}/form?download=0`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50"><Printer size={17}/> Print form</a>
+      {canCreateLearnerLogin && draft.learner && !draft.learner.hasLearnerLogin && !loginDetails && <button type="button" disabled={loginBusy} onClick={() => void createLearnerLogin()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-800 disabled:opacity-60">{loginBusy ? <LoaderCircle className="animate-spin" size={17}/> : <UserRoundPlus size={17}/>} Create learner login</button>}
+      {canCreateAdmission && draft.learner && data.guardians.length > 0 && !guardianLoginDetails && <div className="flex min-h-11 flex-wrap items-center gap-2"><select aria-label="Parent or guardian for account" value={guardianIndex} onChange={event => setGuardianIndex(event.target.value)} className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"><option value="">Select a guardian</option>{data.guardians.map((guardian, index) => <option key={`${index}-${guardian.phone}`} value={index}>{guardian.fullName || `Guardian ${index + 1}`} · {guardian.relationship}</option>)}</select><button type="button" disabled={loginBusy || guardianIndex === ""} onClick={() => void createGuardianLogin()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-800 disabled:cursor-not-allowed disabled:opacity-50">{loginBusy ? <LoaderCircle className="animate-spin" size={16}/> : <UserRoundPlus size={16}/>} Create/link parent login</button></div>}
+      {guardianLoginDetails && <div className="mt-6 w-full rounded-2xl border border-blue-200 bg-blue-50 p-5"><p className="text-sm font-extrabold text-blue-950">{guardianLoginDetails.linkedExisting ? "Existing parent account linked" : "Parent credentials · shown once"}</p><p className="mt-2 text-sm text-slate-700">Sign-in email: <strong>{guardianLoginDetails.email}</strong></p>{guardianLoginDetails.temporaryPassword && <p className="mt-2 font-mono text-lg font-bold text-blue-900">Temporary password: {guardianLoginDetails.temporaryPassword}</p>}<p className="mt-2 text-xs text-slate-600">{guardianLoginDetails.linkedExisting ? "The matching parent account can now see this learner." : guardianLoginDetails.suspended ? "Access remains suspended until the learner is enrolled." : "The parent must change this password at first sign-in."} Share any new credentials privately.</p></div>}
+      <Link href="/learners" className="inline-flex min-h-11 items-center rounded-xl border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50">Open learner register</Link>
+      {canCreateAdmission && <button type="button" onClick={() => void startAnother()} className="min-h-11 rounded-xl px-4 text-sm font-bold text-blue-800 hover:bg-blue-50">Start another admission</button>}
+    </div>
+    {loginDetails && <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-5"><p className="flex items-center gap-2 text-sm font-extrabold text-blue-950"><ShieldCheck size={18}/> Learner credentials · shown once</p><p className="mt-3 text-sm text-slate-700">Sign-in email: <strong>{loginDetails.email}</strong></p><p className="mt-2 font-mono text-lg font-bold text-blue-900">Temporary password: {loginDetails.temporaryPassword}</p><p className="mt-2 text-xs text-slate-600">{loginDetails.suspended ? "The account remains suspended until the Head Teacher approves this admission." : "The learner must change this password at first sign-in."} Share these details privately.</p></div>}
+  </section></section>;
 
   const docsByCategory = new Map(documents.map(document => [document.category, document]));
   return <section className="mx-auto max-w-5xl p-4 pb-32 sm:p-6 sm:pb-32 lg:p-8">
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <Link href="/admissions" className="inline-flex min-h-9 items-center gap-2 text-xs font-bold text-blue-700 hover:text-blue-900 transition hover:underline">
-          <ArrowLeft size={14}/> Back to Admissions
-        </Link>
-        <div className="mt-2 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100/80 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-blue-800">
-            <Sparkles size={11} /> Guided Enrollment
-          </span>
-          <span className="text-xs text-slate-400">·</span>
-          <span className="text-xs font-semibold text-slate-500">Mary Royal School, Kisumu</span>
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-blue-200/90 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-950 p-5 text-white shadow-xl shadow-blue-950/10 sm:p-7">
+      <div className="flex items-center gap-4">
+        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white p-2 shadow-md">
+          <Image
+            src="/mary-royal-logo.png"
+            width={52}
+            height={52}
+            alt="Mary Royal School Crest"
+            className="h-full w-full object-contain"
+          />
         </div>
-        <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">New Learner Admission</h1>
-        <p className="mt-0.5 text-xs text-slate-500">Official Kenya CBE admission workflow with automatic live draft preservation.</p>
+        <div>
+          <Link href="/admissions" className="inline-flex min-h-6 items-center gap-1.5 text-xs font-bold text-blue-200 hover:text-white transition hover:underline">
+            <ArrowLeft size={13}/> Back to Admissions Register
+          </Link>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-blue-100">
+              <Sparkles size={11} /> Guided CBE Enrollment
+            </span>
+            <span className="text-xs text-blue-300">·</span>
+            <span className="text-xs font-semibold text-blue-200">Mary Royal School · Obunga, Kisumu</span>
+          </div>
+          <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">New Learner Admission</h1>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50/40 px-5 py-3 shadow-xs">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Assigned Admission No</p>
-        <p className="mt-0.5 font-mono text-xl font-black text-blue-950">{draft.admissionNo}</p>
+      <div className="rounded-2xl border border-blue-400/30 bg-white/10 px-5 py-3 shadow-xs backdrop-blur-sm">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200">Assigned Admission No</p>
+        <p className="mt-0.5 font-mono text-2xl font-black text-white">{draft.admissionNo}</p>
       </div>
     </div>
 

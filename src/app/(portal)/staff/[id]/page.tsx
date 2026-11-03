@@ -170,7 +170,15 @@ export default async function StaffProfilePage({
     });
   }
 
-  const sanitizedStaff: StaffProfileClientData = { ...staff };
+  const sanitizedStaff: StaffProfileClientData = {
+    ...staff,
+    staffProfile: staff.staffProfile
+      ? {
+          ...staff.staffProfile,
+          editHistory: actor.role === "DIRECTOR" ? staff.staffProfile.editHistory : [],
+        }
+      : null,
+  };
 
   const currentUser = actor.id === id;
   const canEdit = canManageStaffTarget(actor.role, staff.role);

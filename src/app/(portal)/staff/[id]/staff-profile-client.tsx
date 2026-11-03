@@ -216,90 +216,319 @@ export function StaffProfileClient({
   }
 
   function printStaffSlip() {
-    const printWindow = window.open("", "_blank", "width=750,height=850");
+    const printWindow = window.open("", "_blank", "width=850,height=950");
     if (!printWindow) return;
     const doc = printWindow.document;
-    doc.title = `Mary Royal School · ${staff.name} Record Slip`;
+    doc.title = `Mary Royal School · Staff Record Slip · ${staff.name}`;
     const style = doc.createElement("style");
     style.textContent = `
-      body { margin: 0; padding: 40px; background: #f8fafc; font: 14px system-ui, -apple-system, sans-serif; color: #0f172a; }
-      .slip { max-width: 680px; margin: 0 auto; padding: 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-      .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1d4ed8; padding-bottom: 16px; margin-bottom: 24px; }
-      .brand h1 { margin: 0; font-size: 22px; font-weight: 800; color: #1e3a8a; }
-      .brand p { margin: 4px 0 0; font-size: 12px; color: #64748b; }
-      .badge { display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-      .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1e40af; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin: 20px 0 12px; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 24px; background: #f1f5f9; font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .action-bar { max-width: 800px; margin: 0 auto 16px; display: flex; justify-content: space-between; align-items: center; }
+      .action-btn { background: #1d4ed8; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+      .action-btn:hover { background: #1e40af; }
+      .close-btn { background: #e2e8f0; color: #334155; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
+      .close-btn:hover { background: #cbd5e1; }
+      .slip { max-width: 800px; margin: 0 auto; padding: 36px 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); }
+      .header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2.5px solid #1d4ed8; padding-bottom: 18px; margin-bottom: 20px; gap: 16px; }
+      .brand-box { display: flex; align-items: center; gap: 14px; }
+      .brand-logo { width: 70px; height: 70px; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; border: 1px solid #dbeafe; }
+      .brand-text h1 { margin: 0; font-size: 22px; font-weight: 900; color: #1e3a8a; letter-spacing: -0.02em; }
+      .brand-text p { margin: 3px 0 0; font-size: 11.5px; color: #475569; }
+      .brand-text .motto { color: #1d4ed8; font-weight: 600; font-style: italic; }
+      .dossier-meta { text-align: right; }
+      .badge-dossier { display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 9999px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+      .meta-ref { margin-top: 6px; font-size: 11px; font-family: monospace; font-weight: bold; color: #334155; }
+      .meta-date { margin-top: 2px; font-size: 10.5px; color: #64748b; }
+      .section-card { margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; break-inside: avoid; }
+      .section-header { background: #f8fafc; padding: 8px 14px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+      .section-title { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #1e3a8a; margin: 0; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; padding: 12px 14px; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; padding: 12px 14px; }
       .item { display: flex; flex-direction: column; }
-      .item-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; }
-      .item-value { font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px; }
-      .alloc-badge { display: inline-block; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-size: 12px; margin: 2px 4px 2px 0; border: 1px solid #e2e8f0; }
-      .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; }
-      .signature-line { width: 180px; border-top: 1px solid #94a3b8; margin-top: 40px; text-align: center; padding-top: 4px; }
+      .item-full { grid-column: 1 / -1; }
+      .item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.03em; }
+      .item-val { font-size: 12.5px; font-weight: 600; color: #0f172a; margin-top: 2px; word-break: break-word; }
+      .item-mono { font-family: monospace; font-weight: 700; color: #1e3a8a; }
+      .alloc-badge { display: inline-block; background: #eff6ff; padding: 4px 9px; border-radius: 6px; font-size: 11.5px; margin: 2px 4px 2px 0; border: 1px solid #bfdbfe; color: #1e3a8a; }
+      .alloc-badge strong { color: #1d4ed8; }
+      .table-clean { width: 100%; border-collapse: collapse; font-size: 12px; }
+      .table-clean th { background: #f8fafc; text-align: left; padding: 7px 12px; font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+      .table-clean td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+      .footer-sign { margin-top: 28px; padding-top: 18px; border-top: 1.5px solid #cbd5e1; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; break-inside: avoid; }
+      .sign-box { border-top: 1px solid #94a3b8; padding-top: 6px; text-align: center; font-size: 11px; color: #475569; }
+      .sign-title { font-weight: 700; color: #1e293b; }
+      .watermark { text-align: center; margin-top: 20px; font-size: 10px; color: #94a3b8; letter-spacing: 0.05em; text-transform: uppercase; }
       @media print {
         body { padding: 0; background: #fff; }
-        .slip { border: none; box-shadow: none; padding: 0; }
-        .no-print { display: none; }
+        .action-bar { display: none !important; }
+        .slip { border: none !important; box-shadow: none !important; padding: 12px !important; max-width: 100% !important; }
+        .no-print { display: none !important; }
       }
     `;
     doc.head.append(style);
+
+    const formatDt = (v?: DateLike | null) => (v ? toDate(v).toLocaleDateString("en-KE", { dateStyle: "medium" }) : "Not recorded");
+
     const slip = doc.createElement("div");
     slip.className = "slip";
     slip.innerHTML = `
+      <div class="action-bar no-print">
+        <button class="action-btn" onclick="window.print()">🖨️ Print Record Slip / Save as PDF</button>
+        <button class="close-btn" onclick="window.close()">✕ Close</button>
+      </div>
+
       <div class="header">
-        <div class="brand">
-          <h1>Mary Royal School</h1>
-          <p>Obunga · Kisumu · Nurturing Excellence Through CBE</p>
+        <div class="brand-box">
+          <img class="brand-logo" src="${window.location.origin}/mary-royal-logo.png" alt="Mary Royal School Crest" />
+          <div class="brand-text">
+            <h1>Mary Royal School</h1>
+            <p>Obunga, Kisumu · Kenya CBE Centre · <span class="motto">&ldquo;Hard work pays&rdquo;</span></p>
+            <p>Tel: +254 700 000000 · Official Institutional Personnel Dossier</p>
+          </div>
         </div>
-        <div>
-          <span class="badge">Official Staff Record</span>
+        <div class="dossier-meta">
+          <span class="badge-dossier">${staff.suspended ? "Suspended Record" : "Active Staff Record"}</span>
+          <div class="meta-ref">REF: MRS/STF/${staff.staffNumber || staff.id.slice(-6).toUpperCase()}</div>
+          <div class="meta-date">Issued: ${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}</div>
         </div>
       </div>
 
-      <div class="section-title">Personal &amp; Employment Particulars</div>
-      <div class="grid">
-        <div class="item"><span class="item-label">Full Name</span><span class="item-value">${staff.name}</span></div>
-        <div class="item"><span class="item-label">Role / Designation</span><span class="item-value">${staff.employmentTitle || roleLabel}</span></div>
-        <div class="item"><span class="item-label">Staff Number</span><span class="item-value">${staff.staffNumber || "N/A"}</span></div>
-        <div class="item"><span class="item-label">TSC Number</span><span class="item-value">${staff.tscNumber || "N/A"}</span></div>
-        <div class="item"><span class="item-label">Department</span><span class="item-value">${staff.staffProfile?.department || "General"}</span></div>
-        <div class="item"><span class="item-label">Employment Type</span><span class="item-value">${staff.staffProfile?.employmentType || "Permanent"}</span></div>
-        <div class="item"><span class="item-label">Official Email</span><span class="item-value">${staff.email}</span></div>
-        <div class="item"><span class="item-label">Phone Contact</span><span class="item-value">${staff.phone || "Not recorded"}</span></div>
-        <div class="item"><span class="item-label">County</span><span class="item-value">${staff.staffProfile?.county || "Kisumu"}</span></div>
-        <div class="item"><span class="item-label">Physical Address</span><span class="item-value">${staff.staffProfile?.residenceAddress || "Not recorded"}</span></div>
-      </div>
-
-      <div class="section-title">CBE Teaching &amp; Class Allocation</div>
-      <div class="grid">
-        <div class="item" style="grid-column: 1 / -1;">
-          <span class="item-label">Class Teacher of</span>
-          <span class="item-value">${classTeacherGrade ? `Class Teacher: ${classTeacherGrade}` : "Not currently assigned as Class Teacher"}</span>
+      <!-- Section 1: Identification & Personal Info -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">1. Staff Member Personal Identification</h2>
         </div>
-        <div class="item" style="grid-column: 1 / -1;">
-          <span class="item-label">Assigned Teaching Subjects (${teachingAssignments.length})</span>
-          <div style="margin-top: 6px;">
-            ${teachingAssignments.length > 0
-              ? teachingAssignments.map(a => `<span class="alloc-badge"><strong>${a.grade}</strong>: ${a.subject}</span>`).join("")
-              : "<span style='color: #64748b;'>No subjects assigned yet.</span>"}
+        <div class="grid">
+          <div class="item">
+            <span class="item-label">Full Legal Name</span>
+            <span class="item-val" style="font-size: 14px; font-weight: 800; color: #1e3a8a;">${staff.name}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Staff Identification No</span>
+            <span class="item-val item-mono">${staff.staffNumber || "N/A"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">TSC Registration No</span>
+            <span class="item-val item-mono">${staff.tscNumber || "N/A"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">National ID / Passport</span>
+            <span class="item-val item-mono">${profile?.nationalId || "Not recorded"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Date of Birth</span>
+            <span class="item-val">${formatDt(profile?.dateOfBirth)}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Nationality &amp; Status</span>
+            <span class="item-val">${profile?.nationality || "Kenyan"} · ${profile?.maritalStatus || "Not specified"}</span>
           </div>
         </div>
       </div>
 
-      <div class="footer">
-        <div>
-          <p>Issued by School Administration · Mary Royal School</p>
-          <p>Date Generated: ${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}</p>
+      <!-- Section 2: Employment & Designation -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">2. Employment &amp; Institutional Designation</h2>
         </div>
-        <div class="signature-line">
-          Head Teacher / Director Stamp &amp; Sign
+        <div class="grid">
+          <div class="item">
+            <span class="item-label">Official Designation / Title</span>
+            <span class="item-val">${staff.employmentTitle || roleLabel}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Department</span>
+            <span class="item-val">${profile?.department || "General Academic"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Employment Type</span>
+            <span class="item-val">${profile?.employmentType || "Permanent & Pensionable"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Date Joined School</span>
+            <span class="item-val">${formatDt(profile?.dateJoined)}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Reporting Line Manager</span>
+            <span class="item-val">${profile?.lineManager || "Head Teacher / Director"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Experience</span>
+            <span class="item-val">${profile?.yearsOfExperience ? `${profile.yearsOfExperience} Years Experience` : "Not recorded"}</span>
+          </div>
         </div>
       </div>
+
+      <!-- Section 3: Contact & Residence -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">3. Contact &amp; Residential Particulars</h2>
+        </div>
+        <div class="grid">
+          <div class="item">
+            <span class="item-label">Official System Email</span>
+            <span class="item-val item-mono" style="font-size: 12px;">${staff.email}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Primary Mobile Phone</span>
+            <span class="item-val">${staff.phone || "Not recorded"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Alternative Contact Phone</span>
+            <span class="item-val">${profile?.alternatePhone || "None recorded"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">County of Residence</span>
+            <span class="item-val">${profile?.county || "Kisumu"}</span>
+          </div>
+          <div class="item item-full">
+            <span class="item-label">Physical Residence Address</span>
+            <span class="item-val">${profile?.residenceAddress || "Not recorded"}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Professional Qualifications & Education -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">4. Educational History &amp; Professional Certifications</h2>
+        </div>
+        <div class="grid-2">
+          <div class="item">
+            <span class="item-label">Highest Academic / Educational History</span>
+            <span class="item-val">${profile?.educationHistory || staff.qualifications || "Standard teacher training background"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Professional Qualifications</span>
+            <span class="item-val">${profile?.professionalQualifications || "Registered & Verified Teacher"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Specializations / Learning Areas</span>
+            <span class="item-val">${profile?.specializations || "CBC Primary & Junior School Curriculum"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Accreditations &amp; Certificates</span>
+            <span class="item-val">${profile?.certificates || "Certificates verified by Administration"}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: CBC Teaching & Class Allocation -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">5. CBC Class Teacher &amp; Subject Teaching Allocations</h2>
+        </div>
+        <div class="grid-2">
+          <div class="item item-full">
+            <span class="item-label">Class Teacher Allocation</span>
+            <span class="item-val" style="font-size: 13px; font-weight: 700; color: #1e3a8a;">
+              ${classTeacherGrade ? `Class Teacher for: ${classTeacherGrade}` : "Not assigned as Class Teacher (Subject Specialist)"}
+            </span>
+          </div>
+          <div class="item item-full">
+            <span class="item-label">Assigned Teaching Subjects (${teachingAssignments.length})</span>
+            <div style="margin-top: 6px;">
+              ${teachingAssignments.length > 0
+                ? teachingAssignments.map(a => `<span class="alloc-badge"><strong>${a.grade}</strong>: ${a.subject}</span>`).join("")
+                : "<span style='color: #64748b;'>No subjects currently assigned.</span>"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 6: Emergency Contacts -->
+      ${profile?.emergencyContacts && profile.emergencyContacts.length > 0 ? `
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">6. Emergency Contacts &amp; Next of Kin</h2>
+        </div>
+        <table class="table-clean">
+          <thead>
+            <tr>
+              <th>Contact Name</th>
+              <th>Relationship</th>
+              <th>Phone Number</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${profile.emergencyContacts.map(c => `
+              <tr>
+                <td style="font-weight: 700;">${c.fullName}</td>
+                <td>${c.relationship}</td>
+                <td style="font-family: monospace;">${c.phone}</td>
+                <td>${c.isNextOfKin ? "<strong style='color:#1d4ed8;'>Primary Next of Kin</strong>" : "Emergency Contact"}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+      ` : ""}
+
+      <!-- Section 7: Statutory & Bank Details (Only when viewer has canViewStatutory) -->
+      ${canViewStatutory ? `
+      <div class="section-card">
+        <div class="section-header" style="background: #eff6ff;">
+          <h2 class="section-title" style="color: #1e40af;">7. Statutory Identifiers &amp; Salary Bank Details</h2>
+          <span style="font-size: 10px; font-weight: 800; color: #1d4ed8; text-transform: uppercase;">Administrative Copy</span>
+        </div>
+        <div class="grid">
+          <div class="item">
+            <span class="item-label">KRA Tax PIN</span>
+            <span class="item-val item-mono">${profile?.kraPin || "Not recorded"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">NSSF Number</span>
+            <span class="item-val item-mono">${profile?.nssfNumber || "Not recorded"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">SHA / Health Insurance Number</span>
+            <span class="item-val item-mono">${profile?.shaNumber || "Not recorded"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Designated Bank</span>
+            <span class="item-val">${profile?.bankName || "Not recorded"}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Bank Account Name</span>
+            <span class="item-val">${profile?.bankAccountName || staff.name}</span>
+          </div>
+          <div class="item">
+            <span class="item-label">Bank Account &amp; Branch</span>
+            <span class="item-val item-mono">${profile?.bankAccountNumber ? `${profile.bankAccountNumber} (${profile.bankBranch || "Kisumu"})` : "Not recorded"}</span>
+          </div>
+        </div>
+      </div>
+      ` : ""}
+
+      <!-- Section 8: Sign-off & Verification -->
+      <div class="footer-sign">
+        <div>
+          <div style="height: 48px;"></div>
+          <div class="sign-box">
+            <div class="sign-title">${staff.name}</div>
+            <div>Staff Member Signature &amp; Date</div>
+          </div>
+        </div>
+        <div>
+          <div style="height: 48px;"></div>
+          <div class="sign-box">
+            <div class="sign-title">Head Teacher / Director</div>
+            <div>Mary Royal School Official Seal &amp; Stamp</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="watermark">
+        Mary Royal School · Confidential Official Personnel Slip · Hard Work Pays · Form MRS-HR-01
+      </div>
     `;
+
     doc.body.append(slip);
     setTimeout(() => {
-      printWindow.print();
-    }, 300);
+      printWindow.focus();
+    }, 250);
   }
 
   async function handleUploadDoc(e: React.FormEvent) {

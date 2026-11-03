@@ -272,84 +272,118 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
 
   function printDedicatedSlip() {
     if (!successResult) return;
-    const printWindow = window.open("", "_blank", "width=750,height=850");
+    const printWindow = window.open("", "_blank", "width=850,height=950");
     if (!printWindow) return;
     const doc = printWindow.document;
     doc.title = `Mary Royal School · ${personal.name} Staff Credentials Slip`;
     const style = doc.createElement("style");
     style.textContent = `
-      body { margin: 0; padding: 40px; background: #f8fafc; font: 14px system-ui, -apple-system, sans-serif; color: #0f172a; }
-      .slip { max-width: 680px; margin: 0 auto; padding: 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-      .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #1d4ed8; padding-bottom: 16px; margin-bottom: 24px; }
-      .brand h1 { margin: 0; font-size: 22px; font-weight: 800; color: #1e3a8a; }
-      .brand p { margin: 4px 0 0; font-size: 12px; color: #64748b; }
-      .badge { display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-      .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1e40af; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin: 20px 0 12px; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 24px; background: #f1f5f9; font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .action-bar { max-width: 750px; margin: 0 auto 16px; display: flex; justify-content: space-between; align-items: center; }
+      .action-btn { background: #1d4ed8; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer; }
+      .action-btn:hover { background: #1e40af; }
+      .close-btn { background: #e2e8f0; color: #334155; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
+      .close-btn:hover { background: #cbd5e1; }
+      .slip { max-width: 750px; margin: 0 auto; padding: 36px 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); }
+      .header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2.5px solid #1d4ed8; padding-bottom: 18px; margin-bottom: 20px; gap: 16px; }
+      .brand-box { display: flex; align-items: center; gap: 14px; }
+      .brand-logo { width: 68px; height: 68px; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; border: 1px solid #dbeafe; }
+      .brand-text h1 { margin: 0; font-size: 22px; font-weight: 900; color: #1e3a8a; }
+      .brand-text p { margin: 3px 0 0; font-size: 11.5px; color: #475569; }
+      .badge { display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 9999px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+      .section-card { margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; break-inside: avoid; }
+      .section-header { background: #f8fafc; padding: 8px 14px; border-bottom: 1px solid #e2e8f0; }
+      .section-title { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1e3a8a; margin: 0; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; padding: 12px 14px; }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; padding: 12px 14px; }
       .item { display: flex; flex-direction: column; }
-      .item-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; }
-      .item-value { font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px; }
-      .pass-box { grid-column: 1 / -1; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px; margin: 8px 0; }
+      .item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; }
+      .item-value { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-top: 2px; }
+      .pass-box { grid-column: 1 / -1; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 14px; margin: 6px 0; }
       .pass-val { font: 800 18px monospace; color: #1e40af; }
-      .alloc-badge { display: inline-block; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-size: 12px; margin: 2px 4px 2px 0; border: 1px solid #e2e8f0; }
-      .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; }
-      .signature-line { width: 180px; border-top: 1px solid #94a3b8; margin-top: 40px; text-align: center; padding-top: 4px; }
+      .alloc-badge { display: inline-block; background: #eff6ff; padding: 4px 9px; border-radius: 6px; font-size: 11.5px; margin: 2px 4px 2px 0; border: 1px solid #bfdbfe; color: #1e3a8a; }
+      .footer { margin-top: 28px; padding-top: 16px; border-top: 1.5px solid #cbd5e1; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; }
+      .signature-line { width: 200px; border-top: 1px solid #94a3b8; margin-top: 36px; text-align: center; padding-top: 4px; font-weight: 600; color: #1e293b; }
       @media print {
         body { padding: 0; background: #fff; }
-        .slip { border: none; box-shadow: none; padding: 0; }
+        .action-bar { display: none !important; }
+        .slip { border: none !important; box-shadow: none !important; padding: 12px !important; max-width: 100% !important; }
       }
     `;
     doc.head.append(style);
     const slip = doc.createElement("div");
     slip.className = "slip";
     slip.innerHTML = `
+      <div class="action-bar no-print">
+        <button class="action-btn" onclick="window.print()">🖨️ Print Slip / Save as PDF</button>
+        <button class="close-btn" onclick="window.close()">✕ Close</button>
+      </div>
+
       <div class="header">
-        <div class="brand">
-          <h1>Mary Royal School</h1>
-          <p>Obunga · Kisumu · Nurturing Excellence Through CBE</p>
+        <div class="brand-box">
+          <img class="brand-logo" src="${window.location.origin}/mary-royal-logo.png" alt="Mary Royal School Crest" />
+          <div class="brand-text">
+            <h1>Mary Royal School</h1>
+            <p>Obunga · Kisumu · Kenya CBE Centre · <em>&ldquo;Hard work pays&rdquo;</em></p>
+            <p>Official Staff Account Provisioning Slip</p>
+          </div>
         </div>
         <div>
-          <span class="badge">Staff Credentials &amp; Record Slip</span>
+          <span class="badge">Credentials &amp; Record Slip</span>
+          <div style="margin-top: 6px; font-size: 11px; font-family: monospace; font-weight: bold; text-align: right;">REF: MRS/ACC/${employment.staffNumber || "NEW"}</div>
         </div>
       </div>
 
-      <div class="section-title">Staff Member Particulars</div>
-      <div class="grid">
-        <div class="item"><span class="item-label">Full Name</span><span class="item-value">${personal.name}</span></div>
-        <div class="item"><span class="item-label">Assigned Role</span><span class="item-value">${employment.role.replaceAll("_", " ")}</span></div>
-        <div class="item"><span class="item-label">Staff Number</span><span class="item-value">${employment.staffNumber || "N/A"}</span></div>
-        <div class="item"><span class="item-label">TSC Number</span><span class="item-value">${employment.tscNumber || "N/A"}</span></div>
-        <div class="item"><span class="item-label">Department</span><span class="item-value">${employment.department || "General"}</span></div>
-        <div class="item"><span class="item-label">Employment Type</span><span class="item-value">${employment.employmentType || "Permanent"}</span></div>
-        <div class="item"><span class="item-label">Phone Contact</span><span class="item-value">${personal.phone || "Not recorded"}</span></div>
-        <div class="item"><span class="item-label">County</span><span class="item-value">${personal.county || "Kisumu"}</span></div>
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">Staff Member Particulars</h2>
+        </div>
+        <div class="grid">
+          <div class="item"><span class="item-label">Full Name</span><span class="item-value" style="color: #1e3a8a;">${personal.name}</span></div>
+          <div class="item"><span class="item-label">Assigned Role</span><span class="item-value">${employment.role.replaceAll("_", " ")}</span></div>
+          <div class="item"><span class="item-label">Staff Number</span><span class="item-value" style="font-family: monospace;">${employment.staffNumber || "N/A"}</span></div>
+          <div class="item"><span class="item-label">TSC Number</span><span class="item-value" style="font-family: monospace;">${employment.tscNumber || "N/A"}</span></div>
+          <div class="item"><span class="item-label">Department</span><span class="item-value">${employment.department || "General"}</span></div>
+          <div class="item"><span class="item-label">Employment Type</span><span class="item-value">${employment.employmentType || "Permanent"}</span></div>
+          <div class="item"><span class="item-label">Phone Contact</span><span class="item-value">${personal.phone || "Not recorded"}</span></div>
+          <div class="item"><span class="item-label">County</span><span class="item-value">${personal.county || "Kisumu"}</span></div>
+        </div>
       </div>
 
-      <div class="section-title">Class Teacher &amp; Teaching Allocations</div>
-      <div class="grid">
-        <div class="item" style="grid-column: 1 / -1;">
-          <span class="item-label">Class Teacher of</span>
-          <span class="item-value">${employment.classTeacherGrade ? `Class Teacher: ${employment.classTeacherGrade}` : "Not assigned as Class Teacher"}</span>
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">Class Teacher &amp; Teaching Allocations</h2>
         </div>
-        <div class="item" style="grid-column: 1 / -1;">
-          <span class="item-label">Assigned Subjects (${employment.assignedSubjects.length})</span>
-          <div style="margin-top: 6px;">
-            ${employment.assignedSubjects.length > 0
-              ? employment.assignedSubjects.map(a => `<span class="alloc-badge"><strong>${a.grade}</strong>: ${a.subject}</span>`).join("")
-              : "<span style='color: #64748b;'>None assigned during registration.</span>"}
+        <div class="grid-2">
+          <div class="item" style="grid-column: 1 / -1;">
+            <span class="item-label">Class Teacher Allocation</span>
+            <span class="item-value" style="color: #1e3a8a;">${employment.classTeacherGrade ? `Class Teacher: ${employment.classTeacherGrade}` : "Not assigned as Class Teacher"}</span>
+          </div>
+          <div class="item" style="grid-column: 1 / -1;">
+            <span class="item-label">Assigned Teaching Subjects (${employment.assignedSubjects.length})</span>
+            <div style="margin-top: 6px;">
+              ${employment.assignedSubjects.length > 0
+                ? employment.assignedSubjects.map(a => `<span class="alloc-badge"><strong>${a.grade}</strong>: ${a.subject}</span>`).join("")
+                : "<span style='color: #64748b;'>None assigned during registration.</span>"}
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="section-title">System Sign-In Credentials</div>
-      <div class="grid">
-        <div class="item"><span class="item-label">Username / Email</span><span class="item-value" style="font-family: monospace;">${successResult.user.email}</span></div>
-        <div class="pass-box">
-          <span class="item-label">One-Time Temporary Password</span>
-          <div class="pass-val">${successResult.temporaryPassword}</div>
-          <p style="margin: 6px 0 0; font-size: 11px; color: #475569;">
-            * Staff member will be prompted to change this password on initial sign-in. Hand this slip in private.
-          </p>
+      <div class="section-card">
+        <div class="section-header" style="background: #eff6ff;">
+          <h2 class="section-title" style="color: #1e40af;">System Sign-In Credentials</h2>
+        </div>
+        <div style="padding: 12px 14px;">
+          <div class="item"><span class="item-label">Username / Official Email</span><span class="item-value" style="font-family: monospace; font-size: 13px;">${successResult.user.email}</span></div>
+          <div class="pass-box">
+            <span class="item-label" style="color: #1e40af;">One-Time Temporary Password</span>
+            <div class="pass-val">${successResult.temporaryPassword}</div>
+            <p style="margin: 6px 0 0; font-size: 11px; color: #475569;">
+              * Staff member must change this temporary password on initial sign-in. Hand this slip in private.
+            </p>
+          </div>
         </div>
       </div>
 

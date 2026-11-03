@@ -9,9 +9,7 @@ import { readSession } from "@/lib/session";
 import { admissionDocumentCategoryLabels, admissionDraftDataSchema } from "@/lib/admissions";
 import { readStoredFile } from "@/lib/file-storage";
 
-const blue = rgb(0.114, 0.306, 0.847);
-const navy = rgb(0.055, 0.114, 0.224);
-const muted = rgb(0.31, 0.37, 0.45);
+
 function wrap(value: string, font: PDFFont, size: number, width: number) {
   const lines: string[] = [];
   for (const paragraph of value.split(/\r?\n/)) {
@@ -39,6 +37,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try { raw = JSON.parse(draft.payload) as unknown; } catch { raw = {}; }
   const parsed = admissionDraftDataSchema.safeParse(raw);
   const data = parsed.success ? parsed.data : {};
+  const blue = rgb(0.114, 0.306, 0.847);
+  const darkBlue = rgb(0.07, 0.18, 0.45);
+  const navy = rgb(0.055, 0.114, 0.224);
+  const muted = rgb(0.38, 0.44, 0.52);
+  const lightBg = rgb(0.94, 0.96, 0.99);
+  const borderLight = rgb(0.85, 0.89, 0.95);
+
   const pdf = await PDFDocument.create();
   pdf.setTitle(`Admission form ${draft.admissionNo} · Mary Royal School`);
   pdf.setAuthor("Mary Royal School · Obunga, Kisumu");
@@ -48,59 +53,109 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   let page!: PDFPage;
   let y = 0;
   const newPage = () => { page = pdf.addPage(pageSize); y = 792; };
-  const ensure = (height: number) => { if (y - height < 62) newPage(); };
+  const ensure = (height: number) => { if (y - height < 58) newPage(); };
+
   const line = (text: string, size = 9, color = navy, strong = false) => {
     const selected = strong ? bold : font;
     const lines = wrap(text || "Not provided", selected, size, 500);
-    ensure(lines.length * (size + 4) + 5);
+    ensure(lines.length * (size + 4) + 4);
     for (const item of lines) { page.drawText(item, { x: 48, y, size, font: selected, color }); y -= size + 4; }
   };
-  const section = (title: string) => {
-    ensure(34); page.drawRectangle({ x: 42, y: y - 6, width: 511, height: 22, color: rgb(0.91, 0.95, 1) });
-    page.drawText(title.toUpperCase(), { x: 50, y: y, size: 9, font: bold, color: blue }); y -= 29;
+
+  const drawGridRow = (label1: string, val1: string, label2?: string, val2?: string) => {
+    ensure(20);
+    // Left column: x = 48, label width ~90, value at 145
+    page.drawText(label1 + ":", { x: 48, y, size: 8.5, font: bold, color: muted });
+    const cleanVal1 = val1 || "Not provided";
+    page.drawText(cleanVal1.length > 32 ? cleanVal1.slice(0, 31) + "…" : cleanVal1, { x: 142, y, size: 8.5, font, color: navy });
+
+    if (label2) {
+      // Right column: x = 300, label width ~90, value at 395
+      page.drawText(label2 + ":", { x: 300, y, size: 8.5, font: bold, color: muted });
+      const cleanVal2 = val2 || "Not provided";
+      page.drawText(cleanVal2.length > 32 ? cleanVal2.slice(0, 31) + "…" : cleanVal2, { x: 400, y, size: 8.5, font, color: navy });
+    }
+    y -= 14;
   };
+
+  const section = (title: string) => {
+    ensure(36);
+    y -= 4;
+    page.drawRectangle({ x: 42, y: y - 5, width: 511, height: 20, color: lightBg, borderColor: borderLight, borderWidth: 0.5 });
+    page.drawText(title.toUpperCase(), { x: 50, y, size: 8.5, font: bold, color: darkBlue });
+    y -= 22;
+  };
+
   newPage();
   try {
     const logo = await readFile(join(process.cwd(), "public", "mary-royal-logo.png"));
     const image = await pdf.embedPng(logo);
-    page.drawImage(image, { x: 46, y: 744, width: 58, height: 58 });
+    page.drawImage(image, { x: 46, y: 738, width: 62, height: 62 });
   } catch { /* The text masthead remains printable if the optional logo file is unavailable. */ }
-  page.drawText("MARY ROYAL SCHOOL", { x: 115, y: 777, size: 18, font: bold, color: navy });
-  page.drawText("Obunga, Kisumu · Hard work pays", { x: 115, y: 758, size: 10, font, color: muted });
-  page.drawText("LEARNER ADMISSION FORM", { x: 115, y: 739, size: 10, font: bold, color: blue });
-  page.drawText(`Admission No. ${draft.admissionNo}`, { x: 390, y: 777, size: 10, font: bold, color: navy });
-  page.drawText(`Status: ${draft.status}`, { x: 390, y: 760, size: 9, font, color: muted });
-  page.drawLine({ start: { x: 42, y: 730 }, end: { x: 553, y: 730 }, thickness: 1.2, color: blue }); y = 710;
+
+  page.drawText("MARY ROYAL SCHOOL", { x: 120, y: 780, size: 18, font: bold, color: darkBlue });
+  page.drawText("Obunga, Kisumu, Kenya · Motto: Hard work pays", { x: 120, y: 764, size: 9.5, font, color: muted });
+  page.drawText("OFFICIAL LEARNER ADMISSION & CBE DOSSIER", { x: 120, y: 748, size: 9.5, font: bold, color: blue });
+
+  // Top right metadata box
+  page.drawRectangle({ x: 395, y: 738, width: 156, height: 50, color: lightBg, borderColor: borderLight, borderWidth: 1 });
+  page.drawText("ADMISSION NUMBER", { x: 404, y: 772, size: 7.5, font: bold, color: muted });
+  page.drawText(draft.admissionNo, { x: 404, y: 757, size: 12, font: bold, color: darkBlue });
+  page.drawText(`Status: ${draft.status}`, { x: 404, y: 744, size: 8, font, color: muted });
+
+  page.drawLine({ start: { x: 42, y: 728 }, end: { x: 553, y: 728 }, thickness: 1.5, color: blue });
+  y = 712;
+
   const learner = data.learner;
-  section("Learner details");
-  for (const [key, value] of Object.entries({ "Full name": learner?.fullName, "Date of birth": learner?.dateOfBirth, Gender: learner?.gender, Nationality: learner?.nationality, "UPI / NEMIS number": learner?.upiNumber, "Class and stream": [learner?.grade, learner?.stream].filter(Boolean).join(" · "), "Admission date": learner?.admissionDate, "Previous school / class": [learner?.previousSchool, learner?.previousClass].filter(Boolean).join(" · "), "Reason for leaving": learner?.reasonForLeaving, Religion: learner?.religion, "Languages spoken": learner?.languagesSpoken?.join(", ") })) line(`${key}: ${value || "Not provided"}`);
-  section("Residence and transport");
+  section("1. Learner Personal Details");
+  drawGridRow("Full Name", String(learner?.fullName || ""), "UPI / NEMIS No", String(learner?.upiNumber || ""));
+  drawGridRow("Date of Birth", String(learner?.dateOfBirth || ""), "Gender", String(learner?.gender || ""));
+  drawGridRow("Class Applied", String(learner?.grade || ""), "Stream", String(learner?.stream || ""));
+  drawGridRow("Nationality", String(learner?.nationality || ""), "Religion", String(learner?.religion || ""));
+  drawGridRow("Admission Date", String(learner?.admissionDate || ""), "Previous School", String(learner?.previousSchool || ""));
+  if (learner?.reasonForLeaving) line(`Reason for Leaving: ${learner.reasonForLeaving}`, 8, muted);
+
+  section("2. Residence & Transport");
   const residence = data.residence;
-  for (const [key, value] of Object.entries({ County: residence?.county, "Sub-county": residence?.subCounty, Ward: residence?.ward, Village: residence?.village, "Physical address": residence?.physicalAddress, Landmark: residence?.landmark, "Distance to school": residence?.distanceToSchoolKm == null ? "" : `${residence.distanceToSchoolKm} km`, Transport: residence?.transportMeans, "Map coordinates": residence?.latitude == null || residence.longitude == null ? "" : `${residence.latitude}, ${residence.longitude}` })) line(`${key}: ${value || "Not provided"}`);
-  section("Parents and guardians");
+  drawGridRow("County", String(residence?.county || ""), "Sub-County", String(residence?.subCounty || ""));
+  drawGridRow("Ward", String(residence?.ward || ""), "Village / Area", String(residence?.village || ""));
+  drawGridRow("Physical Address", String(residence?.physicalAddress || ""), "Landmark", String(residence?.landmark || ""));
+  drawGridRow("Distance to School", residence?.distanceToSchoolKm ? `${residence.distanceToSchoolKm} km` : "", "Means of Transport", String(residence?.transportMeans || ""));
+
+  section("3. Parents & Legal Guardians");
   for (const [index, guardian] of (data.guardians ?? []).entries()) {
-    line(`${index + 1}. ${guardian.fullName || "Guardian"} · ${guardian.relationship || "Relationship not provided"}${guardian.primaryContact ? " · Primary contact" : ""}${guardian.paysFees ? " · Fee payer" : ""}`, 9, navy, true);
-    line(`Phone: ${guardian.phone || "Not provided"} · WhatsApp: ${guardian.whatsapp ? "Yes" : "No"} · Email: ${guardian.email || "Not provided"}`);
-    line(`ID/passport: ${guardian.idNumber || "Not provided"} · Occupation: ${guardian.occupation || "Not provided"} · Employer: ${guardian.employer || "Not provided"}`);
-    if (guardian.homeAddress) line(`Home address: ${guardian.homeAddress}`);
-    if (guardian.workAddress) line(`Work address: ${guardian.workAddress}`);
+    line(`${index + 1}. ${guardian.fullName || "Guardian"} · ${guardian.relationship || "Guardian"}${guardian.primaryContact ? " (Primary Contact)" : ""}${guardian.paysFees ? " (Fee Payer)" : ""}`, 9, darkBlue, true);
+    drawGridRow("Phone", String(guardian.phone || ""), "Email", String(guardian.email || ""));
+    drawGridRow("National ID", String(guardian.idNumber || ""), "Occupation / Employer", [guardian.occupation, guardian.employer].filter(Boolean).join(" · "));
+    if (guardian.homeAddress) line(`Home Address: ${guardian.homeAddress}`, 8, muted);
   }
-  section("Emergency contacts and authorized collection");
-  for (const [index, contact] of (data.emergencyContacts ?? []).entries()) line(`Emergency ${index + 1}: ${contact.fullName || "Not provided"} · ${contact.relationship || ""} · ${contact.phone || ""}`);
-  for (const [index, person] of (data.pickupPersons ?? []).entries()) line(`Pick-up ${index + 1}: ${person.fullName || "Not provided"} · ${person.relationship || ""} · ${person.phone || ""}`);
-  section("Health and wellbeing · restricted school record");
+
+  section("4. Emergency Contacts & Authorized Collection");
+  for (const [index, contact] of (data.emergencyContacts ?? []).entries()) {
+    drawGridRow(`Emergency #${index + 1}`, `${contact.fullName || "Not provided"} (${contact.relationship || "Contact"})`, "Phone", String(contact.phone || ""));
+  }
+  for (const [index, person] of (data.pickupPersons ?? []).entries()) {
+    drawGridRow(`Pick-up #${index + 1}`, `${person.fullName || "Not provided"} (${person.relationship || "Collector"})`, "Phone", String(person.phone || ""));
+  }
+
+  section("5. Health & Wellbeing (Restricted School Record)");
   const health = data.health;
-  for (const [key, value] of Object.entries({ "Known conditions": health?.knownConditions, Allergies: health?.allergies, Medication: health?.currentMedication, "Special needs": health?.specialNeeds, "Blood group": health?.bloodGroup, "Doctor / hospital": health?.doctorOrHospital, Immunization: health?.immunizationStatus, Insurance: health?.healthInsurance })) line(`${key}: ${value || "Not provided"}`);
-  section("Fee hand-off and consent");
-  line(`Term: ${data.fee?.term || "Not provided"}`);
-  line(`Person responsible for fees: ${data.fee?.feePayerGuardian || "Not provided"}`);
-  line(`Optional items requested: ${(data.fee?.requestedOptionalItems ?? []).join(", ") || "None"}`);
-  line(`Handoff note: ${data.fee?.handoffNote || "Accountant to confirm charges from the approved school fee structure."}`);
-  line(`Data processing consent recorded: ${data.consent ? "Yes" : "No"} · Kenya Data Protection Act 2019`, 9, navy, true);
-  section("Document checklist");
+  drawGridRow("Blood Group", String(health?.bloodGroup || ""), "Immunization", String(health?.immunizationStatus || ""));
+  drawGridRow("Doctor / Hospital", String(health?.doctorOrHospital || ""), "Health Insurance", String(health?.healthInsurance || ""));
+  if (health?.knownConditions) line(`Known Medical Conditions: ${health.knownConditions}`, 8.5, darkBlue);
+  if (health?.allergies) line(`Allergies: ${health.allergies}`, 8.5, darkBlue);
+  if (health?.currentMedication) line(`Medication in use: ${health.currentMedication}`, 8.5, darkBlue);
+  if (health?.specialNeeds) line(`Special Learning Needs / Disabilities: ${health.specialNeeds}`, 8.5, darkBlue);
+
+  section("6. Fee Hand-Off & Administrative Notes");
+  drawGridRow("Admission Term", String(data.fee?.term || ""), "Responsible Payer", String(data.fee?.feePayerGuardian || ""));
+  drawGridRow("Optional Services", (data.fee?.requestedOptionalItems ?? []).join(", ") || "None requested", "Consent Given", data.consent ? "Yes (KDPA 2019 Verified)" : "No");
+  if (data.fee?.handoffNote) line(`Accountant Note: ${data.fee.handoffNote}`, 8, muted);
+
+  section("7. Verified Documents Checklist");
   for (const [category, label] of Object.entries(admissionDocumentCategoryLabels)) {
     const uploaded = draft.documents.some(document => document.category === category);
-    line(`${uploaded ? "[X]" : "[ ]"} ${label}${category === "PASSPORT_PHOTO" || category === "BIRTH_CERTIFICATE" ? " · Required" : ""}`, 8, uploaded ? rgb(0.08, 0.42, 0.24) : muted);
+    line(`${uploaded ? "[X]" : "[ ]"} ${label}${category === "PASSPORT_PHOTO" || category === "BIRTH_CERTIFICATE" ? " (Mandatory)" : ""}`, 8, uploaded ? rgb(0.08, 0.42, 0.24) : muted);
   }
   const photo = draft.documents.find(document => document.category === "PASSPORT_PHOTO");
   if (photo && photo.contentType !== "application/pdf" && /^[a-f0-9-]{36}\.(jpg|png)$/.test(photo.storageKey)) {
