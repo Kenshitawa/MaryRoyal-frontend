@@ -1,0 +1,6 @@
+{
+  "name": "Mary Royal School",
+  "description": "Official portal for Mary Royal Primary & Junior School, Obunga, Kisumu: CBC admissions, report cards, fees, attendance, timetable, and weak-topic learning videos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

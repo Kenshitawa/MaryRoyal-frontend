@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
@@ -85,8 +87,23 @@ export async function GET(
     borderWidth: 1
   });
 
+  let textStartX = 55;
+  try {
+    const logoBuffer = await readFile(join(process.cwd(), "public", "mary-royal-logo.png"));
+    const logoImage = await pdfDoc.embedPng(logoBuffer);
+    page.drawImage(logoImage, {
+      x: 52,
+      y: y - 48,
+      width: 48,
+      height: 48
+    });
+    textStartX = 112;
+  } catch {
+    // Keep fallback position if logo file is unavailable
+  }
+
   page.drawText("MARY ROYAL SCHOOL", {
-    x: 55,
+    x: textStartX,
     y: y - 22,
     size: 16,
     font: fontBold,
@@ -94,9 +111,9 @@ export async function GET(
   });
 
   page.drawText("Obunga, Kisumu, Kenya · Motto: \"Hard work pays\" · Slogan: \"Nurturing Excellence Through CBE\"", {
-    x: 55,
+    x: textStartX,
     y: y - 38,
-    size: 9,
+    size: 8.5,
     font: fontRegular,
     color: slateGray
   });

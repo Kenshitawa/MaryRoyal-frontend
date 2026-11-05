@@ -5,6 +5,7 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Download,
   Plus,
   Search,
   Wallet,
@@ -354,18 +355,28 @@ export default function PayrollSheet({
                       <div className="flex gap-1.5"><dt className="text-ink-2">Net</dt><dd className="font-semibold text-success tabular-nums">{kes(entry.netAmount)}</dd></div>
                     </dl>
                     {entry.reference && <p className="mt-1 truncate text-label text-ink-3">Ref: {entry.reference}</p>}
-                    {canApprove && entry.status === "PENDING" && (
-                      <div className="mt-3">
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <a
+                        href={`/api/finance/payroll/${entry.id}/pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-secondary btn-sm inline-flex items-center gap-1.5"
+                        title="Download official PDF pay slip"
+                      >
+                        <Download size={13} />
+                        Pay Slip PDF
+                      </a>
+                      {canApprove && entry.status === "PENDING" && (
                         <button
                           disabled={busy}
                           onClick={() => void markPaid(entry)}
-                          className="btn btn-secondary btn-sm"
+                          className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
                         >
                           <Check size={14} />
                           Disburse &amp; mark paid
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </article>
                 );
               })}
@@ -380,7 +391,7 @@ export default function PayrollSheet({
                     <th className="px-5 py-3.5">Deductions</th>
                     <th className="px-5 py-3.5">Net Payout</th>
                     <th className="px-5 py-3.5">Status</th>
-                    {(canManage || canApprove) && <th className="px-5 py-3.5">Action</th>}
+                    <th className="px-5 py-3.5">Slip &amp; Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -425,8 +436,18 @@ export default function PayrollSheet({
                           </span>
                         )}
                       </td>
-                      {(canManage || canApprove) && (
-                        <td className="px-5 py-4">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`/api/finance/payroll/${entry.id}/pdf`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex min-h-8 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-blue-950/50"
+                            title="Download official PDF pay slip"
+                          >
+                            <Download size={13} />
+                            Pay Slip
+                          </a>
                           {canApprove && entry.status === "PENDING" && (
                             <button
                               disabled={busy}
@@ -434,11 +455,11 @@ export default function PayrollSheet({
                               className="inline-flex min-h-8 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-50 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                             >
                               <Check size={13} />
-                              Disburse & Mark Paid
+                              Disburse &amp; Mark Paid
                             </button>
                           )}
-                        </td>
-                      )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
