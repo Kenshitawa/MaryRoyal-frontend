@@ -453,12 +453,32 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 </Link>
               )}
 
+              {academicAllowed && (
+                <a
+                  href={`/api/learners/${learner.id}/report-card`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/20 px-4 py-2.5 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/30"
+                  title="Download Official CBE Term Report Card"
+                >
+                  <FileDown size={14} /> Report Card PDF
+                </a>
+              )}
+              <a
+                href={`/api/learners/${learner.id}/admission-slip`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/20 px-4 py-2.5 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/30"
+                title="Download Official Learner Admission Slip & Enrolment Certificate"
+              >
+                <FileDown size={14} /> Admission Slip
+              </a>
               {admissionDraft && canInScope(actor.role, "admissions", "view", "school") && (
                 <Link
                   href={`/api/admissions/${admissionDraft.id}/form`}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-blue-800 shadow-sm transition hover:bg-blue-50"
                 >
-                  <FileDown size={14} /> Download Admission PDF
+                  <FileDown size={14} /> Full Admission Dossier
                 </Link>
               )}
             </div>
@@ -715,6 +735,22 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
         {/* Section 2: CBC Exam Results & Academic Progress */}
         {academicAllowed && (
           <Card id="academics" title="CBC Exam Results & Academic Progress" icon={GraduationCap} badge={`${assessments.length} Recorded Marks`}>
+            {/* Report Card Download Action Banner */}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/60 p-4 dark:border-blue-900/60 dark:bg-blue-950/40">
+              <div>
+                <h3 className="text-xs font-bold text-blue-950 dark:text-blue-100">Official Term Report Card &amp; Academic Dossier</h3>
+                <p className="mt-0.5 text-xs text-blue-700/80 dark:text-blue-300">Generate a branded, certified CBC report card with institutional seals, competency rubrics, and QR verification.</p>
+              </div>
+              <a
+                href={`/api/learners/${learner.id}/report-card`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-blue-800"
+              >
+                <FileDown size={14} /> Download Report Card PDF
+              </a>
+            </div>
+
             {/* Visual Subject Trends */}
             {assessmentTrends.length > 0 && (
               <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

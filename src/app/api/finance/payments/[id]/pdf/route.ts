@@ -35,7 +35,15 @@ export async function GET(
     include: {
       invoice: {
         include: {
-          learner: true,
+          learner: {
+            include: {
+              guardians: {
+                include: {
+                  user: { select: { name: true, phone: true } }
+                }
+              }
+            }
+          },
           lines: true,
           payments: { where: { status: "RECORDED" }, select: { amount: true } }
         }
@@ -61,6 +69,9 @@ export async function GET(
 
   // Generate PDF document
   const pdfDoc = await PDFDocument.create();
+  pdfDoc.setTitle(`Fee Receipt - ${payment.receiptNo} · Mary Royal School`);
+  pdfDoc.setAuthor("Mary Royal Primary & Junior School · Obunga, Kisumu");
+
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
@@ -70,219 +81,292 @@ export async function GET(
   // Color palette
   const royalBlue = rgb(0.114, 0.306, 0.847); // #1D4ED8
   const darkNavy = rgb(0.063, 0.137, 0.247);  // #10233F
+  const goldAccent = rgb(0.85, 0.65, 0.13); // #D9A521
   const slateGray = rgb(0.392, 0.447, 0.541);
-  const lightBg = rgb(0.961, 0.973, 0.992);
-  const lightBorder = rgb(0.898, 0.925, 0.965);
+  const lightBg = rgb(0.961, 0.975, 0.995);
+  const borderLight = rgb(0.87, 0.90, 0.95);
+  const white = rgb(1, 1, 1);
+  const emeraldGreen = rgb(0.06, 0.52, 0.25);
+  const rubyRed = rgb(0.85, 0.18, 0.18);
 
-  let y = height - 50;
-
-  // Header banner
+  // Decorative Certificate Border
   page.drawRectangle({
-    x: 40,
-    y: y - 55,
-    width: width - 80,
-    height: 65,
+    x: 20,
+    y: 20,
+    width: width - 40,
+    height: height - 40,
+    borderColor: royalBlue,
+    borderWidth: 2
+  });
+
+  page.drawRectangle({
+    x: 24,
+    y: 24,
+    width: width - 48,
+    height: height - 48,
+    borderColor: goldAccent,
+    borderWidth: 0.75
+  });
+
+  let y = height - 45;
+
+  // Header banner box
+  page.drawRectangle({
+    x: 35,
+    y: y - 72,
+    width: width - 70,
+    height: 72,
     color: lightBg,
-    borderColor: lightBorder,
+    borderColor: borderLight,
     borderWidth: 1
   });
 
-  let textStartX = 55;
+  let textStartX = 48;
   try {
     const logoBuffer = await readFile(join(process.cwd(), "public", "mary-royal-logo.png"));
     const logoImage = await pdfDoc.embedPng(logoBuffer);
     page.drawImage(logoImage, {
-      x: 52,
-      y: y - 48,
-      width: 48,
-      height: 48
+      x: 45,
+      y: y - 66,
+      width: 60,
+      height: 60
     });
-    textStartX = 112;
+    textStartX = 114;
   } catch {
-    // Keep fallback position if logo file is unavailable
+    // Keep fallback position
   }
 
-  page.drawText("MARY ROYAL SCHOOL", {
+  // Institutional Masthead with Verified P.O. Box & Contacts
+  page.drawText("MARY ROYAL PRIMARY & JUNIOR SCHOOL", {
     x: textStartX,
-    y: y - 22,
-    size: 16,
-    font: fontBold,
-    color: royalBlue
-  });
-
-  page.drawText("Obunga, Kisumu, Kenya · Motto: \"Hard work pays\" · Slogan: \"Nurturing Excellence Through CBE\"", {
-    x: textStartX,
-    y: y - 38,
-    size: 8.5,
-    font: fontRegular,
-    color: slateGray
-  });
-
-  y -= 80;
-
-  // Title and Receipt No
-  page.drawText("OFFICIAL FEE RECEIPT", {
-    x: 40,
-    y,
-    size: 18,
+    y: y - 20,
+    size: 15,
     font: fontBold,
     color: darkNavy
   });
 
-  const receiptBadge = `RECEIPT NO: ${payment.receiptNo}`;
-  const badgeWidth = fontBold.widthOfTextAtSize(receiptBadge, 11);
-  page.drawRectangle({
-    x: width - 40 - badgeWidth - 20,
-    y: y - 5,
-    width: badgeWidth + 20,
-    height: 24,
+  page.drawText("P.O. Box 40100, Kisumu, Kenya · Tel: +254 718 216 374 · Email: maryroyalschool81@gmail.com", {
+    x: textStartX,
+    y: y - 35,
+    size: 7.8,
+    font: fontRegular,
+    color: slateGray
+  });
+
+  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya · Finance & Bursar's Office", {
+    x: textStartX,
+    y: y - 47,
+    size: 7.5,
+    font: fontRegular,
+    color: slateGray
+  });
+
+  page.drawText("Motto: \"Hard Work Pays\"  ·  Slogan: \"Nurturing Excellence Through CBE\"", {
+    x: textStartX,
+    y: y - 59,
+    size: 7.5,
+    font: fontBold,
     color: royalBlue
   });
-  page.drawText(receiptBadge, {
-    x: width - 40 - badgeWidth - 10,
-    y: y + 2,
-    size: 11,
-    font: fontBold,
-    color: rgb(1, 1, 1)
+
+  // Top right Receipt Badge
+  page.drawRectangle({
+    x: width - 162,
+    y: y - 66,
+    width: 127,
+    height: 56,
+    color: royalBlue
   });
 
-  y -= 30;
+  page.drawText("OFFICIAL RECEIPT", {
+    x: width - 152,
+    y: y - 26,
+    size: 7.5,
+    font: fontBold,
+    color: goldAccent
+  });
 
-  // Meta box (Learner & Payment Details)
+  page.drawText(payment.receiptNo, {
+    x: width - 152,
+    y: y - 44,
+    size: 11,
+    font: fontBold,
+    color: white
+  });
+
+  const isVoid = payment.status === "VOID";
+  page.drawText(isVoid ? "STATUS: VOIDED" : "STATUS: ISSUED & PAID", {
+    x: width - 152,
+    y: y - 58,
+    size: 7,
+    font: fontBold,
+    color: isVoid ? goldAccent : white
+  });
+
+  y -= 90;
+
+  // Title Ribbon
   page.drawRectangle({
-    x: 40,
-    y: y - 105,
-    width: width - 80,
-    height: 115,
+    x: 35,
+    y: y - 22,
+    width: width - 70,
+    height: 24,
+    color: darkNavy
+  });
+
+  page.drawText("OFFICIAL STUDENT FEE PAYMENT RECEIPT", {
+    x: 165,
+    y: y - 15,
+    size: 10,
+    font: fontBold,
+    color: white
+  });
+
+  y -= 38;
+
+  // Meta box (Learner & Transaction Details)
+  page.drawRectangle({
+    x: 35,
+    y: y - 88,
+    width: width - 70,
+    height: 88,
     color: lightBg,
-    borderColor: lightBorder,
+    borderColor: borderLight,
     borderWidth: 1
   });
 
-  const col1 = 55;
+  const col1 = 45;
   const col2 = 310;
-  let detailY = y - 10;
+  let detailY = y - 16;
 
-  page.drawText("Learner Name:", { x: col1, y: detailY, size: 9, font: fontRegular, color: slateGray });
-  page.drawText(payment.invoice.learner.name, { x: col1 + 80, y: detailY, size: 10, font: fontBold, color: darkNavy });
+  page.drawText("Learner Name:", { x: col1, y: detailY, size: 8.5, font: fontBold, color: slateGray });
+  page.drawText(payment.invoice.learner.name, { x: col1 + 80, y: detailY, size: 9, font: fontBold, color: darkNavy });
 
-  page.drawText("Admission No:", { x: col2, y: detailY, size: 9, font: fontRegular, color: slateGray });
-  page.drawText(payment.invoice.learner.admissionNo, { x: col2 + 80, y: detailY, size: 10, font: fontBold, color: darkNavy });
+  page.drawText("Admission No:", { x: col2, y: detailY, size: 8.5, font: fontBold, color: slateGray });
+  page.drawText(payment.invoice.learner.admissionNo, { x: col2 + 85, y: detailY, size: 9, font: fontBold, color: darkNavy });
 
-  detailY -= 22;
-  page.drawText("Class / Grade:", { x: col1, y: detailY, size: 9, font: fontRegular, color: slateGray });
-  page.drawText(payment.invoice.learner.grade, { x: col1 + 80, y: detailY, size: 10, font: fontBold, color: darkNavy });
+  detailY -= 18;
+  page.drawText("Class / Grade:", { x: col1, y: detailY, size: 8.5, font: fontBold, color: slateGray });
+  page.drawText(payment.invoice.learner.grade, { x: col1 + 80, y: detailY, size: 8.5, font: fontRegular, color: darkNavy });
 
-  page.drawText("Academic Term:", { x: col2, y: detailY, size: 9, font: fontRegular, color: slateGray });
-  page.drawText(payment.invoice.term, { x: col2 + 80, y: detailY, size: 10, font: fontBold, color: darkNavy });
+  page.drawText("Academic Term:", { x: col2, y: detailY, size: 8.5, font: fontBold, color: slateGray });
+  page.drawText(payment.invoice.term, { x: col2 + 85, y: detailY, size: 8.5, font: fontRegular, color: darkNavy });
 
-  detailY -= 22;
-  page.drawText("Date Received:", { x: col1, y: detailY, size: 9, font: fontRegular, color: slateGray });
-  const dateFormatted = new Intl.DateTimeFormat("en-KE", { dateStyle: "long", timeZone: "Africa/Nairobi" }).format(payment.createdAt);
-  page.drawText(dateFormatted, { x: col1 + 80, y: detailY, size: 10, font: fontBold, color: darkNavy });
+  detailY -= 18;
+  page.drawText("Date Received:", { x: col1, y: detailY, size: 8.5, font: fontBold, color: slateGray });
+  const dateFormatted = new Intl.DateTimeFormat("en-KE", { dateStyle: "long", timeStyle: "short", timeZone: "Africa/Nairobi" }).format(payment.createdAt);
+  page.drawText(dateFormatted, { x: col1 + 80, y: detailY, size: 8.5, font: fontRegular, color: darkNavy });
 
-  page.drawText("Payment Method:", { x: col2, y: detailY, size: 9, font: fontRegular, color: slateGray });
+  page.drawText("Payment Method:", { x: col2, y: detailY, size: 8.5, font: fontBold, color: slateGray });
   const methodDetail = payment.method + (payment.mpesaCode ? ` (${payment.mpesaCode})` : "") + (payment.reference ? ` · Ref: ${payment.reference}` : "");
-  page.drawText(methodDetail, { x: col2 + 80, y: detailY, size: 10, font: fontBold, color: darkNavy });
+  page.drawText(methodDetail, { x: col2 + 85, y: detailY, size: 8.5, font: fontBold, color: darkNavy });
 
-  detailY -= 22;
-  page.drawText("Received By:", { x: col1, y: detailY, size: 9, font: fontRegular, color: slateGray });
-  page.drawText(payment.recordedBy?.name ?? "Accounts Office", { x: col1 + 80, y: detailY, size: 10, font: fontBold, color: darkNavy });
+  detailY -= 18;
+  page.drawText("Received By:", { x: col1, y: detailY, size: 8.5, font: fontBold, color: slateGray });
+  page.drawText(payment.recordedBy?.name ?? "Finance Office", { x: col1 + 80, y: detailY, size: 8.5, font: fontRegular, color: darkNavy });
 
-  page.drawText("Status:", { x: col2, y: detailY, size: 9, font: fontRegular, color: slateGray });
-  page.drawText(payment.status === "VOID" ? "VOIDED" : "CONFIRMED & ISSUED", {
-    x: col2 + 80,
+  page.drawText("Payment Status:", { x: col2, y: detailY, size: 8.5, font: fontBold, color: slateGray });
+  page.drawText(isVoid ? "VOIDED / CANCELLED" : "CONFIRMED & CLEARED", {
+    x: col2 + 85,
     y: detailY,
-    size: 10,
+    size: 8.5,
     font: fontBold,
-    color: payment.status === "VOID" ? rgb(0.85, 0.15, 0.15) : rgb(0.1, 0.6, 0.3)
+    color: isVoid ? rubyRed : emeraldGreen
   });
 
-  y -= 135;
+  y -= 105;
 
   // Table header for Invoice Breakdown
-  page.drawText("INVOICE ITEMS BREAKDOWN", { x: 40, y, size: 11, font: fontBold, color: darkNavy });
-  y -= 15;
+  page.drawText("INVOICE PARTICULARS & FEE BREAKDOWN", { x: 35, y, size: 9.5, font: fontBold, color: darkNavy });
+  y -= 14;
 
   page.drawRectangle({
-    x: 40,
+    x: 35,
     y: y - 18,
-    width: width - 80,
-    height: 24,
-    color: rgb(0.92, 0.94, 0.98)
+    width: width - 70,
+    height: 20,
+    color: royalBlue
   });
 
-  page.drawText("Description", { x: 55, y: y - 10, size: 9, font: fontBold, color: darkNavy });
-  page.drawText("Category", { x: 310, y: y - 10, size: 9, font: fontBold, color: darkNavy });
-  page.drawText("Amount (KES)", { x: width - 120, y: y - 10, size: 9, font: fontBold, color: darkNavy });
+  page.drawText("DESCRIPTION / FEE ITEM", { x: 45, y: y - 12, size: 8, font: fontBold, color: white });
+  page.drawText("CATEGORY", { x: 310, y: y - 12, size: 8, font: fontBold, color: white });
+  page.drawText("AMOUNT (KES)", { x: width - 125, y: y - 12, size: 8, font: fontBold, color: white });
 
-  y -= 25;
+  y -= 22;
 
   // Invoice Lines
   let invoiceTotal = 0;
-  for (const line of payment.invoice.lines) {
+  for (const [idx, line] of payment.invoice.lines.entries()) {
     invoiceTotal += line.amount;
-    page.drawText(line.description, { x: 55, y, size: 9, font: fontRegular, color: darkNavy });
-    page.drawText(line.category, { x: 310, y, size: 9, font: fontRegular, color: slateGray });
-    const lineAmt = kes(line.amount);
-    page.drawText(lineAmt, { x: width - 50 - fontRegular.widthOfTextAtSize(lineAmt, 9), y, size: 9, font: fontRegular, color: darkNavy });
+    const rowBg = idx % 2 === 0 ? white : rgb(0.98, 0.985, 0.995);
 
-    page.drawLine({
-      start: { x: 40, y: y - 6 },
-      end: { x: width - 40, y: y - 6 },
-      color: lightBorder,
-      thickness: 0.5
+    page.drawRectangle({
+      x: 35,
+      y: y - 14,
+      width: width - 70,
+      height: 18,
+      color: rowBg,
+      borderColor: borderLight,
+      borderWidth: 0.5
     });
 
-    y -= 20;
+    page.drawText(line.description, { x: 45, y: y - 8, size: 8, font: fontRegular, color: darkNavy });
+    page.drawText(line.category, { x: 310, y: y - 8, size: 7.5, font: fontRegular, color: slateGray });
+    const lineAmt = kes(line.amount);
+    page.drawText(lineAmt, { x: width - 45 - fontRegular.widthOfTextAtSize(lineAmt, 8), y: y - 8, size: 8, font: fontBold, color: darkNavy });
+
+    y -= 18;
   }
 
-  y -= 10;
+  y -= 12;
 
   // Summary calculation
   const totalPaidOnInvoice = payment.invoice.payments.reduce((s, p) => s + p.amount, 0);
   const remainingBalance = Math.max(0, invoiceTotal - totalPaidOnInvoice - payment.invoice.creditApplied);
 
-  // Totals Box
+  // Totals Box (Right)
+  const totalsBoxW = 240;
+  const totalsBoxX = width - 35 - totalsBoxW;
   page.drawRectangle({
-    x: width - 280,
-    y: y - 75,
-    width: 240,
-    height: 85,
-    color: lightBg,
+    x: totalsBoxX,
+    y: y - 76,
+    width: totalsBoxW,
+    height: 76,
+    color: rgb(0.93, 0.96, 1.0),
     borderColor: royalBlue,
-    borderWidth: 1.5
+    borderWidth: 1.2
   });
 
-  page.drawText("Total Invoice Due:", { x: width - 265, y: y - 18, size: 10, font: fontRegular, color: slateGray });
-  page.drawText(kes(invoiceTotal), { x: width - 55 - fontRegular.widthOfTextAtSize(kes(invoiceTotal), 10), y: y - 18, size: 10, font: fontBold, color: darkNavy });
+  page.drawText("Total Invoice Incurred:", { x: totalsBoxX + 12, y: y - 18, size: 8.5, font: fontRegular, color: slateGray });
+  page.drawText(kes(invoiceTotal), { x: width - 45 - fontRegular.widthOfTextAtSize(kes(invoiceTotal), 8.5), y: y - 18, size: 8.5, font: fontBold, color: darkNavy });
 
-  page.drawText("THIS PAYMENT:", { x: width - 265, y: y - 40, size: 11, font: fontBold, color: royalBlue });
-  page.drawText(kes(payment.amount), { x: width - 55 - fontBold.widthOfTextAtSize(kes(payment.amount), 11), y: y - 40, size: 11, font: fontBold, color: royalBlue });
+  page.drawText("AMOUNT PAID (THIS RECEIPT):", { x: totalsBoxX + 12, y: y - 38, size: 9, font: fontBold, color: royalBlue });
+  page.drawText(kes(payment.amount), { x: width - 45 - fontBold.widthOfTextAtSize(kes(payment.amount), 10), y: y - 38, size: 10, font: fontBold, color: royalBlue });
 
-  page.drawText("Remaining Balance:", { x: width - 265, y: y - 62, size: 10, font: fontRegular, color: slateGray });
-  page.drawText(kes(remainingBalance), { x: width - 55 - fontRegular.widthOfTextAtSize(kes(remainingBalance), 10), y: y - 62, size: 10, font: fontBold, color: darkNavy });
+  page.drawText("Remaining Term Balance:", { x: totalsBoxX + 12, y: y - 58, size: 8.5, font: fontRegular, color: slateGray });
+  const balColor = remainingBalance > 0 ? rubyRed : emeraldGreen;
+  page.drawText(kes(remainingBalance), { x: width - 45 - fontBold.widthOfTextAtSize(kes(remainingBalance), 9), y: y - 58, size: 9, font: fontBold, color: balColor });
 
-  // Verification QR Code
+  // Verification QR Code (Left)
   const qrVerificationText = `MARY-ROYAL-VERIFIED:receipt=${payment.receiptNo};adm=${payment.invoice.learner.admissionNo};amount=${payment.amount};date=${payment.createdAt.toISOString()}`;
   const qrMatrix = generateQrMatrix(qrVerificationText);
-  const qrSize = 85;
-  const qrX = 55;
-  const qrY = y - 75;
+  const qrSize = 65;
+  const qrX = 45;
+  const qrY = y - 70;
   const moduleSize = qrSize / qrMatrix.length;
 
   page.drawRectangle({
-    x: qrX - 5,
-    y: qrY - 5,
-    width: qrSize + 10,
-    height: qrSize + 10,
-    color: rgb(1, 1, 1),
-    borderColor: lightBorder,
+    x: qrX - 4,
+    y: qrY - 4,
+    width: qrSize + 8,
+    height: qrSize + 8,
+    color: white,
+    borderColor: borderLight,
     borderWidth: 1
   });
 
   for (let r = 0; r < qrMatrix.length; r++) {
-    for (let c = 0; c < qrMatrix.length; c++) {
+    for (let c = 0; c < qrMatrix[r].length; c++) {
       if (qrMatrix[r][c]) {
         page.drawRectangle({
           x: qrX + c * moduleSize,
@@ -295,52 +379,86 @@ export async function GET(
     }
   }
 
-  page.drawText("Scan to verify official receipt", {
-    x: qrX + qrSize + 15,
-    y: qrY + 45,
-    size: 8,
+  page.drawText("Authentic Digital Receipt", {
+    x: qrX + qrSize + 12,
+    y: qrY + 40,
+    size: 7.5,
     font: fontBold,
     color: royalBlue
   });
-  page.drawText(`Digital verification token: ${payment.receiptNo.slice(-6)}`, {
-    x: qrX + qrSize + 15,
-    y: qrY + 30,
-    size: 8,
+  page.drawText(`Token: ${payment.receiptNo.slice(-6).toUpperCase()} · Tamper-proof`, {
+    x: qrX + qrSize + 12,
+    y: qrY + 28,
+    size: 7,
+    font: fontRegular,
+    color: slateGray
+  });
+  page.drawText("Scan with any camera to verify validity", {
+    x: qrX + qrSize + 12,
+    y: qrY + 16,
+    size: 6.8,
     font: fontRegular,
     color: slateGray
   });
 
-  y -= 130;
+  y -= 110;
 
-  // Signatures
-  page.drawLine({
-    start: { x: 55, y },
-    end: { x: 230, y },
-    color: darkNavy,
-    thickness: 1
+  // Terms & Conditions Banner
+  page.drawRectangle({
+    x: 35,
+    y: y - 26,
+    width: width - 70,
+    height: 26,
+    color: lightBg,
+    borderColor: borderLight,
+    borderWidth: 0.5
   });
-  page.drawText("Authorized Cashier / Accountant", { x: 55, y: y - 14, size: 9, font: fontRegular, color: slateGray });
 
-  page.drawLine({
-    start: { x: width - 230, y },
-    end: { x: width - 55, y },
-    color: darkNavy,
-    thickness: 1
+  page.drawText("NOTICE: Fees once paid are non-refundable and non-transferable. Retain this receipt as official proof of payment.", {
+    x: 42,
+    y: y - 11,
+    size: 7.2,
+    font: fontBold,
+    color: darkNavy
   });
-  page.drawText("Head Teacher / Director Sign & Stamp", { x: width - 230, y: y - 14, size: 9, font: fontRegular, color: slateGray });
-
-  // Footer
-  page.drawText("Thank you for partnering in your child's excellence at Mary Royal School.", {
-    x: 40,
-    y: 35,
-    size: 8,
+  page.drawText("Payment made through official channels: Mary Royal School Bank Account or Verified School M-Pesa Till / Paybill.", {
+    x: 42,
+    y: y - 21,
+    size: 6.8,
     font: fontRegular,
     color: slateGray
   });
-  page.drawText("This document is an official valid receipt issued under Mary Royal School regulations.", {
-    x: width - 290,
-    y: 35,
-    size: 8,
+
+  y -= 45;
+
+  // Signatures & Stamp
+  page.drawLine({
+    start: { x: 45, y },
+    end: { x: 220, y },
+    color: slateGray,
+    thickness: 0.5
+  });
+  page.drawText("Authorized Bursar / Accountant Stamp & Sign", { x: 45, y: y - 12, size: 7.5, font: fontRegular, color: slateGray });
+
+  page.drawLine({
+    start: { x: width - 220, y },
+    end: { x: width - 45, y },
+    color: slateGray,
+    thickness: 0.5
+  });
+  page.drawText("Head Teacher / Director Official Endorsement", { x: width - 220, y: y - 12, size: 7.5, font: fontRegular, color: slateGray });
+
+  // Footer microprint
+  const printTimestamp = new Intl.DateTimeFormat("en-KE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Africa/Nairobi"
+  }).format(new Date());
+
+  page.drawText(`Mary Royal Primary & Junior School · P.O. Box 40100, Kisumu · Official Finance Document · Generated ${printTimestamp} EAT`, {
+    x: 35,
+    y: 28,
+    size: 7,
     font: fontRegular,
     color: slateGray
   });
@@ -350,7 +468,7 @@ export async function GET(
   return new Response(Buffer.from(pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="MaryRoyal_Receipt_${payment.receiptNo}.pdf"`,
+      "Content-Disposition": `inline; filename="MaryRoyal-Receipt-${payment.receiptNo}.pdf"`,
       "Cache-Control": "private, max-age=3600"
     }
   });

@@ -8,6 +8,7 @@ import { LearnerLink } from "@/components/learner-link";
 import {
   Calendar,
   CheckCircle2,
+  FileDown,
   GraduationCap,
   HeartHandshake,
   Receipt,
@@ -222,12 +223,23 @@ export default async function FamilyPortal({
               </div>
             </div>
 
-            <Link
-              href={`/learners/${child.id}`}
-              className="inline-flex items-center gap-1.5 self-start rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-2 text-xs font-bold text-blue-800 transition hover:bg-blue-100 sm:self-auto dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300"
-            >
-              Open Complete Learner Profile →
-            </Link>
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+              <a
+                href={`/api/learners/${child.id}/admission-slip`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-800 shadow-sm transition hover:border-blue-400 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                title="Download official school admission slip & enrolment certificate"
+              >
+                <FileDown size={13} /> Admission Slip
+              </a>
+              <Link
+                href={`/learners/${child.id}`}
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-2 text-xs font-bold text-blue-800 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300"
+              >
+                Open Complete Profile →
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -378,16 +390,30 @@ export default async function FamilyPortal({
 
           {/* Released Results Card */}
           <section className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-6 shadow-sm dark:border-slate-800/80">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Trophy size={18} className="text-amber-500" />
                 <h2 className="text-base font-black text-slate-900 dark:text-white">
                   Released Academic Results
                 </h2>
               </div>
-              <span className="text-xs font-semibold text-slate-500">
-                {assessments.length} marks
-              </span>
+              <div className="flex items-center gap-2">
+                {assessments.length > 0 && (
+                  <a
+                    href={`/api/learners/${child.id}/report-card`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
+                    title="Download Official CBE Term Report Card"
+                  >
+                    <FileDown size={13} />
+                    Report Card PDF
+                  </a>
+                )}
+                <span className="text-xs font-semibold text-slate-500">
+                  {assessments.length} marks
+                </span>
+              </div>
             </div>
 
             {assessments.length === 0 ? (
