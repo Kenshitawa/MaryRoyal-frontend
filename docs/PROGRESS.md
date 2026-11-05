@@ -439,3 +439,20 @@ Total output lines: 287
 - Built: Redesigned the Staff Record Slip print view (`staff-profile-client.tsx`) and onboarding credentials slip (`staff-wizard.tsx`) with the official Mary Royal School crest logo, full staff dossier (personal ID, qualifications, CBE allocations, contact/residence, emergency contacts, authorized statutory details), action bar with "Print / Save as PDF", and official seal sign-offs. Redesigned Admission Wizard UI header with school crest and elevated CBE enrollment banner; redesigned downloadable Admission PDF (`/api/admissions/[id]/form`) with two-column aligned data layout, school crest, and formal signature blocks. Sanitized staff edit history to ensure only Director receives staff audit records. Confirmed assignment and learning content grade/subject dropdown fallbacks and AI drafting are active for Head Teacher and Director.
 - Tested: `npm run lint` (0 errors, 0 warnings), `npm run typecheck` (0 errors), `npm test` (13 test files, 66/66 passed).
 - Known: Full Playwright E2E suite was not re-run in this quick pass; local dev server was not restarted.
+
+## Offline-first Android Client, Official Wrapper, CI & Branded Staff Slips — 2026-11-05
+- **Built:**
+  - Configured and generated official Gradle 9.3.1 wrapper (`gradlew`, `gradlew.bat`, `gradle-wrapper.jar`, `gradle-wrapper.properties`) in `android/`.
+  - Configured Android build environment with OpenJDK 17 and `local.properties`.
+  - Added GitHub Actions CI pipeline (`.github/workflows/android-apk.yml`) to automatically compile and publish the standalone Mary Royal School Android APK (`app-debug.apk`) on pushes.
+  - Aligned Android mobile client with web backend: mapped wrong password/login error responses to friendly human-readable alerts ("Wrong password or email address. Please check your details and try again.") with lockout counters.
+  - Created dedicated Staff Pay Slip PDF download endpoint (`/api/finance/payroll/[id]/pdf`) featuring official school crest logo, remuneration breakdown, statutory deductions, net disbursement, authorized signature blocks, and verification QR code.
+  - Upgraded Finance Payroll Sheet (`payroll-sheet.tsx`) with direct "Pay Slip" PDF download buttons for both mobile card views and desktop tables.
+  - Enhanced Fee Payment Receipt PDF (`/api/finance/payments/[id]/pdf`) with official Mary Royal School crest logo and refined header layout.
+- **Tested:**
+  - `npm run typecheck` passed (0 errors).
+  - `npm test` passed (13 test files, 66/66 tests passing).
+  - Gradle 9.3.1 wrapper generation verified and validated.
+  - Clean git status; committed to branch `feat/staff-drafts-mobilenav-audit`.
+- **Next:**
+  - Run Android APK build locally or trigger GitHub Actions CI run upon git push.
