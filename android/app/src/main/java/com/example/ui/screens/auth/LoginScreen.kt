@@ -266,7 +266,7 @@ fun LoginScreen(
                         visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = if (showPassword) KeyboardType.VisiblePassword else KeyboardType.Password,
+                            keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(

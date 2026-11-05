@@ -105,7 +105,7 @@ fun ChangePasswordScreen(
                     }
                 },
                 visualTransformation = if (showCurrentPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = if (showCurrentPassword) KeyboardType.VisiblePassword else KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().testTag("current_password_input")
             )
@@ -124,7 +124,7 @@ fun ChangePasswordScreen(
                     }
                 },
                 visualTransformation = if (showNewPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = if (showNewPassword) KeyboardType.VisiblePassword else KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().testTag("new_password_input")
             )
@@ -143,7 +143,7 @@ fun ChangePasswordScreen(
                     }
                 },
                 visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = if (showConfirmPassword) KeyboardType.VisiblePassword else KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().testTag("confirm_password_input")
             )

@@ -163,7 +163,7 @@ fun OperationsScreen() {
                                 item {
                                     Text(day, fontWeight = FontWeight.Bold, color = RoyalBlue, fontSize = 16.sp, modifier = Modifier.padding(top = 8.dp))
                                 }
-                                val daySlots = realSlots.filter { it.dayOfWeek.equals(day, ignoreCase = true) }
+                                val daySlots = realSlots.filter { it.day.equals(day, ignoreCase = true) }
                                 if (daySlots.isNotEmpty()) {
                                     items(daySlots) { slot ->
                                         Card(
@@ -178,13 +178,13 @@ fun OperationsScreen() {
                                             ) {
                                                 Column {
                                                     Text(slot.subject, fontWeight = FontWeight.SemiBold)
-                                                    val subtext = listOfNotNull(slot.room, slot.teacherName).joinToString(" • ")
+                                                    val subtext = listOfNotNull(slot.room, slot.teacher).joinToString(" • ")
                                                     if (subtext.isNotBlank()) {
                                                         Text(subtext, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                                     }
                                                 }
                                                 Surface(color = RoyalGold.copy(alpha = 0.15f), shape = RoundedCornerShape(6.dp)) {
-                                                    Text("${slot.startTime} - ${slot.endTime}", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF7A5400), modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                                                    Text(slot.time, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF7A5400), modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                                                 }
                                             }
                                         }
