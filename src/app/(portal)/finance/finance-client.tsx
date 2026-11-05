@@ -377,6 +377,16 @@ export default function FinanceClient({
             Void
           </button>
         )}
+        <a
+          href={`/api/finance/invoices/${inv.id}/pdf`}
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-secondary btn-sm"
+          title="Download official invoice PDF"
+        >
+          <Download size={14} aria-hidden="true" />
+          Invoice PDF
+        </a>
         {inv.payments.length > 0 && (
           <a
             href={`/api/finance/payments/${inv.payments[0].id}/pdf`}
