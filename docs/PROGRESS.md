@@ -456,3 +456,17 @@ Total output lines: 287
   - Clean git status; committed to branch `feat/staff-drafts-mobilenav-audit`.
 - **Next:**
   - Run Android APK build locally or trigger GitHub Actions CI run upon git push.
+
+## Redesigned Official Admission Slips, Report Cards & Fee Receipts with Real P.O. Box — 2026-11-05
+- **Built:**
+  - Discovered and integrated the school's verified institutional contact data: P.O. Box 40100, Kisumu, Kenya; Telephone: +254 718 216 374; Email: maryroyalschool81@gmail.com; Physical location: Obunga (Near Breweries), Kisumu, Kenya; Slogan: "Nurturing Excellence Through CBE"; Motto: "Hard Work Pays".
+  - Redesigned the Learner Admission Form / Dossier PDF (`/api/admissions/[id]/form`) with double royal blue/gold certificate borders, embedded high-res school crest, complete bio-data grid, emergency contacts, medical disclosures, document checklist, official seals and signatures, and verification QR code.
+  - Created dedicated Enrolled Learner Admission Slip & Enrolment Certificate endpoint (`/api/learners/[id]/admission-slip`) with role/guardian authorization.
+  - Created CBC Term Academic Progress Report Card generator (`/api/learners/[id]/report-card`) with the 4-band KNEC performance key (EE, ME, AE, BE), learning area marksheet, competencies, teacher remarks, attendance statistics, co-curricular appraisal, official stamps, and QR code.
+  - Elevated the Fee Payment Receipt PDF (`/api/finance/payments/[id]/pdf`) with double certificate border, itemized invoice breakdown, remaining balance, and digital authenticity token.
+  - Created Student Fee Invoice & Demand Statement PDF generator (`/api/finance/invoices/[id]/pdf`) with official bank deposit and M-Pesa payment guides.
+  - Added direct download buttons to Learner Profile (`/learners/[id]`) and Parent Portal (`/portal`).
+- **Tested:**
+  - `npm run typecheck` passed (0 errors).
+  - `npm test` passed (13 test files, 66/66 tests passing).
+  - Committed to `feat/staff-drafts-mobilenav-audit`.
