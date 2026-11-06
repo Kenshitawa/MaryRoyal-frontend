@@ -276,6 +276,9 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     if (!printWindow) return;
     const doc = printWindow.document;
     doc.title = `Mary Royal School · ${personal.name} Staff Credentials Slip`;
+    const esc = (input: unknown) =>
+      String(input ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] as string);
+    const roleText = employment.role.replaceAll("_", " ");
     const style = doc.createElement("style");
     style.textContent = `
       * { box-sizing: border-box; }
@@ -316,7 +319,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     slip.className = "slip";
     slip.innerHTML = `
       <div class="action-bar no-print">
-        <button class="action-btn" onclick="window.print()">🖨️ Print Slip / Save as PDF</button>
+        <button class="action-btn" onclick="window.print()">Print Slip / Save as PDF</button>
         <button class="close-btn" onclick="window.close()">✕ Close</button>
       </div>
 
@@ -331,7 +334,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
         </div>
         <div>
           <span class="badge">Credentials &amp; Record Slip</span>
-          <div style="margin-top: 6px; font-size: 11px; font-family: monospace; font-weight: bold; text-align: right;">REF: MRS/ACC/${employment.staffNumber || "NEW"}</div>
+          <div style="margin-top: 6px; font-size: 11px; font-family: monospace; font-weight: bold; text-align: right;">REF: MRS/ACC/${esc(employment.staffNumber || "NEW")}</div>
         </div>
       </div>
 
@@ -340,14 +343,14 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
           <h2 class="section-title">Staff Member Particulars</h2>
         </div>
         <div class="grid">
-          <div class="item"><span class="item-label">Full Name</span><span class="item-value" style="color: #1e3a8a;">${personal.name}</span></div>
-          <div class="item"><span class="item-label">Assigned Role</span><span class="item-value">${employment.role.replaceAll("_", " ")}</span></div>
-          <div class="item"><span class="item-label">Staff Number</span><span class="item-value" style="font-family: monospace;">${employment.staffNumber || "N/A"}</span></div>
-          <div class="item"><span class="item-label">TSC Number</span><span class="item-value" style="font-family: monospace;">${employment.tscNumber || "N/A"}</span></div>
-          <div class="item"><span class="item-label">Department</span><span class="item-value">${employment.department || "General"}</span></div>
-          <div class="item"><span class="item-label">Employment Type</span><span class="item-value">${employment.employmentType || "Permanent"}</span></div>
-          <div class="item"><span class="item-label">Phone Contact</span><span class="item-value">${personal.phone || "Not recorded"}</span></div>
-          <div class="item"><span class="item-label">County</span><span class="item-value">${personal.county || "Kisumu"}</span></div>
+          <div class="item"><span class="item-label">Full Name</span><span class="item-value" style="color: #1e3a8a;">${esc(personal.name)}</span></div>
+          <div class="item"><span class="item-label">Assigned Role</span><span class="item-value">${esc(roleText)}</span></div>
+          <div class="item"><span class="item-label">Staff Number</span><span class="item-value" style="font-family: monospace;">${esc(employment.staffNumber || "N/A")}</span></div>
+          <div class="item"><span class="item-label">TSC Number</span><span class="item-value" style="font-family: monospace;">${esc(employment.tscNumber || "N/A")}</span></div>
+          <div class="item"><span class="item-label">Department</span><span class="item-value">${esc(employment.department || "General")}</span></div>
+          <div class="item"><span class="item-label">Employment Type</span><span class="item-value">${esc(employment.employmentType || "Permanent")}</span></div>
+          <div class="item"><span class="item-label">Phone Contact</span><span class="item-value">${esc(personal.phone || "Not recorded")}</span></div>
+          <div class="item"><span class="item-label">County</span><span class="item-value">${esc(personal.county || "Kisumu")}</span></div>
         </div>
       </div>
 
@@ -358,13 +361,13 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
         <div class="grid-2">
           <div class="item" style="grid-column: 1 / -1;">
             <span class="item-label">Class Teacher Allocation</span>
-            <span class="item-value" style="color: #1e3a8a;">${employment.classTeacherGrade ? `Class Teacher: ${employment.classTeacherGrade}` : "Not assigned as Class Teacher"}</span>
+            <span class="item-value" style="color: #1e3a8a;">${employment.classTeacherGrade ? `Class Teacher: ${esc(employment.classTeacherGrade)}` : "Not assigned as Class Teacher"}</span>
           </div>
           <div class="item" style="grid-column: 1 / -1;">
             <span class="item-label">Assigned Teaching Subjects (${employment.assignedSubjects.length})</span>
             <div style="margin-top: 6px;">
               ${employment.assignedSubjects.length > 0
-                ? employment.assignedSubjects.map(a => `<span class="alloc-badge"><strong>${a.grade}</strong>: ${a.subject}</span>`).join("")
+                ? employment.assignedSubjects.map(a => `<span class="alloc-badge"><strong>${esc(a.grade)}</strong>: ${esc(a.subject)}</span>`).join("")
                 : "<span style='color: #64748b;'>None assigned during registration.</span>"}
             </div>
           </div>
@@ -376,10 +379,10 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
           <h2 class="section-title" style="color: #1e40af;">System Sign-In Credentials</h2>
         </div>
         <div style="padding: 12px 14px;">
-          <div class="item"><span class="item-label">Username / Official Email</span><span class="item-value" style="font-family: monospace; font-size: 13px;">${successResult.user.email}</span></div>
+          <div class="item"><span class="item-label">Username / Official Email</span><span class="item-value" style="font-family: monospace; font-size: 13px;">${esc(successResult.user.email)}</span></div>
           <div class="pass-box">
             <span class="item-label" style="color: #1e40af;">One-Time Temporary Password</span>
-            <div class="pass-val">${successResult.temporaryPassword}</div>
+            <div class="pass-val">${esc(successResult.temporaryPassword)}</div>
             <p style="margin: 6px 0 0; font-size: 11px; color: #475569;">
               * Staff member must change this temporary password on initial sign-in. Hand this slip in private.
             </p>
@@ -403,47 +406,46 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     }, 300);
   }
 
-  function downloadStaffSlip() {
+  async function downloadStaffSlip() {
     if (!successResult) return;
-    const content = `MARY ROYAL SCHOOL · OBUNGA, KISUMU
-OFFICIAL STAFF RECORD & CREDENTIALS SLIP
-=====================================================
-Date Generated: ${new Date().toLocaleDateString("en-KE", { dateStyle: "long" })}
-
-STAFF PARTICULARS:
-- Full Name: ${personal.name}
-- Assigned Role: ${employment.role.replaceAll("_", " ")}
-- Staff Number: ${employment.staffNumber || "N/A"}
-- TSC Number: ${employment.tscNumber || "N/A"}
-- Department: ${employment.department || "General"}
-- Employment Type: ${employment.employmentType || "Permanent"}
-- Official Email: ${successResult.user.email}
-- Phone Contact: ${personal.phone || "Not recorded"}
-- County: ${personal.county || "Kisumu"}
-
-CBE TEACHING ALLOCATIONS:
-- Class Teacher: ${employment.classTeacherGrade ? employment.classTeacherGrade : "Not assigned"}
-- Teaching Subjects:
-${employment.assignedSubjects.map(a => `  * ${a.grade}: ${a.subject}`).join("\n") || "  * None assigned"}
-
-SYSTEM LOGIN CREDENTIALS:
-- Email / Username: ${successResult.user.email}
-- Temporary Password: ${successResult.temporaryPassword}
-
-NOTICE:
-This temporary password is provided for one-time initialization.
-Staff must change this password on first sign-in.
-Keep this document secure in school records.
-=====================================================
-Mary Royal School · Obunga, Kisumu · Hard Work Pays
-`;
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Staff_Record_${personal.name.replace(/\\s+/g, "_")}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
+    try {
+      const { buildStaffSlipPdf } = await import("@/lib/staff-slip-pdf");
+      let logoBytes: ArrayBuffer | null = null;
+      try {
+        const response = await fetch("/mary-royal-logo.png");
+        if (response.ok) logoBytes = await response.arrayBuffer();
+      } catch {
+        logoBytes = null;
+      }
+      const bytes = await buildStaffSlipPdf(
+        {
+          name: personal.name,
+          role: employment.role,
+          staffNumber: employment.staffNumber,
+          tscNumber: employment.tscNumber,
+          department: employment.department,
+          employmentType: employment.employmentType,
+          phone: personal.phone,
+          county: personal.county,
+          email: successResult.user.email,
+          temporaryPassword: successResult.temporaryPassword,
+          classTeacherGrade: employment.classTeacherGrade,
+          assignments: employment.assignedSubjects
+        },
+        logoBytes
+      );
+      const body = new ArrayBuffer(bytes.byteLength);
+      new Uint8Array(body).set(bytes);
+      const url = URL.createObjectURL(new Blob([body], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = url;
+      const safeName = personal.name.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "Staff";
+      link.download = `Mary-Royal-Staff-Slip-${employment.staffNumber || "NEW"}-${safeName}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Could not generate the staff slip PDF. Use Print Slip and choose Save as PDF.");
+    }
   }
 
   useEffect(() => {
@@ -1358,7 +1360,7 @@ Mary Royal School · Obunga, Kisumu · Hard Work Pays
                   onClick={downloadStaffSlip}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-xs font-bold text-blue-900 shadow-sm hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 >
-                  <Download size={13} /> Download Slip
+                  <Download size={13} /> Download PDF
                 </button>
                 <button
                   type="button"
