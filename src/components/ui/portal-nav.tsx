@@ -93,7 +93,11 @@ export function PortalNav({ role }: { role: string }) {
       items: category.items.filter((item) => item.label.toLowerCase().includes(search.trim().toLowerCase())),
     }))
     .filter((category) => category.items.length > 0);
-  const moreBadge = badges.pendingApprovals + badges.unreadNotifications + badges.welfare;
+  const moreBadge = Math.max(
+    badges.pendingApprovals + badges.pendingComplaints,
+    badges.unreadNotifications,
+    badges.welfare,
+  );
 
   if (keyboardOpen) return null;
 
@@ -157,6 +161,7 @@ export function PortalNav({ role }: { role: string }) {
                 {category.items.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
+                  const count = badgeFor(item.badgeKey) || (item.href === "/welfare" ? badges.welfare : 0);
                   return (
                     <Link
                       key={`${item.label}:${item.href}`}
@@ -169,6 +174,11 @@ export function PortalNav({ role }: { role: string }) {
                     >
                       <Icon size={16} className="shrink-0" aria-hidden="true" />
                       <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      {count > 0 ? (
+                        <span className="grid h-4 min-w-4 shrink-0 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-white">
+                          {count > 9 ? "9+" : count}
+                        </span>
+                      ) : null}
                     </Link>
                   );
                 })}

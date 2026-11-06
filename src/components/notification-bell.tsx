@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, Check, CheckCheck, X, Clock, AlertCircle, Info, Zap } from "lucide-react";
 
 
@@ -41,6 +42,7 @@ const typeBg: Record<string, string> = {
 };
 
 export default function NotificationBell() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unread, setUnread] = useState(0);
@@ -90,6 +92,14 @@ export default function NotificationBell() {
     setUnread((c) => Math.max(0, c - 1));
   }
 
+  function openNotification(notification: Notification) {
+    setOpen(false);
+    void (async () => {
+      await markRead(notification.id);
+      if (notification.link) router.push(notification.link);
+    })();
+  }
+
   const actionRequired = notifications.filter((n) => n.actionRequired && !n.actionDone);
 
   return (
@@ -109,7 +119,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-[350px] rounded-2xl border border-slate-200/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900">
+        <div className="absolute right-0 top-12 z-50 w-[min(350px,calc(100vw-2rem))] rounded-2xl border border-slate-200/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -153,14 +163,16 @@ export default function NotificationBell() {
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  onClick={() => {
-                    void markRead(n.id);
-                    setOpen(false);
-                    if (n.link) {
-                      window.location.href = n.link;
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openNotification(n)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openNotification(n);
                     }
                   }}
-                  className={`relative cursor-pointer border-b border-slate-50 px-4 py-3 transition hover:bg-slate-50/80 last:border-0 dark:border-slate-800 dark:hover:bg-slate-800/60 ${!n.read ? typeBg[n.type] ?? "bg-blue-50" : "bg-white dark:bg-slate-900"}`}
+                  className={`relative block w-full cursor-pointer border-b border-slate-50 px-4 py-3 text-left transition hover:bg-slate-50/80 last:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:border-slate-800 dark:hover:bg-slate-800/60 ${!n.read ? typeBg[n.type] ?? "bg-blue-50" : "bg-white dark:bg-slate-900"}`}
                 >
                   {!n.read && <span className="absolute right-4 top-3.5 h-1.5 w-1.5 rounded-full bg-blue-600" />}
                   <div className="flex items-start gap-2">

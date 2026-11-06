@@ -16,14 +16,18 @@ export async function GET() {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
-  // Automatically purge read notifications older than 5 days
+  // Retain read notifications for five days after they were read. Rows read
+  // before `readAt` existed fall back to their creation timestamp.
   const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
   try {
     await db.notification.deleteMany({
       where: {
         userId: user.id,
         read: true,
-        createdAt: { lt: fiveDaysAgo },
+        OR: [
+          { readAt: { lt: fiveDaysAgo } },
+          { readAt: null, createdAt: { lt: fiveDaysAgo } },
+        ],
       },
     });
   } catch (err) {
@@ -47,12 +51,22 @@ export async function PATCH(request: Request) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
   const { id, action } = body as { id?: string; action?: string };
   if (action === "read-all") {
-    await db.notification.updateMany({ where: { userId: user.id, read: false }, data: { read: true } });
+    await db.notification.updateMany({
+      where: { userId: user.id, read: false },
+      data: { read: true, readAt: new Date() },
+    });
     return NextResponse.json({ ok: true });
   }
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
   const notification = await db.notification.findUnique({ where: { id } });
   if (!notification || notification.userId !== user.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  await db.notification.update({ where: { id }, data: { read: true, ...(action === "done" ? { actionDone: true } : {}) } });
+  await db.notification.update({
+    where: { id },
+    data: {
+      read: true,
+      readAt: notification.readAt ?? new Date(),
+      ...(action === "done" ? { actionDone: true } : {}),
+    },
+  });
   return NextResponse.json({ ok: true });
 }

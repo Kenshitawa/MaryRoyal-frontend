@@ -897,11 +897,13 @@ model Notification {
   type            String    @default("INFO")
   link            String?
   read            Boolean   @default(false)
+  readAt          DateTime?
   actionRequired  Boolean   @default(false)
   actionDone      Boolean   @default(false)
   createdAt       DateTime  @default(now())
 
   @@index([userId, read])
+  @@index([userId, read, readAt])
   @@index([userId, actionRequired])
 }
 

@@ -487,3 +487,7 @@ Total output lines: 287
 ## Welfare portfolio and loan rules — 2026-11-06
 - Built: the unpaid-loan count and total outstanding capital cards are now rendered only for the Welfare Chair and Director (Head Teacher keeps the fund-savings summary); verified the existing top-three contributors widget, three-month clearance copy, active-loan block and loan top-up flow against the local build.
 - Tested: typecheck and lint exit 0; production build compiles; headless Chrome confirms Chair/Director see both loan cards, Head Teacher does not, and a teacher with an active loan sees the small top-three section plus "Request Loan Top-Up". API check: a second normal loan returns 400 with the three-month message while the top-up succeeds with a 3-month term.
+
+## Notification retention, deep links and badges — 2026-11-06
+- Built: read notifications now retain a `readAt` timestamp and are purged five days after being read (legacy rows without `readAt` fall back to `createdAt`); tapping a notification marks it read before routing to its linked page, and the Mobile "More" sheet and desktop sidebar show the red numeric Welfare badge supplied by `/api/nav/badges`.
+- Tested: `npm run typecheck` and `npm run lint` exit 0; `npm test` 73/73; `prisma migrate deploy` applied `20261106_notification_read_at`; live API verification confirmed a 6-day-old read row and a legacy read row were purged while a 1-day read row and an unread row remained, PATCH set `readAt`, and the Welfare badge payload returned 1 for an unread welfare notification.
