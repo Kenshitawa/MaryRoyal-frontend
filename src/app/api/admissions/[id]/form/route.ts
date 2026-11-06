@@ -564,14 +564,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     { hideEmpty: true }
   );
 
-  section("10", "Declarations and institutional endorsement");
   const declaration =
     "The parent or legal guardian confirms that the information in this dossier is true and complete. The school confirms receipt of the documents listed above. Admission is confirmed only when this dossier is approved and the learner record is created.";
   const declarationLines = wrap(declaration, font, 7.7, CW);
   const cardHeight = 64;
   const panelHeight = 62;
-  // Keep the declaration, signatures and verification panel together instead of orphaning the panel.
-  ensure(declarationLines.length * 10 + 12 + cardHeight + 10 + panelHeight + 6);
+  // Keep the heading, declaration, signatures and verification panel together on one page.
+  ensure(declarationLines.length * 10 + 12 + cardHeight + 10 + panelHeight + 40);
+  section("10", "Declarations and institutional endorsement");
   for (const item of declarationLines) {
     page.drawText(item, { x: MX, y, size: 7.7, font, color: navy });
     y -= 10;
