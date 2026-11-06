@@ -31,7 +31,7 @@ npm run seed:demo
 npm run dev
 ```
 
-Every seeded account uses `MaryRoyal2026!` and is prompted to change its password. Demo data is fictional and should be reset before real records are added.
+Every seeded account uses ` and is prompted to change its password. Demo data is fictional and should be reset before real records are added.
 
 | Role | Email |
 |---|---|
