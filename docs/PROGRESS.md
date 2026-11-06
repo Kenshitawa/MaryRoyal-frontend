@@ -483,3 +483,7 @@ Total output lines: 287
 - Built: shared `src/lib/curriculum.ts` options (blank-safe, class-ordered, never empty) used by New Assignment, learning-content, weekly teaching log, schemes of work and the video library; Head Teacher and Director receive the live school-wide grade/learning-area catalogue instead of a hard-coded list, and the subject selector always resolves to a valid option for the chosen class.
 - Tested: `npm run typecheck` and `npm run lint` exit 0; `npm test` 73/73 including 7 new curriculum tests; production build compiles; headless Chrome against the built app (teacher and Head Teacher) shows populated Grade and Learning Area selects in all five forms with no page errors.
 
+
+## Welfare portfolio and loan rules — 2026-11-06
+- Built: the unpaid-loan count and total outstanding capital cards are now rendered only for the Welfare Chair and Director (Head Teacher keeps the fund-savings summary); verified the existing top-three contributors widget, three-month clearance copy, active-loan block and loan top-up flow against the local build.
+- Tested: typecheck and lint exit 0; production build compiles; headless Chrome confirms Chair/Director see both loan cards, Head Teacher does not, and a teacher with an active loan sees the small top-three section plus "Request Loan Top-Up". API check: a second normal loan returns 400 with the three-month message while the top-up succeeds with a 3-month term.

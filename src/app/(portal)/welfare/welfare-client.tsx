@@ -384,22 +384,26 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
       {/* Overview Tab (Admin) */}
       {tab === "overview" && ["DIRECTOR", "WELFARE_CHAIR", "HEAD_TEACHER"].includes(role) && (
         <div className="space-y-4">
-          {/* Key Welfare & Loans Portfolio Cards for Director & Chair */}
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-4 dark:border-rose-950 dark:bg-rose-950/20">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">Unpaid Loans Count</p>
-              <p className="mt-1 text-2xl font-black text-rose-900 dark:text-rose-200">
-                {overviewStats ? overviewStats.totalLoansCount : members.flatMap((m) => m.loans).filter((l) => !["REJECTED", "PAID"].includes(l.status)).length}
-              </p>
-              <p className="mt-0.5 text-[11px] text-rose-600/80">Pending &amp; active staff loans</p>
-            </div>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-950 dark:bg-amber-950/20">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Total Loans Outside</p>
-              <p className="mt-1 text-2xl font-black text-amber-900 dark:text-amber-200">
-                {fmt(overviewStats ? overviewStats.totalLoanAmountOutside : members.flatMap((m) => m.loans).filter((l) => !["REJECTED", "PAID"].includes(l.status)).reduce((a, l) => a + l.principalAmount - l.repaidAmount, 0))}
-              </p>
-              <p className="mt-0.5 text-[11px] text-amber-600/80">Outstanding loan capital to be cleared</p>
-            </div>
+          {/* Loan portfolio totals are restricted to the Director and Welfare Chair. */}
+          <div className={`grid gap-3 ${["DIRECTOR", "WELFARE_CHAIR"].includes(role) ? "sm:grid-cols-3" : ""}`}>
+            {["DIRECTOR", "WELFARE_CHAIR"].includes(role) && (
+              <>
+                <div className="rounded-2xl border border-rose-200 bg-rose-50/60 p-4 dark:border-rose-950 dark:bg-rose-950/20">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">Unpaid Loans Count</p>
+                  <p className="mt-1 text-2xl font-black text-rose-900 dark:text-rose-200">
+                    {overviewStats ? overviewStats.totalLoansCount : members.flatMap((m) => m.loans).filter((l) => !["REJECTED", "PAID"].includes(l.status)).length}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-rose-600/80">Pending &amp; active staff loans</p>
+                </div>
+                <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-950 dark:bg-amber-950/20">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Total Loans Outside</p>
+                  <p className="mt-1 text-2xl font-black text-amber-900 dark:text-amber-200">
+                    {fmt(overviewStats ? overviewStats.totalLoanAmountOutside : members.flatMap((m) => m.loans).filter((l) => !["REJECTED", "PAID"].includes(l.status)).reduce((a, l) => a + l.principalAmount - l.repaidAmount, 0))}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-amber-600/80">Outstanding loan capital to be cleared</p>
+                </div>
+              </>
+            )}
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-950 dark:bg-emerald-950/20">
               <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Total Fund Savings</p>
               <p className="mt-1 text-2xl font-black text-emerald-900 dark:text-emerald-200">
