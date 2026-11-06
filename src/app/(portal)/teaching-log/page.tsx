@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
 import TeachingLogClient from "./teaching-log-client";
+import { loadCurriculumCatalog } from "@/lib/curriculum-catalog";
 
 export default async function TeachingLogPage() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -13,6 +14,11 @@ export default async function TeachingLogPage() {
   if (!user || user.suspended) redirect("/");
   if (user.forcePasswordChange) redirect("/change-password");
   if (!canInScope(user.role, "teachingLogs", "view", user.role === "TEACHER" ? "assigned" : "school")) redirect("/dashboard");
-  const assignments = user.role === "TEACHER" ? await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] }) : [];
-  return <><TeachingLogClient role={user.role} assignments={assignments}/></>;
+  const [assignments, catalog] = await Promise.all([
+    user.role === "TEACHER"
+      ? db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] })
+      : Promise.resolve([]),
+    user.role === "TEACHER" ? Promise.resolve(undefined) : loadCurriculumCatalog(),
+  ]);
+  return <><TeachingLogClient role={user.role} assignments={assignments} catalog={catalog}/></>;
 }

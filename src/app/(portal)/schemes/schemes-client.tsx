@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LayoutList, Plus, CheckCircle2, XCircle, Filter, X, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/ui/primitives";
+import { gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
 
 type Teaching = { grade: string; subject: string };
 type Scheme = {
@@ -44,21 +45,17 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const TERMS = ["2026 Term 1", "2026 Term 2", "2026 Term 3", "2027 Term 1", "2027 Term 2", "2027 Term 3"];
-const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
-const STANDARD_SUBJECTS = [
-  "Mathematics",
-  "English",
-  "Kiswahili",
-  "Integrated Science",
-  "Social Studies",
-  "CRE",
-  "Creative Arts",
-  "Agriculture",
-  "Environmental Activities",
-  "Pre-Technical Studies",
-];
 
-export default function SchemesClient({ role, teaching }: { role: string; userId?: string; teaching: Teaching[] }) {
+export default function SchemesClient({
+  role,
+  teaching,
+  catalog,
+}: {
+  role: string;
+  userId?: string;
+  teaching: Teaching[];
+  catalog?: CurriculumCatalog;
+}) {
   const isAdmin = ["DEPUTY", "HEAD_TEACHER", "DIRECTOR"].includes(role);
   const isTeacher = role === "TEACHER";
 
@@ -71,14 +68,11 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
   const [filterTerm, setFilterTerm] = useState("ALL");
   const [aiBusy, setAiBusy] = useState(false);
 
-  const grades = useMemo(() => {
-    const assigned = [...new Set(teaching.map((t) => t.grade))];
-    return assigned.length > 0 ? assigned : STANDARD_GRADES;
-  }, [teaching]);
+  const grades = useMemo(() => gradeOptions(teaching, catalog), [teaching, catalog]);
 
-  const [form, setForm] = useState({
-    grade: teaching[0]?.grade ?? (teaching.length > 0 ? teaching[0].grade : STANDARD_GRADES[0]),
-    subject: teaching[0]?.subject ?? (teaching.length > 0 ? teaching[0].subject : STANDARD_SUBJECTS[0]),
+  const [form, setForm] = useState(() => ({
+    grade: grades[0] ?? "",
+    subject: subjectOptions(grades[0] ?? "", teaching, catalog)[0] ?? "",
     term: TERMS[0],
     year: new Date().getFullYear(),
     week: 1,
@@ -91,12 +85,10 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
     learningResources: "",
     assessmentMethods: "",
     reflection: "",
-  });
+  }));
 
-  const subjects = useMemo(() => {
-    const matching = teaching.filter((t) => t.grade === form.grade).map((t) => t.subject);
-    return matching.length > 0 ? matching : STANDARD_SUBJECTS;
-  }, [teaching, form.grade]);
+  const subjects = useMemo(() => subjectOptions(form.grade, teaching, catalog), [teaching, form.grade, catalog]);
+  const formSubject = subjects.includes(form.subject) ? form.subject : subjects[0] ?? "";
 
   const load = useCallback(async () => {
     const res = await fetch("/api/schemes");
@@ -110,7 +102,7 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
   async function draftWithAI() {
     setAiBusy(true);
     try {
-      const response = await fetch("/api/ai/draft", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "scheme", grade: form.grade, subject: form.subject, topic: form.strand || form.subStrand || form.learningOutcomes }) });
+      const response = await fetch("/api/ai/draft", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "scheme", grade: form.grade, subject: formSubject, topic: form.strand || form.subStrand || form.learningOutcomes }) });
       const result = await response.json();
       if (!response.ok) { notify(result.error ?? "Draft unavailable", false); return; }
       setForm((current) => ({ ...current, ...result.draft }));
@@ -123,7 +115,7 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
     e.preventDefault();
     setBusy(true);
     try {
-      const res = await fetch("/api/schemes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...form, week: Number(form.week), lessonNo: Number(form.lessonNo), year: Number(form.year) }) });
+      const res = await fetch("/api/schemes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...form, subject: formSubject, week: Number(form.week), lessonNo: Number(form.lessonNo), year: Number(form.year) }) });
       const data = await res.json();
       if (!res.ok) { notify(data.error ?? "Error", false); return; }
       notify("Scheme submitted — Deputy and Head Teacher notified!");
@@ -276,16 +268,16 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
               <button type="button" aria-label="Close scheme editor" onClick={() => setShowCreate(false)} className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-slate-100"><X size={15}/></button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
-              <button type="button" onClick={() => void draftWithAI()} disabled={aiBusy || !form.grade || !form.subject || !(form.strand || form.subStrand || form.learningOutcomes)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 text-sm font-semibold text-blue-800 disabled:opacity-50 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"><Sparkles size={15}/>{aiBusy ? "Drafting locally…" : "Draft with local AI"}</button>
+              <button type="button" onClick={() => void draftWithAI()} disabled={aiBusy || !form.grade || !formSubject || !(form.strand || form.subStrand || form.learningOutcomes)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 text-sm font-semibold text-blue-800 disabled:opacity-50 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"><Sparkles size={15}/>{aiBusy ? "Drafting locally…" : "Draft with local AI"}</button>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Grade</label>
                   <select
                     value={form.grade}
                     onChange={(e) => {
-                      const g = e.target.value;
-                      const match = teaching.find((t) => t.grade === g)?.subject;
-                      setForm((f) => ({ ...f, grade: g, subject: match || STANDARD_SUBJECTS[0] }));
+                      const nextGrade = e.target.value;
+                      const nextSubject = subjectOptions(nextGrade, teaching, catalog)[0] ?? "";
+                      setForm((f) => ({ ...f, grade: nextGrade, subject: nextSubject }));
                     }}
                     required
                     className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -296,7 +288,7 @@ export default function SchemesClient({ role, teaching }: { role: string; userId
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
                   <select
-                    value={form.subject}
+                    value={formSubject}
                     onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
                     required
                     className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"

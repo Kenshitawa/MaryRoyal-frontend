@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LearnerLink } from "@/components/learner-link";
 import { MAX_UPLOAD_FILE_BYTES } from "@/lib/upload-limits";
+import { activeSubject, gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
 import {
   AlertCircle,
   BookOpen,
@@ -50,42 +51,24 @@ type Assignment = {
   submissions: Submission[];
 };
 
-const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
-const STANDARD_SUBJECTS = [
-  "Mathematics",
-  "English",
-  "Kiswahili",
-  "Integrated Science",
-  "Social Studies",
-  "CRE",
-  "Creative Arts",
-  "Agriculture",
-  "Environmental Activities",
-  "Pre-Technical Studies",
-];
-
-export default function AssignmentsClient({
-  role,
+export default function AssignmentsClient({  role,
   teaching,
+  catalog,
 }: {
   role: string;
   teaching: Teaching[];
+  catalog?: CurriculumCatalog;
 }) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
 
-  const availableGrades = useMemo(() => {
-    const assigned = [...new Set(teaching.map((item) => item.grade))];
-    return assigned.length > 0 ? assigned : STANDARD_GRADES;
-  }, [teaching]);
+  const availableGrades = useMemo(() => gradeOptions(teaching, catalog), [teaching, catalog]);
 
-  const [grade, setGrade] = useState(teaching[0]?.grade ?? availableGrades[0]);
+  const [grade, setGrade] = useState(() => availableGrades[0] ?? "");
 
-  const subjects = useMemo(() => {
-    const matching = teaching.filter((item) => item.grade === grade).map((item) => item.subject);
-    return matching.length > 0 ? matching : STANDARD_SUBJECTS;
-  }, [teaching, grade]);
+  const subjects = useMemo(() => subjectOptions(grade, teaching, catalog), [teaching, grade, catalog]);
 
-  const [subject, setSubject] = useState(teaching[0]?.subject ?? subjects[0]);
+  const [subjectChoice, setSubjectChoice] = useState(() => subjects[0] ?? "");
+  const subject = activeSubject(subjectChoice, subjects);
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
   const [topic, setTopic] = useState("");
@@ -449,15 +432,14 @@ export default function AssignmentsClient({
                 required
                 value={grade}
                 onChange={(e) => {
-                  const newG = e.target.value;
-                  setGrade(newG);
-                  const matching = teaching.find((item) => item.grade === newG)?.subject;
-                  setSubject(matching || STANDARD_SUBJECTS[0]);
+                  const newGrade = e.target.value;
+                  setGrade(newGrade);
+                  setSubjectChoice(subjectOptions(newGrade, teaching, catalog)[0] ?? "");
                 }}
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
                 {availableGrades.map((item) => (
-                  <option key={item}>{item}</option>
+                  <option key={item} value={item}>{item}</option>
                 ))}
               </select>
             </div>
@@ -469,11 +451,11 @@ export default function AssignmentsClient({
               <select
                 required
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
+                onChange={(e) => setSubjectChoice(e.target.value)}
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
                 {subjects.map((item) => (
-                  <option key={item}>{item}</option>
+                  <option key={item} value={item}>{item}</option>
                 ))}
               </select>
             </div>

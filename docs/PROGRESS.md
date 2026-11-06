@@ -478,3 +478,8 @@ Total output lines: 287
 ## Staff dossier PDF and printable forms — 2026-11-06
 - Built: `/api/staff/[id]/dossier` renders a complete branded staff record (crest masthead, all profile sections, attendance summary, statutory/payroll only for Director/Head Teacher/Accountant, edit history for the Director, signatures and QR verification); the profile button now opens that PDF instead of the client print popup with a placeholder phone number.
 - Tested: typecheck/lint exit 0; 66/66 unit tests; Director and Head Teacher receive 200 `%PDF`, a teacher receives 200 for their own record only, and Secretary/other-staff requests return 403.
+
+## Grade and learning-area selectors — 2026-11-06
+- Built: shared `src/lib/curriculum.ts` options (blank-safe, class-ordered, never empty) used by New Assignment, learning-content, weekly teaching log, schemes of work and the video library; Head Teacher and Director receive the live school-wide grade/learning-area catalogue instead of a hard-coded list, and the subject selector always resolves to a valid option for the chosen class.
+- Tested: `npm run typecheck` and `npm run lint` exit 0; `npm test` 73/73 including 7 new curriculum tests; production build compiles; headless Chrome against the built app (teacher and Head Teacher) shows populated Grade and Learning Area selects in all five forms with no page errors.
+

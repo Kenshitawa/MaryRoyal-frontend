@@ -12,6 +12,7 @@ import {
   Tv,
   Video,
 } from "lucide-react";
+import { CURRICULUM_GRADES, CURRICULUM_SUBJECTS } from "@/lib/curriculum";
 
 type VideoRow = {
   id: string;
@@ -254,7 +255,7 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
                 required
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
-                {["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)].map(
+                {CURRICULUM_GRADES.map(
                   (grade) => (
                     <option key={grade}>{grade}</option>
                   )
@@ -266,14 +267,15 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Learning Area (Subject) <span className="text-blue-600">*</span>
               </label>
-              <input
+              <select
                 name="subject"
                 required
-                minLength={2}
-                maxLength={60}
-                placeholder="e.g. Mathematics"
-                className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-              />
+                className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              >
+                {CURRICULUM_SUBJECTS.map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
+              </select>
             </div>
 
             <div>

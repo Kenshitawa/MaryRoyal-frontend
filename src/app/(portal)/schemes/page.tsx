@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import SchemesClient from "./schemes-client";
+import { loadCurriculumCatalog } from "@/lib/curriculum-catalog";
 
 export const metadata = { title: "Schemes of Work — Mary Royal School" };
 
@@ -16,12 +17,17 @@ export default async function SchemesPage() {
   if (user.forcePasswordChange) redirect("/change-password");
   if (!can(user.role as never, "schemesOfWork", "view")) redirect("/dashboard");
 
-  // Get teaching assignments for teachers
-  const teaching = user.role === "TEACHER" ? await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true } }) : [];
+  // Get teaching assignments for teachers, plus the school-wide catalogue for reviewers.
+  const [teaching, catalog] = await Promise.all([
+    user.role === "TEACHER"
+      ? db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true } })
+      : Promise.resolve([]),
+    user.role === "TEACHER" ? Promise.resolve(undefined) : loadCurriculumCatalog(),
+  ]);
 
   return (
     <>
-      <SchemesClient role={user.role} userId={user.id} teaching={teaching} />
+      <SchemesClient role={user.role} userId={user.id} teaching={teaching} catalog={catalog} />
     </>
   );
 }

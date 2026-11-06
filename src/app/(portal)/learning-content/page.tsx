@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import LearningContentClient from "./learning-content-client";
+import { loadCurriculumCatalog } from "@/lib/curriculum-catalog";
 
 export default async function LearningContentPage() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -13,8 +14,11 @@ export default async function LearningContentPage() {
   if (user.forcePasswordChange) redirect("/change-password");
   const allowedRoles = ["TEACHER", "HEAD_TEACHER", "DIRECTOR"];
   if (!allowedRoles.includes(user.role)) redirect("/dashboard");
-  const assignments = user.role === "TEACHER"
-    ? await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] })
-    : [];
-  return <><LearningContentClient assignments={assignments}/></>;
+  const [assignments, catalog] = await Promise.all([
+    user.role === "TEACHER"
+      ? db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] })
+      : Promise.resolve([]),
+    user.role === "TEACHER" ? Promise.resolve(undefined) : loadCurriculumCatalog(),
+  ]);
+  return <><LearningContentClient assignments={assignments} catalog={catalog}/></>;
 }

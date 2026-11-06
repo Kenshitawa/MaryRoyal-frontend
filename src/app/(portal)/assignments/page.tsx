@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
+import { loadCurriculumCatalog } from "@/lib/curriculum-catalog";
 import AssignmentsClient from "./assignments-client";
 
 export default async function AssignmentsPage() {
@@ -14,8 +15,11 @@ export default async function AssignmentsPage() {
   if (user.forcePasswordChange) redirect("/change-password");
   const scope = (user.role === "DIRECTOR" || user.role === "HEAD_TEACHER") ? "school" : user.role === "TEACHER" ? "assigned" : "self";
   if (!canInScope(user.role, "assignments", "view", scope)) redirect("/dashboard");
-  const teaching = user.role === "TEACHER"
-    ? await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] })
-    : [];
-  return <><AssignmentsClient role={user.role} teaching={teaching}/></>;
+  const [teaching, catalog] = await Promise.all([
+    user.role === "TEACHER"
+      ? db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true }, orderBy: [{ grade: "asc" }, { subject: "asc" }] })
+      : Promise.resolve([]),
+    user.role === "TEACHER" ? Promise.resolve(undefined) : loadCurriculumCatalog(),
+  ]);
+  return <><AssignmentsClient role={user.role} teaching={teaching} catalog={catalog}/></>;
 }

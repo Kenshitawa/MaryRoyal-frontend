@@ -14,6 +14,7 @@ import {
   Video,
   Sparkles,
 } from "lucide-react";
+import { activeSubject, gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
 
 type Assignment = { grade: string; subject: string };
 type Resource = {
@@ -28,40 +29,23 @@ type Resource = {
   teacher: { name: string };
 };
 
-const STANDARD_GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, i) => `Grade ${i + 1}`)];
-const STANDARD_SUBJECTS = [
-  "Mathematics",
-  "English",
-  "Kiswahili",
-  "Integrated Science",
-  "Social Studies",
-  "CRE",
-  "Creative Arts",
-  "Agriculture",
-  "Environmental Activities",
-  "Pre-Technical Studies",
-];
-
 export default function LearningContentClient({
   assignments,
+  catalog,
 }: {
   assignments: Assignment[];
+  catalog?: CurriculumCatalog;
 }) {
   const [resources, setResources] = useState<Resource[]>([]);
 
-  const availableGrades = useMemo(() => {
-    const assigned = [...new Set(assignments.map((item) => item.grade))];
-    return assigned.length > 0 ? assigned : STANDARD_GRADES;
-  }, [assignments]);
+  const availableGrades = useMemo(() => gradeOptions(assignments, catalog), [assignments, catalog]);
 
-  const [grade, setGrade] = useState(assignments[0]?.grade ?? availableGrades[0]);
+  const [grade, setGrade] = useState(() => availableGrades[0] ?? "");
 
-  const subjects = useMemo(() => {
-    const matching = assignments.filter((item) => item.grade === grade).map((item) => item.subject);
-    return matching.length > 0 ? matching : STANDARD_SUBJECTS;
-  }, [assignments, grade]);
+  const subjects = useMemo(() => subjectOptions(grade, assignments, catalog), [assignments, grade, catalog]);
 
-  const [subject, setSubject] = useState(assignments[0]?.subject ?? subjects[0]);
+  const [subjectChoice, setSubjectChoice] = useState(() => subjects[0] ?? "");
+  const subject = activeSubject(subjectChoice, subjects);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [kind, setKind] = useState("VIDEO");
@@ -294,15 +278,14 @@ export default function LearningContentClient({
                 required
                 value={grade}
                 onChange={(e) => {
-                  const newG = e.target.value;
-                  setGrade(newG);
-                  const matching = assignments.find((item) => item.grade === newG)?.subject;
-                  setSubject(matching || STANDARD_SUBJECTS[0]);
+                  const newGrade = e.target.value;
+                  setGrade(newGrade);
+                  setSubjectChoice(subjectOptions(newGrade, assignments, catalog)[0] ?? "");
                 }}
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
                 {availableGrades.map((item) => (
-                  <option key={item}>{item}</option>
+                  <option key={item} value={item}>{item}</option>
                 ))}
               </select>
             </div>
@@ -314,11 +297,11 @@ export default function LearningContentClient({
               <select
                 required
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
+                onChange={(e) => setSubjectChoice(e.target.value)}
                 className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               >
                 {subjects.map((item) => (
-                  <option key={item}>{item}</option>
+                  <option key={item} value={item}>{item}</option>
                 ))}
               </select>
             </div>
