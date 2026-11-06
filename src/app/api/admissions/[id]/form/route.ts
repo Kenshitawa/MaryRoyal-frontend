@@ -206,25 +206,34 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     const logoWidth = drawLogo(MX, pageH - 44, 54);
     const textX = MX + (logoWidth ? logoWidth + 14 : 0);
+    const cardX = pageW - MX - 152;
+    const mastheadWidth = cardX - textX - 12;
 
-    page.drawText("MARY ROYAL PRIMARY & JUNIOR SCHOOL", { x: textX, y: pageH - 68, size: 14.5, font: bold, color: navy });
+    const schoolName = "MARY ROYAL PRIMARY & JUNIOR SCHOOL";
+    page.drawText(schoolName, {
+      x: textX,
+      y: pageH - 68,
+      size: fitSize(schoolName, bold, 14.5, 10.5, mastheadWidth),
+      font: bold,
+      color: navy
+    });
     page.drawText("Nurturing Excellence Through CBE", { x: textX, y: pageH - 81, size: 7.8, font: bold, color: royal });
-    page.drawText("P.O. Box 40100, Kisumu, Kenya  ·  Tel +254 718 216 374  ·  maryroyalschool81@gmail.com", {
+    const contactLine = "P.O. Box 40100, Kisumu  ·  Tel +254 718 216 374  ·  maryroyalschool81@gmail.com";
+    page.drawText(contactLine, {
       x: textX,
       y: pageH - 92,
-      size: 7.2,
+      size: fitSize(contactLine, font, 7.2, 6.2, mastheadWidth),
       font,
       color: slate
     });
     page.drawText("Obunga, near Breweries, Kisumu  ·  Ministry of Education / CBE registered", {
       x: textX,
       y: pageH - 101,
-      size: 7.2,
+      size: fitSize("Obunga, near Breweries, Kisumu  ·  Ministry of Education / CBE registered", font, 7.2, 6.2, mastheadWidth),
       font,
       color: slate
     });
 
-    const cardX = pageW - MX - 152;
     const cardTop = pageH - 44;
     const cardHeight = 66;
     page.drawRectangle({ x: cardX, y: cardTop - cardHeight, width: 152, height: cardHeight, color: wash, borderColor: rule, borderWidth: 0.6 });
