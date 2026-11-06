@@ -1,31 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { NextResponse } from "next/server";
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { cbcLevel } from "@/lib/grading";
 import { generateQrMatrix } from "@/lib/qr";
-
-function wrap(value: string, font: PDFFont, size: number, width: number) {
-  const lines: string[] = [];
-  for (const paragraph of value.split(/\r?\n/)) {
-    let line = "";
-    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (line && font.widthOfTextAtSize(candidate, size) > width) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = candidate;
-      }
-    }
-    if (line) lines.push(line);
-  }
-  return lines.length ? lines : [""];
-}
 
 export async function GET(
   request: Request,

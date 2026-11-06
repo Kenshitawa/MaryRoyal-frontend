@@ -219,7 +219,7 @@ test("non-director roles receive only the account and learner access configured 
   expect((await api.post("/api/guardians",{data:{userId:"not-a-user",learnerId:"not-a-learner"}})).status()).toBe(403);
   expect((await api.delete("/api/guardians",{data:{id:"not-a-link"}})).status()).toBe(403);
   expect((await api.get("/api/reports/learners")).status()).toBe(403);
-  expect((await api.get("/api/audit")).status()).toBe(role==="headteacher"?200:403);
+  expect((await api.get("/api/audit")).status(),`${role} audit log reads`).toBe(403);
   const createMark=await api.post("/api/assessments",{data:{learnerId:testOutOfScopeLearnerId,subject:"English",score:55,term:"2026 Term 3"}});expect(createMark.status()).toBe(403);
   const editMark=await api.patch("/api/assessments",{data:{id:testAssessmentId,score:55}});expect(editMark.status()).toBe(role==="teacher"?409:403);
   const markWorkflow=await api.post(`/api/assessments/${testAssessmentId}/workflow`,{data:{action:"release"}});expect(markWorkflow.status()).toBe(403);

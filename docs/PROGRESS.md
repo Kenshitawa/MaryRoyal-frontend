@@ -470,3 +470,7 @@ Total output lines: 287
   - `npm run typecheck` passed (0 errors).
   - `npm test` passed (13 test files, 66/66 tests passing).
   - Committed to `feat/staff-drafts-mobilenav-audit`.
+
+## Admission dossier PDF rebuild — 2026-11-06
+- Built: replaced the decorative certificate admission form with a formal ten-section dossier using the school crest, royal/gold masthead, record tables and a QR verification panel; values wrap instead of truncating, identifiers shrink to fit, and missing fields print "Not provided" instead of invented county/ward/commute/health/fee defaults.
+- Tested: `npm run typecheck` and `npm run lint` exit 0; targeted Playwright director suite passes the admission PDF assertion (HTTP 200, `application/pdf`, `%PDF`); both isolated fixtures render 3 pages with 0 ellipses, full `E2E-MOBILE-DRAFT`/`E2E-MOBILE-SUBMITTED` references, and the declaration/signature/verification block intact. One stale expectation was corrected: Head Teacher `/api/audit` is now asserted 403, matching the Director-only matrix required by owner feedback.
