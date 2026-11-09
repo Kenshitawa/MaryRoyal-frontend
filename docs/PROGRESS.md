@@ -518,3 +518,10 @@ Total output lines: 287
   - Institutional document security and scannable QR verification panel.
   - Clean continuation headers and running footers on every page with page-x-of-y, document reference, and Nairobi EAT timestamp.
 - Tested: `npm run typecheck` (0 errors), `npm run lint` (0 errors, 0 warnings), and `npm test` (15 test files, 74/74 unit tests passed).
+
+## Single-Page Admission Slip Refinement with Centered Header & Professional Footer — 2026-11-09
+- Built: Refined `/api/learners/[id]/admission-slip` and `/api/admissions/[id]/form` according to owner direction:
+  - Header: Centered masthead featuring the school crest logo centered at top (56×56 pt), prominent centered school name `MARY ROYAL PRIMARY & JUNIOR SCHOOL` (15pt bold navy), centered school motto `"Hard Work Pays - Nurturing Excellence Through CBE"` (8pt bold royal blue), Ministry of Education / CBC accreditation line, centered P.O. Box and contact details (`P.O. Box 40100, Kisumu, Kenya | Tel: +254 718 216 374 | maryroyalschool81@gmail.com`), and Obunga campus address, underlined by royal blue + gold double rules.
+  - Strict Single-Page Architecture: Formatted the complete Learner Admission Slip as a compact, self-contained single-page A4 document (`Page 1 of 1`), containing the learner bio hero with passport photo, Enrolment Details & CBE Placement (01), Residential Address & Commute (02), Parent & Legal Guardian (03), Emergency Contacts & Authorized Pickup (04), Legal Declaration with 3 signature blocks (Parent, Secretary, Head Teacher/Director with official seal graphic) (05), and digital verification QR code panel.
+  - Professional Footer: Double royal blue / gold dividing rules, left-aligned school name and Obunga Kisumu campus info with accreditation and "This slip is NOT a fee receipt" notice, right-aligned `Page 1 of 1 | Reference | Nairobi EAT timestamp`, and centered Kenya Basic Education Act statutory authority notice.
+- Tested: `npm run typecheck` passed (0 errors), `npm run lint` passed (0 errors, 0 warnings), `npm test` passed (15 test files, 74/74 tests passing), and high-resolution screenshot generated via Playwright/Chrome headless preview.
