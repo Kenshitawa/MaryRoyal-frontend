@@ -504,3 +504,17 @@ Total output lines: 287
 ## Production deployment verification — 2026-11-06
 - Built: pushed the release merge `ce1fb3b` to `main`; Vercel built and promoted it from the production branch with no force push (fast-forward from `fdcf596` after merging upstream `main`).
 - Verified: GitHub commit status for `ce1fb3b` is Vercel `success` ("Deployment has completed", deployment `GJvTg5ukUbSnQZbBuRBkjk2nmhGi`). Live `portal.maryroyalschool.co.ke` returns 200 for `/`, 200 `{"status":"ok"}` with `Cache-Control: no-store` from `/api/health`, and 401 for unauthenticated `/api/learners/[id]/admission-slip`, `/api/learners/[id]/report-card`, `/api/staff/[id]/dossier`; an initial edge-cached 404 on the two learner PDF routes cleared on revalidation and `X-Matched-Path` now resolves those routes. Production-readiness gates in `docs/ROADMAP.md` (live PostgreSQL verification, backup/restore drill, full E2E on production) remain open and this deployment is not claimed production-ready.
+
+## Executive Admission Form & Slip Redesign — 2026-11-09
+- Built: Redesigned both the Learner Admission Slip & Enrolment Certificate (`/api/learners/[id]/admission-slip`) and the Admission Dossier & Form (`/api/admissions/[id]/form`) into an executive, highly professional Kenyan school document:
+  - Official double-line certificate frame in Royal Blue with Kenyan Gold corner accents on each page.
+  - School Crest masthead with MOE / CBE accreditation, school contacts, motto, and Obunga Kisumu campus details.
+  - Executive document metadata card with status badge and issuance date.
+  - Student Hero Demographics Block featuring the learner's full legal name in 13pt bold deep navy, prominent admission number pill badge, a 4-cell quick-glance metadata grid, and a dedicated passport photograph frame (embedding uploaded photo or rendering an authentic registry placeholder).
+  - High-density, balanced two-column card grid layout replacing the previous single-column stretched rows.
+  - Structured sections for Academic Placement, Residential Address & Commute, Parents & Guardians (with Primary Contact/Sponsor badge), Emergency Contacts & Authorized Pickup Roster, Health & Medical Summary, Fee Handoff & Optional Services, Verified Document Checklist, and Record Audit.
+  - Formal Kenyan school admission undertaking and Data Protection Act 2019 consent status.
+  - Three executive signature and verification blocks: Parent/Legal Guardian, Admissions Secretary, and Head Teacher/Director featuring a detailed circular institutional school seal stamp graphic.
+  - Institutional document security and scannable QR verification panel.
+  - Clean continuation headers and running footers on every page with page-x-of-y, document reference, and Nairobi EAT timestamp.
+- Tested: `npm run typecheck` (0 errors), `npm run lint` (0 errors, 0 warnings), and `npm test` (15 test files, 74/74 unit tests passed).
