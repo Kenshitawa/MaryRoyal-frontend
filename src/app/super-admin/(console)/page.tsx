@@ -205,7 +205,7 @@ export default async function PlatformDashboardPage({
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[820px] border-collapse text-left">
+              <table className="w-full min-w-[900px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/70 text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">
                     <th scope="col" className="px-4 py-2.5 sm:px-5">School</th>
@@ -214,6 +214,7 @@ export default async function PlatformDashboardPage({
                     <th scope="col" className="px-3 py-2.5 text-right">Learners</th>
                     <th scope="col" className="px-3 py-2.5 text-right">Accounts</th>
                     <th scope="col" className="px-3 py-2.5">Status</th>
+                    <th scope="col" className="px-3 py-2.5">Settings</th>
                     <th scope="col" className="px-4 py-2.5 text-right sm:px-5">Added</th>
                   </tr>
                 </thead>
@@ -272,6 +273,14 @@ export default async function PlatformDashboardPage({
                           >
                             {school.status}
                           </span>
+                        </td>
+                        <td className="px-3 py-3">
+                          <Link
+                            href={`/super-admin/schools/${school.id}/payments`}
+                            className="text-xs font-semibold text-teal-800 hover:underline"
+                          >
+                            Payment settings
+                          </Link>
                         </td>
                         <td className="px-4 py-3 text-right text-[11px] text-slate-500 sm:px-5">
                           {formatDate(school.createdAt)}

@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client";
 export type Action = "view" | "create" | "update" | "delete" | "approve" | "review" | "release" | "submit" | "confirm" | "verify" | "apply";
-export type Resource = "dashboard" | "accounts" | "staff" | "staffAttendance" | "learners" | "admissions" | "learnerAccounts" | "attendance" | "assessments" | "discipline" | "finance" | "invoices" | "payments" | "payroll" | "feeStructures" | "audit" | "operations" | "guardians" | "exports" | "teachingLogs" | "assignments" | "learning" | "learningVideos" | "complaints" | "examSessions" | "rubrics" | "feeWaivers" | "textbooks" | "schemesOfWork" | "timetable" | "welfare" | "notifications";
+export type Resource = "dashboard" | "accounts" | "staff" | "staffAttendance" | "learners" | "admissions" | "learnerAccounts" | "attendance" | "assessments" | "discipline" | "finance" | "invoices" | "payments" | "paymentSettings" | "payroll" | "feeStructures" | "audit" | "operations" | "guardians" | "exports" | "teachingLogs" | "assignments" | "learning" | "learningVideos" | "complaints" | "examSessions" | "rubrics" | "feeWaivers" | "textbooks" | "schemesOfWork" | "timetable" | "welfare" | "notifications";
 export type DataScope = "school" | "assigned" | "linked" | "self" | "learner-identity" | "academic" | "operations" | "finance";
 const ALL_STAFF: Role[] = [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SECRETARY, Role.ACCOUNTANT, Role.TEACHER, Role.WELFARE_CHAIR, Role.NON_TEACHING_STAFF];
 const ALL: Role[] = [...ALL_STAFF, Role.PARENT, Role.LEARNER];
@@ -18,6 +18,7 @@ const matrix: Record<Resource, Partial<Record<Action, Role[]>>> = {
  finance: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.ACCOUNTANT, Role.PARENT] },
  invoices: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.ACCOUNTANT, Role.PARENT], create: [Role.ACCOUNTANT, Role.DIRECTOR] },
  payments: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.ACCOUNTANT, Role.PARENT], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.ACCOUNTANT], update: [Role.ACCOUNTANT, Role.DIRECTOR], approve: [Role.HEAD_TEACHER, Role.DIRECTOR] },
+ paymentSettings: { view: [Role.DIRECTOR, Role.ACCOUNTANT], update: [Role.DIRECTOR, Role.ACCOUNTANT] },
  payroll: { view: [Role.DIRECTOR, Role.HEAD_TEACHER], create: [Role.HEAD_TEACHER], update: [Role.HEAD_TEACHER], approve: [Role.DIRECTOR] },
  feeStructures: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.ACCOUNTANT], create: [Role.DIRECTOR, Role.HEAD_TEACHER], update: [Role.DIRECTOR, Role.HEAD_TEACHER] },
  audit: { view: [Role.DIRECTOR] },
@@ -52,6 +53,7 @@ const scopes: Record<Resource, Partial<Record<DataScope, Role[]>>> = {
  finance: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.ACCOUNTANT], linked: [Role.PARENT] },
  invoices: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.ACCOUNTANT], linked: [Role.PARENT] },
  payments: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.ACCOUNTANT], linked: [Role.PARENT] },
+ paymentSettings: { school: [Role.DIRECTOR, Role.ACCOUNTANT] },
  payroll: { school: [Role.DIRECTOR, Role.HEAD_TEACHER] },
  feeStructures: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.ACCOUNTANT] },
  audit: { school: [Role.DIRECTOR] },

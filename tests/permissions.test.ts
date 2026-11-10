@@ -5,7 +5,7 @@ import { youtubeVideoId } from "../src/lib/learning-videos";
 
 const resources = [
   "dashboard", "accounts", "staff", "staffAttendance", "learners", "admissions", "learnerAccounts",
-  "attendance", "assessments", "discipline", "finance", "invoices", "payments", "payroll", "feeStructures",
+  "attendance", "assessments", "discipline", "finance", "invoices", "payments", "paymentSettings", "payroll", "feeStructures",
   "audit", "operations", "guardians", "exports", "teachingLogs", "assignments", "learning", "learningVideos",
   "complaints", "examSessions", "rubrics", "feeWaivers", "textbooks", "schemesOfWork", "timetable", "welfare", "notifications"
 ] as const;
@@ -22,7 +22,7 @@ const grants: Record<Role, string[]> = {
     "admissions:view", "admissions:create", "admissions:update", "admissions:submit", "admissions:delete", "learnerAccounts:create",
     "attendance:view", "attendance:create", "attendance:update", "assessments:view", "assessments:approve", "assessments:release",
     "discipline:view", "discipline:create", "discipline:update", "finance:view", "invoices:view", "invoices:create",
-    "payments:view", "payments:create", "payments:update", "payments:approve", "payroll:view", "payroll:approve",
+    "payments:view", "payments:create", "payments:update", "payments:approve", "paymentSettings:view", "paymentSettings:update", "payroll:view", "payroll:approve",
     "feeStructures:view", "feeStructures:create", "feeStructures:update", "audit:view", "operations:view", "operations:create",
     "operations:update", "guardians:view", "guardians:create", "guardians:delete", "exports:view", "teachingLogs:view",
     "teachingLogs:approve", "learningVideos:view", "learningVideos:create", "learningVideos:update", "complaints:view",
@@ -65,7 +65,7 @@ const grants: Record<Role, string[]> = {
   ],
   [Role.ACCOUNTANT]: [
     "dashboard:view", "staff:view", "staffAttendance:view", "learners:view", "finance:view", "invoices:view",
-    "invoices:create", "payments:view", "payments:create", "payments:update", "feeStructures:view", "feeWaivers:view",
+    "invoices:create", "payments:view", "payments:create", "payments:update", "paymentSettings:view", "paymentSettings:update", "feeStructures:view", "feeWaivers:view",
     "feeWaivers:create", "welfare:view", "welfare:apply", "notifications:view", "notifications:update"
   ],
   [Role.TEACHER]: [
@@ -130,6 +130,28 @@ describe("permission matrix", () => {
     expect(canInScope(Role.SECRETARY, "learnerAccounts", "create", "school")).toBe(true);
     expect(can(Role.SECRETARY, "accounts", "create")).toBe(false);
     expect(can(Role.DIRECTOR, "accounts", "create")).toBe(true);
+  });
+
+  it("limits payment settings to Director and Accountant in school scope", () => {
+    for (const role of [Role.DIRECTOR, Role.ACCOUNTANT]) {
+      expect(can(role, "paymentSettings", "view")).toBe(true);
+      expect(can(role, "paymentSettings", "update")).toBe(true);
+      expect(canInScope(role, "paymentSettings", "view", "school")).toBe(true);
+      expect(canInScope(role, "paymentSettings", "update", "school")).toBe(true);
+    }
+    for (const role of [
+      Role.HEAD_TEACHER,
+      Role.DEPUTY,
+      Role.SECRETARY,
+      Role.TEACHER,
+      Role.WELFARE_CHAIR,
+      Role.NON_TEACHING_STAFF,
+      Role.PARENT,
+      Role.LEARNER,
+    ]) {
+      expect(can(role, "paymentSettings", "view"), role).toBe(false);
+      expect(can(role, "paymentSettings", "update"), role).toBe(false);
+    }
   });
 
   it("keeps Secretary read-only for payments while Accountant records and manages them", () => {

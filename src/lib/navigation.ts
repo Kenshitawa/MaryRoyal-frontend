@@ -55,6 +55,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Assessments", href: "/assessments", icon: BookOpen },
     { label: "Attendance", href: "/attendance", icon: CalendarCheck },
     { label: "Finance", href: "/finance", icon: Wallet },
+    { label: "Payment settings", href: "/settings/payments", icon: ShieldCheck },
     { label: "Welfare", href: "/welfare", icon: HeartHandshake },
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Timetable", href: "/timetable", icon: CalendarDays },
@@ -100,6 +101,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
   ACCOUNTANT: [
     { label: "Overview", href: "/dashboard", icon: GraduationCap },
     { label: "Finance", href: "/finance", icon: Wallet },
+    { label: "Payment settings", href: "/settings/payments", icon: ShieldCheck },
     { label: "Learners", href: "/learners", icon: Users },
   ],
   TEACHER: [
@@ -178,6 +180,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       {
         category: "Settings",
         items: [
+          { label: "Payment Settings", href: "/settings/payments", icon: ShieldCheck },
           { label: "Profile & Security", href: "/profile", icon: User },
           { label: "Security Audit", href: "/audit", icon: Eye },
           { label: "Privacy Notice", href: "/privacy", icon: ShieldCheck },
@@ -326,6 +329,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       {
         category: "Settings",
         items: [
+          { label: "Payment Settings", href: "/settings/payments", icon: ShieldCheck },
           { label: "Profile & Security", href: "/profile", icon: User },
           { label: "Privacy Notice", href: "/privacy", icon: ShieldCheck },
         ],
@@ -498,6 +502,7 @@ const detailSections: { prefix: string; roles?: string[]; label: string }[] = [
   { prefix: "/assessments/exams", label: "Exams", roles: ["DEPUTY"] },
   { prefix: "/assessments", label: "Academics" },
   { prefix: "/finance/structures", label: "Finance" },
+  { prefix: "/settings/payments", label: "Settings" },
   { prefix: "/finance", label: "Finance" },
   { prefix: "/receipts", label: "Finance" },
   { prefix: "/profile", label: "Settings" },

@@ -731,6 +731,7 @@ model AuditEvent {
   action    String
   entity    String
   entityId  String?
+  metadata  String?
   createdAt DateTime @default(now())
   @@index([createdAt])
   @@index([schoolId])

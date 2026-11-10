@@ -142,7 +142,20 @@ export async function getTenantConfig(slugOrId: string, forceRefresh = false): P
 
 export function invalidateTenantCache(slugOrId: string): void {
   const normalized = normaliseKey(slugOrId);
-  tenantCache.delete(`tenant:${normalized}`);
+  if (!normalized) return;
+
+  // The cache stores the same config under both the id and the slug. Drop every
+  // entry that points at this tenant so a payment-settings save cannot leave a
+  // stale branded/payment payload behind under the other key.
+  for (const [cacheKey, entry] of tenantCache) {
+    if (
+      cacheKey === `tenant:${normalized}` ||
+      normaliseKey(entry.data?.id ?? "") === normalized ||
+      normaliseKey(entry.data?.slug ?? "") === normalized
+    ) {
+      tenantCache.delete(cacheKey);
+    }
+  }
 }
 
 export function clearTenantCache(): void {
