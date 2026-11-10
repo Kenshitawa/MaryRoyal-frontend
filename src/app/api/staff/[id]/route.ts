@@ -58,7 +58,7 @@ async function actor() {
   if (!session) return null;
   const user = await db.user.findUnique({
     where: { id: session.id },
-    select: { id: true, name: true, role: true, suspended: true, forcePasswordChange: true },
+    select: { id: true, name: true, role: true, schoolId: true, suspended: true, forcePasswordChange: true },
   });
   return user && !user.suspended && !user.forcePasswordChange ? user : null;
 }
@@ -80,8 +80,8 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const staff = await db.user.findUnique({
-    where: { id },
+  const staff = await db.user.findFirst({
+    where: { id, schoolId: user.schoolId },
     select: {
       id: true,
       name: true,
@@ -174,8 +174,8 @@ export async function PATCH(
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
   const { id } = await params;
-  const staff = await db.user.findUnique({
-    where: { id },
+  const staff = await db.user.findFirst({
+    where: { id, schoolId: user.schoolId },
     include: { staffProfile: true },
   });
 
@@ -385,8 +385,8 @@ export async function PATCH(
         await tx.classTeacherAssignment.deleteMany({ where: { teacherId: id } });
         if (body.classTeacherGrade) {
           await tx.classTeacherAssignment.upsert({
-            where: { grade: body.classTeacherGrade },
-            create: { teacherId: id, grade: body.classTeacherGrade },
+            where: { schoolId_grade: { schoolId: user.schoolId, grade: body.classTeacherGrade } },
+            create: { schoolId: user.schoolId, teacherId: id, grade: body.classTeacherGrade },
             update: { teacherId: id },
           });
           changes.push({ field: "classTeacherGrade", oldVal: null, newVal: body.classTeacherGrade });
@@ -448,8 +448,8 @@ export async function DELETE(
     return NextResponse.json({ error: "You cannot delete your own account." }, { status: 400 });
   }
 
-  const staff = await db.user.findUnique({
-    where: { id },
+  const staff = await db.user.findFirst({
+    where: { id, schoolId: user.schoolId },
   });
   if (!staff) {
     return NextResponse.json({ error: "Staff member not found." }, { status: 404 });

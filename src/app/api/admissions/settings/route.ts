@@ -11,7 +11,7 @@ async function actor() {
   if (!session) return null;
   const user = await db.user.findUnique({
     where: { id: session.id },
-    select: { id: true, name: true, role: true, suspended: true, forcePasswordChange: true },
+    select: { id: true, name: true, role: true, schoolId: true, suspended: true, forcePasswordChange: true },
   });
   return user && !user.suspended && !user.forcePasswordChange ? user : null;
 }
@@ -25,7 +25,7 @@ export async function GET() {
   }
 
   const setting = await db.schoolSetting.findUnique({
-    where: { key: "draft_retention_days" },
+    where: { schoolId_key: { schoolId: user.schoolId, key: "draft_retention_days" } },
   });
 
   const days = setting ? parseInt(setting.value, 10) || 0 : 0;
@@ -68,8 +68,9 @@ export async function PATCH(request: Request) {
   const days = parsed.data.draftRetentionDays;
 
   await db.schoolSetting.upsert({
-    where: { key: "draft_retention_days" },
+    where: { schoolId_key: { schoolId: user.schoolId, key: "draft_retention_days" } },
     create: {
+      schoolId: user.schoolId,
       key: "draft_retention_days",
       value: String(days),
     },

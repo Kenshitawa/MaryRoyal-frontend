@@ -23,7 +23,7 @@ export default async function AdmissionsPage({
 
   const user = await db.user.findUnique({
     where: { id: session.id },
-    select: { id: true, role: true, suspended: true, forcePasswordChange: true },
+    select: { id: true, role: true, schoolId: true, suspended: true, forcePasswordChange: true },
   });
   if (!user || user.suspended) redirect("/");
   if (user.forcePasswordChange) redirect("/change-password");
@@ -66,7 +66,7 @@ export default async function AdmissionsPage({
   const canConfigureRetention = user.role === "DIRECTOR" || user.role === "HEAD_TEACHER";
 
   const retentionSetting = await db.schoolSetting.findUnique({
-    where: { key: "draft_retention_days" },
+    where: { schoolId_key: { schoolId: user.schoolId, key: "draft_retention_days" } },
   });
   const retentionDays = retentionSetting ? parseInt(retentionSetting.value, 10) || 0 : 0;
   const retentionNotice =

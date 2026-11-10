@@ -15,7 +15,7 @@ async function actor() {
   if (!session) return null;
   const user = await db.user.findUnique({
     where: { id: session.id },
-    select: { id: true, name: true, role: true, suspended: true, forcePasswordChange: true },
+    select: { id: true, name: true, role: true, schoolId: true, suspended: true, forcePasswordChange: true },
   });
   return user && !user.suspended && !user.forcePasswordChange ? user : null;
 }
@@ -188,7 +188,7 @@ export async function POST(request: Request) {
 
   // Check email uniqueness
   const existing = await db.user.findUnique({
-    where: { email: data.personal.email },
+    where: { schoolId_email: { schoolId: user.schoolId, email: data.personal.email } },
   });
   if (existing) {
     return NextResponse.json(
@@ -206,6 +206,7 @@ export async function POST(request: Request) {
       // Create user record
       const newUser = await tx.user.create({
         data: {
+          schoolId: user.schoolId,
           name: data.personal.name,
           email: data.personal.email,
           phone: data.personal.phone || null,
@@ -226,6 +227,7 @@ export async function POST(request: Request) {
       // Create staff profile
       const profile = await tx.staffProfile.create({
         data: {
+          schoolId: user.schoolId,
           userId: newUser.id,
           gender: data.personal.gender || null,
           dateOfBirth: data.personal.dateOfBirth ? new Date(data.personal.dateOfBirth) : null,
@@ -314,6 +316,7 @@ export async function POST(request: Request) {
               },
             },
             create: {
+              schoolId: user.schoolId,
               teacherId: newUser.id,
               grade: asgn.grade,
               subject: asgn.subject,
@@ -325,8 +328,9 @@ export async function POST(request: Request) {
 
       if (data.employment.role === Role.TEACHER && data.employment.classTeacherGrade) {
         await tx.classTeacherAssignment.upsert({
-          where: { grade: data.employment.classTeacherGrade },
+          where: { schoolId_grade: { schoolId: user.schoolId, grade: data.employment.classTeacherGrade } },
           create: {
+            schoolId: user.schoolId,
             teacherId: newUser.id,
             grade: data.employment.classTeacherGrade,
           },

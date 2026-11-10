@@ -4,6 +4,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { DEMO_SCHOOL_ID } from "../src/lib/tenant-constants";
 
 const cbcDefaults = [
   { code: "EE", label: "Exceeding Expectations", minScore: 80, maxScore: 100, descriptor: "Consistently exceeds the expected competency", sortOrder: 1 },
@@ -30,7 +31,7 @@ async function main() {
     const preserveDirector = demoOnly || process.argv.includes("--preserve-director");
     const director = preserveDirector
       ? await db.user.findFirst({ where: { role: "DIRECTOR" }, select: { id: true } })
-      : await db.user.findUnique({ where: { email: "director@maryroyal.ac.ke" }, select: { id: true } });
+      : await db.user.findUnique({ where: { schoolId_email: { schoolId: DEMO_SCHOOL_ID, email: "director@maryroyal.ac.ke" } }, select: { id: true } });
     if (preserveDirector && !director) throw new Error("The existing Director account is required for a credentials-preserving local reset.");
     const preservedUserIds = director ? [director.id] : [];
     if (demoOnly) {

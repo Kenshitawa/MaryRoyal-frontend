@@ -13,7 +13,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const token = (await cookies()).get("mary_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  const actor = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });
+  const actor = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, schoolId: true, suspended: true, forcePasswordChange: true } });
   if (!actor || actor.suspended || actor.forcePasswordChange) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   if (!canInScope(actor.role, "learnerAccounts", "create", "school")) {
     await db.auditEvent.create({ data: { actorId: actor.id, action: "ACCESS_DENIED", entity: "LearnerLogin" } });
@@ -34,7 +34,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   } else {
     const rawFirst = learner.name.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, "") || "learner";
     const candidate = `${rawFirst}@learners.maryroyal.ac.ke`;
-    const inUse = await db.user.findUnique({ where: { email: candidate } });
+    const inUse = await db.user.findUnique({ where: { schoolId_email: { schoolId: actor.schoolId, email: candidate } } });
     if (!inUse) {
       email = candidate;
     } else {
@@ -46,9 +46,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const passwordHash = await bcrypt.hash(temporaryPassword, 12);
   try {
     const account = await db.$transaction(async tx => {
-      const user = await tx.user.create({ data: { name: learner.name, email, passwordHash, role: "LEARNER", forcePasswordChange: true, suspended: learner.admissionStatus !== "APPROVED", suspensionReason: learner.admissionStatus !== "APPROVED" ? "ADMISSION_PENDING" : null } });
-      await tx.guardianLink.create({ data: { userId: user.id, learnerId: learner.id, relation: "Learner" } });
-      await tx.auditEvent.create({ data: { actorId: actor.id, action: "LEARNER_LOGIN_CREATED", entity: "Learner", entityId: learner.id } });
+      const user = await tx.user.create({ data: { schoolId: actor.schoolId, name: learner.name, email, passwordHash, role: "LEARNER", forcePasswordChange: true, suspended: learner.admissionStatus !== "APPROVED", suspensionReason: learner.admissionStatus !== "APPROVED" ? "ADMISSION_PENDING" : null } });
+      await tx.guardianLink.create({ data: { schoolId: actor.schoolId, userId: user.id, learnerId: learner.id, relation: "Learner" } });
+      await tx.auditEvent.create({ data: { schoolId: actor.schoolId, actorId: actor.id, action: "LEARNER_LOGIN_CREATED", entity: "Learner", entityId: learner.id } });
       return user;
     });
     return NextResponse.json({ account: { id: account.id, email: account.email, suspended: account.suspended }, temporaryPassword }, { status: 201 });

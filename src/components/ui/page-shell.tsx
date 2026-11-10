@@ -14,6 +14,7 @@ import { getRoleNavigation, getSectionForPath } from "@/lib/navigation";
 import { PortalHeader } from "@/components/ui/portal-header";
 import { PortalNav } from "@/components/ui/portal-nav";
 import { ToastProvider } from "@/components/ui/toast";
+import { useTenant } from "@/components/tenant-provider";
 
 type ShellUser = {
   id: string;
@@ -33,6 +34,7 @@ export function PageShell({
   hiddenLabels?: string[];
   children: React.ReactNode;
 }) {
+  const tenant = useTenant();
   const pathname = usePathname() ?? "/";
   const section = getSectionForPath(pathname, user.role);
   const nav = useMemo(
@@ -62,12 +64,12 @@ export function PageShell({
         Skip to main content
       </a>
       <div className="app-shell">
-        <aside className="app-sidebar" aria-label="Mary Royal School navigation">
+        <aside className="app-sidebar" aria-label={`${tenant.name} navigation`}>
           <Link href={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} className="mb-5 flex items-center gap-2.5 px-2">
-            <Image src="/mary-royal-logo.png" alt="" width={36} height={36} className="h-9 w-9 object-contain" />
+            <Image src={tenant.logoUrl || "/mary-royal-logo.png"} alt={`${tenant.name} crest`} width={36} height={36} className="h-9 w-9 object-contain" />
             <span className="min-w-0">
-              <span className="block truncate text-body font-semibold text-ink">Mary Royal School</span>
-              <span className="block text-caption text-ink-3">Obunga · Kisumu</span>
+              <span className="block truncate text-body font-semibold text-ink">{tenant.name}</span>
+              <span className="block text-caption text-ink-3">{tenant.physicalAddress ?? "Campus"}</span>
             </span>
           </Link>
           <nav aria-label="Desktop navigation" className="flex flex-col gap-0.5">
@@ -98,15 +100,15 @@ export function PageShell({
             </Link>
           </div>
           <div className="mt-auto rounded-xl bg-brand-soft p-3.5">
-            <p className="text-label font-semibold text-brand-ink">Hard work pays</p>
-            <p className="mt-0.5 text-caption text-brand-ink/80">Nurturing Excellence Through CBE</p>
+            <p className="text-label font-semibold text-brand-ink">{tenant.motto}</p>
+            <p className="mt-0.5 text-caption text-brand-ink/80">{tenant.slogan ?? "Nurturing Excellence Through CBE"}</p>
           </div>
         </aside>
 
         <div className="app-column">
           <header aria-label="School app bar" className="app-topbar">
             <p className="min-w-0 truncate text-label text-ink-3">
-              Mary Royal School <span className="px-1.5 text-ink-3">/</span>
+              {tenant.name} <span className="px-1.5 text-ink-3">/</span>
               <span className="font-semibold text-ink">{section}</span>
             </p>
             <div className="flex items-center gap-2">

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronRight, Search, Eye, LogOut } from "lucide-react";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 import { CommandPalette } from "@/components/design-system/command-palette";
+import { useTenant } from "@/components/tenant-provider";
 
 interface DashboardHeaderProps {
   user: {
@@ -19,18 +20,19 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ user, roleTitle }: DashboardHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const tenant = useTenant();
 
   return (
     <>
       <header className="sticky top-0 z-20 flex h-[72px] items-center justify-between border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90 sm:px-7 lg:px-10">
         {/* Mobile brand & Desktop Breadcrumb */}
         <div className="flex items-center gap-3 lg:hidden">
-          <Image src="/mary-royal-logo.png" alt="Mary Royal School" width={36} height={36} className="rounded-lg" />
-          <span className="font-extrabold tracking-tight text-slate-900 dark:text-white">Mary Royal</span>
+          <Image src={tenant.logoUrl || "/mary-royal-logo.png"} alt={tenant.name} width={36} height={36} className="rounded-lg object-contain" />
+          <span className="font-extrabold tracking-tight text-slate-900 dark:text-white truncate max-w-[140px]">{tenant.name}</span>
         </div>
 
         <div className="hidden items-center gap-2 text-xs text-slate-400 dark:text-slate-500 lg:flex">
-          <span className="font-semibold text-slate-600 dark:text-slate-400">Mary Royal School</span>
+          <span className="font-semibold text-slate-600 dark:text-slate-400">{tenant.name}</span>
           <ChevronRight size={14} />
           <span className="font-bold text-slate-800 dark:text-slate-200">{roleTitle} workspace</span>
         </div>

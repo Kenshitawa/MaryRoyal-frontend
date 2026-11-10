@@ -3,6 +3,7 @@ import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { makeSession, makeActivitySession } from "../src/lib/session";
 import { completedAdmissionSchema } from "../src/lib/admissions";
+import { DEMO_SCHOOL_ID } from "../src/lib/tenant-constants";
 
 const localTestDatabaseUrl = "file:./round3-e2e.test.db";
 const db = new PrismaClient();
@@ -36,7 +37,7 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
   const expires = Math.floor(Date.now() / 1000) + 60 * 60 * 8;
 
   for (const item of roles) {
-    const user = await db.user.findUnique({ where: { email: item.email } });
+    const user = await db.user.findUnique({ where: { schoolId_email: { schoolId: DEMO_SCHOOL_ID, email: item.email } } });
     if (!user) {
       console.warn(`User ${item.email} not found for storageState generation.`);
       continue;
@@ -76,10 +77,10 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
   }
 
   // Detail pages need real record ids so the mobile audit can cover every page.
-  const teacher = await db.user.findUnique({ where: { email: "teacher@maryroyal.ac.ke" }, select: { id: true } });
-  const parent = await db.user.findUnique({ where: { email: "parent@maryroyal.ac.ke" }, select: { id: true } });
-  const secretary = await db.user.findUnique({ where: { email: "secretary@maryroyal.ac.ke" }, select: { id: true } });
-  const learnerUser = await db.user.findUnique({ where: { email: "learner@maryroyal.ac.ke" }, select: { id: true } });
+  const teacher = await db.user.findUnique({ where: { schoolId_email: { schoolId: DEMO_SCHOOL_ID, email: "teacher@maryroyal.ac.ke" } }, select: { id: true } });
+  const parent = await db.user.findUnique({ where: { schoolId_email: { schoolId: DEMO_SCHOOL_ID, email: "parent@maryroyal.ac.ke" } }, select: { id: true } });
+  const secretary = await db.user.findUnique({ where: { schoolId_email: { schoolId: DEMO_SCHOOL_ID, email: "secretary@maryroyal.ac.ke" } }, select: { id: true } });
+  const learnerUser = await db.user.findUnique({ where: { schoolId_email: { schoolId: DEMO_SCHOOL_ID, email: "learner@maryroyal.ac.ke" } }, select: { id: true } });
   const selfLink = learnerUser
     ? await db.guardianLink.findFirst({ where: { userId: learnerUser.id, relation: "Learner" }, orderBy: { createdAt: "asc" } })
     : null;
@@ -105,12 +106,12 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
     pickupPersons: [], health: {}, fee: { term: "2026 Term 3", feePayerGuardian: "Synthetic Guardian", requestedOptionalItems: [] }, consent: true,
   }));
   const secretaryDraft = await db.admissionDraft.upsert({
-    where: { admissionNo: "E2E-MOBILE-DRAFT" }, update: {},
-    create: { admissionNo: "E2E-MOBILE-DRAFT", createdById: secretary.id, status: "DRAFT", currentStep: 1, payload: admissionPayload },
+    where: { schoolId_admissionNo: { schoolId: DEMO_SCHOOL_ID, admissionNo: "E2E-MOBILE-DRAFT" } }, update: {},
+    create: { schoolId: DEMO_SCHOOL_ID, admissionNo: "E2E-MOBILE-DRAFT", createdById: secretary.id, status: "DRAFT", currentStep: 1, payload: admissionPayload },
   });
   const reviewDraft = await db.admissionDraft.upsert({
-    where: { admissionNo: "E2E-MOBILE-SUBMITTED" }, update: {},
-    create: { admissionNo: "E2E-MOBILE-SUBMITTED", createdById: secretary.id, status: "SUBMITTED", currentStep: 7, payload: admissionPayload, submittedAt: new Date("2026-10-28T08:00:00Z") },
+    where: { schoolId_admissionNo: { schoolId: DEMO_SCHOOL_ID, admissionNo: "E2E-MOBILE-SUBMITTED" } }, update: {},
+    create: { schoolId: DEMO_SCHOOL_ID, admissionNo: "E2E-MOBILE-SUBMITTED", createdById: secretary.id, status: "SUBMITTED", currentStep: 7, payload: admissionPayload, submittedAt: new Date("2026-10-28T08:00:00Z") },
   });
   const staffUsers = await db.user.findMany({
     where: { email: { in: roles.filter(item => !["PARENT", "LEARNER"].includes(item.role)).map(item => item.email) } },

@@ -1,8 +1,11 @@
 import { db } from "@/lib/db";
 import { deleteStoredFile } from "@/lib/file-storage";
+import { DEMO_SCHOOL_ID } from "@/lib/tenant-constants";
 
 async function main() {
-  const dbSetting = await db.schoolSetting.findUnique({ where: { key: "draft_retention_days" } });
+  const dbSetting = await db.schoolSetting.findUnique({
+  where: { schoolId_key: { schoolId: DEMO_SCHOOL_ID, key: "draft_retention_days" } },
+});
   const configuredDays = dbSetting ? parseInt(dbSetting.value, 10) : null;
   const daysValue = Number(process.env.ADMISSION_DRAFT_RETENTION_DAYS ?? (configuredDays && configuredDays > 0 ? configuredDays : 365));
   if (!Number.isInteger(daysValue) || daysValue < 1 || daysValue > 3650) throw new Error("ADMISSION_DRAFT_RETENTION_DAYS must be an integer between 1 and 3650.");
