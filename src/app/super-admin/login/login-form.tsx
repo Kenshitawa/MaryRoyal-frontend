@@ -101,6 +101,7 @@ export default function PlatformLoginForm({ nextPath }: { nextPath: string }) {
       )}
 
       <button
+        type="submit"
         disabled={busy}
         className="group flex h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-teal-800 text-sm font-bold text-white shadow-lg shadow-teal-900/20 transition hover:-translate-y-0.5 hover:bg-teal-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-70"
       >
