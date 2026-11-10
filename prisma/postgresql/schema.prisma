@@ -18,17 +18,73 @@ enum Role {
   PARENT
   LEARNER
 }
+model School {
+  id              String               @id @default(cuid())
+  name            String
+  slug            String               @unique
+  motto           String               @default("Hard work pays")
+  slogan          String?              @default("Nurturing Excellence Through CBE")
+  logoUrl         String               @default("/mary-royal-logo.png")
+  primaryColour   String               @default("#1d4ed8")
+  secondaryColour String               @default("#102653")
+  accentColour    String               @default("#d97706")
+  contactEmail    String?
+  contactPhone    String?
+  poBox           String?
+  physicalAddress String?
+  status          String               @default("ACTIVE")
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  paymentConfig   SchoolPaymentConfig?
+  users           User[]
+  learners        Learner[]
+}
+
+model SchoolPaymentConfig {
+  id                            String   @id @default(cuid())
+  schoolId                      String   @unique
+  school                        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  paybillNumber                 String?
+  accountFormat                 String   @default("ADMISSION_NO")
+  tillNumber                    String?
+  bankName                      String?
+  bankBranch                    String?
+  bankAccountNumber             String?
+  bankAccountName               String?
+  darajaConsumerKeyEncrypted    String?
+  darajaConsumerSecretEncrypted String?
+  darajaPasskeyEncrypted        String?
+  darajaShortcode               String?
+  darajaEnvironment             String   @default("sandbox")
+  updatedAt                     DateTime @updatedAt
+}
+
+model SuperAdmin {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String
+  passwordHash     String
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean  @default(false)
+  failedLogins     Int      @default(0)
+  suspended        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
 model User {
   id                  String             @id @default(cuid())
+  schoolId            String             @default("school_demo_mary_royal")
+  school              School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   name                String
   avatarUrl           String?
   staffNumber         String?
   tscNumber           String?
   qualifications      String?
   employmentTitle     String?
-  email               String             @unique
-  phone               String?            @unique
-  governmentId        String?            @unique
+  email               String
+  phone               String?
+  governmentId        String?
   passwordHash        String
   role                Role
   forcePasswordChange Boolean            @default(true)
@@ -83,10 +139,14 @@ model User {
   staffDocumentsUploaded StaffDocument[] @relation("StaffDocUploader")
   staffHistoryAuthored StaffHistory[]   @relation("StaffHistoryActor")
   staffDraftsCreated  StaffDraft[]     @relation("StaffDraftCreator")
+  @@unique([schoolId, email])
+  @@index([schoolId])
 }
 model Learner {
   id          String       @id @default(cuid())
-  admissionNo String       @unique
+  schoolId            String       @default("school_demo_mary_royal")
+  school              School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  admissionNo         String
   name        String
   grade       String
   gender      String
@@ -105,9 +165,12 @@ model Learner {
   admissionDraft AdmissionDraft?
   learningVideoWatches LearningVideoWatch[]
   disciplineIncidents DisciplineIncident[]
+  @@unique([schoolId, admissionNo])
+  @@index([schoolId])
 }
 model LearnerProfile {
   id                    String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   learnerId             String   @unique
   learner               Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   dateOfBirth           DateTime?
@@ -146,9 +209,11 @@ model LearnerProfile {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
   @@index([county, subCounty])
+  @@index([schoolId])
 }
 model LearnerGuardian {
   id             String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   profileId      String
   profile        LearnerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   fullName       String
@@ -167,9 +232,11 @@ model LearnerGuardian {
   createdAt      DateTime @default(now())
   @@index([profileId, primaryContact])
   @@index([phone])
+  @@index([schoolId])
 }
 model LearnerEmergencyContact {
   id             String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   profileId      String
   profile        LearnerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   fullName       String
@@ -177,9 +244,11 @@ model LearnerEmergencyContact {
   phone          String
   createdAt      DateTime @default(now())
   @@index([profileId])
+  @@index([schoolId])
 }
 model LearnerPickupPerson {
   id             String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   profileId      String
   profile        LearnerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   fullName       String
@@ -187,10 +256,12 @@ model LearnerPickupPerson {
   phone          String
   createdAt      DateTime @default(now())
   @@index([profileId])
+  @@index([schoolId])
 }
 model AdmissionDraft {
   id           String   @id @default(cuid())
-  admissionNo  String   @unique
+  schoolId            String       @default("school_demo_mary_royal")
+  admissionNo  String
   createdById  String
   createdBy    User     @relation("AdmissionCreator", fields: [createdById], references: [id])
   learnerId    String?  @unique
@@ -205,9 +276,12 @@ model AdmissionDraft {
   updatedAt    DateTime @updatedAt
   @@index([createdById, status, updatedAt])
   @@index([status, updatedAt])
+  @@unique([schoolId, admissionNo])
+  @@index([schoolId])
 }
 model AdmissionDocument {
   id          String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   draftId     String
   draft       AdmissionDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
   category    String
@@ -219,27 +293,40 @@ model AdmissionDocument {
   uploadedBy  User     @relation("AdmissionUploader", fields: [uploadedById], references: [id])
   createdAt   DateTime @default(now())
   @@index([draftId, category])
+  @@index([schoolId])
 }
 model AdmissionCounter {
   id         String @id
+  schoolId            String       @default("school_demo_mary_royal")
   lastNumber Int    @default(0)
+  @@index([schoolId])
 }
 model SchoolSetting {
-  key       String   @id
+  id        String   @id @default(cuid())
+  schoolId  String   @default("school_demo_mary_royal")
+  key       String
   value     String
   updatedAt DateTime @updatedAt
+  @@unique([schoolId, key])
+  @@index([schoolId])
 }
 model CbcLevel {
-  code        String  @id
-  label       String
-  minScore    Float
-  maxScore    Float
-  descriptor  String
-  sortOrder   Int     @unique
-  active      Boolean @default(true)
+  id         String  @id @default(cuid())
+  schoolId   String  @default("school_demo_mary_royal")
+  code       String
+  label      String
+  minScore   Float
+  maxScore   Float
+  descriptor String
+  sortOrder  Int
+  active     Boolean @default(true)
+  @@unique([schoolId, code])
+  @@unique([schoolId, sortOrder])
+  @@index([schoolId])
 }
 model GuardianLink {
   id        String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   learnerId String
@@ -248,34 +335,43 @@ model GuardianLink {
   createdAt DateTime @default(now())
   @@unique([userId, learnerId])
   @@index([learnerId])
+  @@index([schoolId])
 }
 model Attendance {
   id        String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   learnerId String
   learner   Learner  @relation(fields: [learnerId], references: [id])
   date      DateTime
   status    String
   @@unique([learnerId, date])
   @@index([date])
+  @@index([schoolId])
 }
 model TeacherAssignment {
   id        String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   teacherId String
   teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   grade     String
   subject   String
   @@unique([teacherId, grade, subject])
   @@index([teacherId, grade])
+  @@index([schoolId])
 }
 model ClassTeacherAssignment {
   id        String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   teacherId String
   teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  grade     String   @unique
+  grade     String
   @@index([teacherId])
+  @@unique([schoolId, grade])
+  @@index([schoolId])
 }
 model TeachingLog {
   id            String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   teacherId     String
   teacher       User     @relation(fields: [teacherId], references: [id])
   grade         String
@@ -288,9 +384,11 @@ model TeachingLog {
   createdAt     DateTime @default(now())
   @@index([teacherId, createdAt])
   @@index([status, createdAt])
+  @@index([schoolId])
 }
 model Assignment {
   id           String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   title        String
   instructions String
   grade        String
@@ -307,9 +405,11 @@ model Assignment {
   submissions  AssignmentSubmission[]
   @@index([grade, subject, dueAt])
   @@index([teacherId, createdAt])
+  @@index([schoolId])
 }
 model AssignmentSubmission {
   id           String     @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   assignmentId String
   assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   learnerId    String
@@ -325,9 +425,11 @@ model AssignmentSubmission {
   @@unique([assignmentId, learnerId])
   @@index([learnerId, submittedAt])
   @@index([assignmentId, status])
+  @@index([schoolId])
 }
 model LearningResource {
   id          String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   title       String
   description String
   grade       String
@@ -339,9 +441,11 @@ model LearningResource {
   createdAt   DateTime @default(now())
   @@index([grade, subject, createdAt])
   @@index([teacherId, createdAt])
+  @@index([schoolId])
 }
 model LearningGameAttempt {
   id        String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   learnerId String
   learner   Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
   gameKey   String
@@ -350,9 +454,11 @@ model LearningGameAttempt {
   createdAt DateTime @default(now())
   @@index([learnerId, createdAt])
   @@index([learnerId, gameKey])
+  @@index([schoolId])
 }
 model Complaint {
   id          String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   subject     String
   category    String   @default("OTHER")
   message     String
@@ -372,9 +478,11 @@ model Complaint {
   replies     ComplaintReply[]
   @@index([openedById, createdAt])
   @@index([assignedToId, status])
+  @@index([schoolId])
 }
 model ComplaintReply {
   id          String    @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   complaintId String
   complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   authorId    String
@@ -382,9 +490,11 @@ model ComplaintReply {
   message     String
   createdAt   DateTime  @default(now())
   @@index([complaintId, createdAt])
+  @@index([schoolId])
 }
 model Assessment {
   id          String             @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   learnerId   String
   learner     Learner            @relation(fields: [learnerId], references: [id])
   enteredById String?
@@ -408,9 +518,11 @@ model Assessment {
   @@index([enteredById, term])
   @@index([status, term])
   @@unique([learnerId, subject, term])
+  @@index([schoolId])
 }
 model AssessmentHistory {
   id           String     @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   assessmentId String
   assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   actorId      String
@@ -421,9 +533,11 @@ model AssessmentHistory {
   createdAt    DateTime   @default(now())
   @@index([assessmentId, version])
   @@unique([assessmentId, version])
+  @@index([schoolId])
 }
 model FeeInvoice {
   id           String        @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   learnerId    String
   learner      Learner       @relation(fields: [learnerId], references: [id])
   term         String
@@ -441,19 +555,23 @@ model FeeInvoice {
   waivers      FeeWaiver[]
   @@unique([learnerId, term])
   @@index([term, status])
+  @@index([schoolId])
 }
 model InvoiceLine {
   id          String     @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   invoiceId   String
   invoice     FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   category    String
   description String
   amount      Int
   @@index([invoiceId])
+  @@index([schoolId])
 }
 
 model FeeStructure {
   id            String              @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   grade         String
   term          String
   version       Int
@@ -465,12 +583,14 @@ model FeeStructure {
   lines         FeeStructureLine[]
   invoices      FeeInvoice[]
 
-  @@unique([grade, term, version])
+  @@unique([schoolId, grade, term, version])
   @@index([grade, term, active])
+  @@index([schoolId])
 }
 
 model FeeStructureLine {
   id          String       @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   structureId String
   structure   FeeStructure @relation(fields: [structureId], references: [id], onDelete: Cascade)
   category    String
@@ -479,19 +599,23 @@ model FeeStructureLine {
   optional    Boolean      @default(false)
 
   @@index([structureId])
+  @@index([schoolId])
 }
 model ReceiptCounter {
   id         String @id
+  schoolId            String       @default("school_demo_mary_royal")
   lastNumber Int    @default(0)
+  @@index([schoolId])
 }
 model FeePayment {
   id             String              @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   invoiceId      String
   invoice        FeeInvoice          @relation(fields: [invoiceId], references: [id])
-  receiptNo      String              @unique
+  receiptNo      String
   amount         Int
   method         String
-  mpesaCode      String?             @unique
+  mpesaCode      String?
   reference      String?
   status         String              @default("RECORDED")
   confirmedById  String?
@@ -506,9 +630,12 @@ model FeePayment {
   credit         FeeCredit?
   @@index([invoiceId, status])
   @@index([createdAt])
+  @@unique([schoolId, receiptNo])
+  @@index([schoolId])
 }
 model FeeCredit {
   id              String     @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   learnerId       String
   learner         Learner    @relation(fields: [learnerId], references: [id])
   sourcePaymentId String     @unique
@@ -518,9 +645,11 @@ model FeeCredit {
   status          String     @default("AVAILABLE")
   createdAt       DateTime   @default(now())
   @@index([learnerId, status])
+  @@index([schoolId])
 }
 model FeePaymentHistory {
   id          String     @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   paymentId   String
   payment     FeePayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   actorId     String
@@ -533,9 +662,11 @@ model FeePaymentHistory {
   createdAt   DateTime   @default(now())
   @@unique([paymentId, version])
   @@index([paymentId, createdAt])
+  @@index([schoolId])
 }
 model FeeExpense {
   id           String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   category     String
   supplier     String?
   amount       Int
@@ -545,9 +676,11 @@ model FeeExpense {
   enteredBy    User     @relation("ExpenseRecorder", fields: [enteredById], references: [id])
   createdAt    DateTime @default(now())
   @@index([paidAt, category])
+  @@index([schoolId])
 }
 model PayrollEntry {
   id          String           @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   staffId     String
   staff       User             @relation("PayrollStaff", fields: [staffId], references: [id])
   period      String
@@ -565,9 +698,11 @@ model PayrollEntry {
   history     PayrollHistory[]
   @@unique([staffId, period])
   @@index([period, status])
+  @@index([schoolId])
 }
 model PayrollHistory {
   id          String       @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   payrollId   String
   payroll     PayrollEntry @relation(fields: [payrollId], references: [id], onDelete: Cascade)
   actorId     String
@@ -581,9 +716,11 @@ model PayrollHistory {
   createdAt   DateTime     @default(now())
   @@unique([payrollId, version])
   @@index([payrollId, createdAt])
+  @@index([schoolId])
 }
 model AuditEvent {
   id        String   @id @default(cuid())
+  schoolId            String?
   actorId   String?
   actor     User?    @relation(fields: [actorId], references: [id])
   action    String
@@ -591,13 +728,15 @@ model AuditEvent {
   entityId  String?
   createdAt DateTime @default(now())
   @@index([createdAt])
+  @@index([schoolId])
 }
 
 
 model LearningVideo {
   id        String                @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   title     String
-  videoId   String                @unique
+  videoId   String
   grade     String
   subject   String
   strand    String
@@ -610,10 +749,13 @@ model LearningVideo {
   watches   LearningVideoWatch[]
 
   @@index([grade, subject, strand, status])
+  @@unique([schoolId, videoId])
+  @@index([schoolId])
 }
 
 model LearningVideoWatch {
   id        String        @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   videoId   String
   video     LearningVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
   learnerId String
@@ -625,10 +767,12 @@ model LearningVideoWatch {
   @@unique([videoId, learnerId, userId])
   @@index([learnerId, watchedAt])
   @@index([userId, watchedAt])
+  @@index([schoolId])
 }
 
 model StaffAttendance {
   id          String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   staffId     String
   staff       User     @relation("StaffAttendanceUser", fields: [staffId], references: [id])
   date        DateTime
@@ -643,10 +787,12 @@ model StaffAttendance {
   @@unique([staffId, date])
   @@index([date, status])
   @@index([recordedById, date])
+  @@index([schoolId])
 }
 
 model DisciplineIncident {
   id            String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   learnerId     String
   learner       Learner  @relation(fields: [learnerId], references: [id])
   incidentAt    DateTime
@@ -664,10 +810,12 @@ model DisciplineIncident {
 
   @@index([learnerId, incidentAt])
   @@index([status, followUpAt])
+  @@index([schoolId])
 }
 
 model ExamSession {
   id                 String       @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   name               String       // e.g. "2026 Term 1 End-Term"
   term               String       // e.g. "2026 Term 1"
   status             String       @default("DRAFT") // DRAFT, ACTIVE, CLOSED, PUBLISHED
@@ -688,10 +836,12 @@ model ExamSession {
 
   @@index([term, status])
   @@index([createdById])
+  @@index([schoolId])
 }
 
 model CbcRubric {
   id            String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   version       Int      @default(1)
   code          String   // EE, ME, AE, BE, etc.
   label         String   // Exceeding Expectations
@@ -710,10 +860,12 @@ model CbcRubric {
 
   @@index([code, version])
   @@index([gradeBand, learningArea])
+  @@index([schoolId])
 }
 
 model FeeWaiver {
   id            String     @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   invoiceId     String
   invoice       FeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   amount        Int
@@ -730,10 +882,12 @@ model FeeWaiver {
 
   @@index([invoiceId, status])
   @@index([requestedById])
+  @@index([schoolId])
 }
 
 model Textbook {
   id              String          @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   title           String
   subject         String
   grade           String
@@ -748,10 +902,12 @@ model Textbook {
   issues          TextbookIssue[]
 
   @@index([grade, subject])
+  @@index([schoolId])
 }
 
 model TextbookIssue {
   id              String    @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   textbookId      String
   textbook        Textbook  @relation(fields: [textbookId], references: [id], onDelete: Cascade)
   teacherId       String
@@ -770,10 +926,12 @@ model TextbookIssue {
 
   @@index([teacherId, status])
   @@index([textbookId, status])
+  @@index([schoolId])
 }
 
 model SchemeOfWork {
   id                  String    @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   teacherId           String
   teacher             User      @relation("SchemeAuthor", fields: [teacherId], references: [id])
   grade               String
@@ -801,10 +959,12 @@ model SchemeOfWork {
   @@index([teacherId, term])
   @@index([grade, subject, term])
   @@index([status])
+  @@index([schoolId])
 }
 
 model SchoolTimetable {
   id              String    @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   title           String
   term            String
   year            Int       @default(2026)
@@ -819,10 +979,12 @@ model SchoolTimetable {
   updatedAt       DateTime  @updatedAt
 
   @@index([term, status])
+  @@index([schoolId])
 }
 
 model WelfareMember {
   id                  String                @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   userId              String                @unique
   user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   totalSavings        Int                   @default(0)
@@ -832,10 +994,12 @@ model WelfareMember {
   loans               WelfareLoan[]
 
   @@index([active])
+  @@index([schoolId])
 }
 
 model WelfareContribution {
   id              String         @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   memberId        String
   member          WelfareMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
   month           Int
@@ -851,10 +1015,12 @@ model WelfareContribution {
 
   @@index([memberId, year, month])
   @@index([category])
+  @@index([schoolId])
 }
 
 model WelfareProduct {
   id              String    @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   title           String
   description     String
   targetAmount    Int       @default(0)
@@ -864,10 +1030,12 @@ model WelfareProduct {
   createdBy       User      @relation("WelfareProductCreator", fields: [createdById], references: [id])
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  @@index([schoolId])
 }
 
 model WelfareLoan {
   id                    String         @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   memberId              String
   member                WelfareMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
   type                  String
@@ -887,10 +1055,12 @@ model WelfareLoan {
 
   @@index([memberId, status])
   @@index([status])
+  @@index([schoolId])
 }
 
 model Notification {
   id              String    @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   userId          String
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   title           String
@@ -906,10 +1076,12 @@ model Notification {
   @@index([userId, read])
   @@index([userId, read, readAt])
   @@index([userId, actionRequired])
+  @@index([schoolId])
 }
 
 model StaffProfile {
   id                         String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   userId                     String   @unique
   user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   gender                     String?
@@ -946,10 +1118,12 @@ model StaffProfile {
   documents                  StaffDocument[]
   editHistory                StaffHistory[]
   @@index([userId])
+  @@index([schoolId])
 }
 
 model StaffEmergencyContact {
   id             String       @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   staffProfileId String
   staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
   fullName       String
@@ -958,10 +1132,12 @@ model StaffEmergencyContact {
   isNextOfKin    Boolean      @default(false)
   createdAt      DateTime     @default(now())
   @@index([staffProfileId])
+  @@index([schoolId])
 }
 
 model StaffReferee {
   id             String       @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   staffProfileId String
   staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
   fullName       String
@@ -971,10 +1147,12 @@ model StaffReferee {
   email          String?
   createdAt      DateTime     @default(now())
   @@index([staffProfileId])
+  @@index([schoolId])
 }
 
 model StaffDocument {
   id             String       @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   staffProfileId String
   staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
   category       String       // ID_COPY, TSC_CARD, ACADEMIC_CERTIFICATE, CV, CONTRACT, PASSPORT_PHOTO
@@ -986,10 +1164,12 @@ model StaffDocument {
   uploadedBy     User         @relation("StaffDocUploader", fields: [uploadedById], references: [id])
   createdAt      DateTime     @default(now())
   @@index([staffProfileId, category])
+  @@index([schoolId])
 }
 
 model StaffHistory {
   id             String       @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   staffProfileId String
   staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
   actorId        String
@@ -999,10 +1179,12 @@ model StaffHistory {
   newValue       String?
   createdAt      DateTime     @default(now())
   @@index([staffProfileId, createdAt])
+  @@index([schoolId])
 }
 
 model StaffDraft {
   id          String   @id @default(cuid())
+  schoolId            String       @default("school_demo_mary_royal")
   createdById String
   createdBy   User     @relation("StaffDraftCreator", fields: [createdById], references: [id])
   payload     String   @default("{}")
@@ -1010,5 +1192,5 @@ model StaffDraft {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   @@index([createdById, updatedAt])
+  @@index([schoolId])
 }
-
