@@ -10,6 +10,7 @@ import { useTheme, type UITheme, type UIStyle } from "@/components/design-system
 import { getMobileNavigation, getSectionForPath } from "@/lib/navigation";
 import { IconButton } from "@/components/ui/actions";
 import { Sheet } from "@/components/ui/sheet";
+import { useTenant } from "@/components/tenant-provider";
 
 type HeaderUser = { id: string; name: string; email?: string | null; role: string; roleLabel: string; avatarUrl?: string | null };
 type PersonResult = { id: string; title: string; subtitle: string; href: string };
@@ -33,6 +34,7 @@ function readPeople(payload: unknown, kind: "learners" | "staff"): PersonResult[
 }
 
 export function PortalHeader({ user }: { user: HeaderUser }) {
+  const tenant = useTenant();
   const pathname = usePathname() ?? "/";
   const section = getSectionForPath(pathname, user.role);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -58,8 +60,8 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
             <ArrowLeft size={20} />
           </IconButton>
         ) : (
-          <Link href={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} aria-label="Mary Royal home" className="icon-btn">
-            <Image src="/mary-royal-logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
+          <Link href={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} aria-label={`${tenant.name} home`} className="icon-btn">
+            <Image src={tenant.logoUrl || "/mary-royal-logo.png"} alt="" width={28} height={28} className="h-7 w-7 object-contain" />
           </Link>
         )}
         <p className="min-w-0 flex-1 truncate text-body font-semibold text-ink">{section}</p>
@@ -85,6 +87,7 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
 
       <Sheet open={profileOpen} onClose={() => setProfileOpen(false)} title={user.name} description={`${user.roleLabel}${user.email ? ` · ${user.email}` : ""}`}>
         <ProfileSheetBody
+          schoolName={tenant.name}
           onNavigate={() => setProfileOpen(false)}
           confirmSignOut={confirmSignOut}
           onAskSignOut={() => setConfirmSignOut(true)}
@@ -108,11 +111,13 @@ function initials(name: string) {
 }
 
 export function ProfileSheetBody({
+  schoolName,
   onNavigate,
   confirmSignOut,
   onAskSignOut,
   onCancelSignOut,
 }: {
+  schoolName: string;
   onNavigate: () => void;
   confirmSignOut: boolean;
   onAskSignOut: () => void;
@@ -151,7 +156,7 @@ export function ProfileSheetBody({
       </div>
       {confirmSignOut ? (
         <div className="rounded-xl border border-danger-line bg-danger-soft p-3">
-          <p className="text-label font-semibold text-danger">Sign out of Mary Royal School?</p>
+          <p className="text-label font-semibold text-danger">Sign out of {schoolName}?</p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <button type="button" className="btn btn-secondary" onClick={onCancelSignOut}>
               Cancel

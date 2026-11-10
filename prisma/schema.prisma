@@ -32,6 +32,7 @@ model School {
   poBox           String?
   physicalAddress String?
   status          String               @default("ACTIVE")
+  provisioningKey String?              @unique
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
   paymentConfig   SchoolPaymentConfig?
@@ -82,11 +83,15 @@ model User {
   qualifications      String?
   employmentTitle     String?
   email               String
+  username            String?
   phone               String?
   governmentId        String?
   passwordHash        String
   role                Role
   forcePasswordChange Boolean            @default(true)
+  twoFactorSecretEncrypted String?
+  twoFactorEnabled    Boolean            @default(false)
+  sessionVersion      Int                @default(0)
   suspended           Boolean            @default(false)
   suspensionReason    String?
   failedLogins        Int                @default(0)
@@ -139,6 +144,7 @@ model User {
   staffHistoryAuthored StaffHistory[]   @relation("StaffHistoryActor")
   staffDraftsCreated  StaffDraft[]     @relation("StaffDraftCreator")
   @@unique([schoolId, email])
+  @@unique([schoolId, username])
   @@index([schoolId])
 }
 model Learner {
@@ -1192,4 +1198,36 @@ model StaffDraft {
   updatedAt   DateTime @updatedAt
   @@index([createdById, updatedAt])
   @@index([schoolId])
+}
+
+model ProvisioningJob {
+  id             String    @id @default(cuid())
+  idempotencyKey String    @unique
+  slug           String
+  status         String    @default("PENDING")
+  attempts       Int       @default(0)
+  schoolId       String?
+  requestJson    String
+  resultJson     String?
+  error          String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@index([slug])
+  @@index([status])
+}
+
+model PlatformAuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorEmail String?
+  action     String
+  entity     String
+  entityId   String?
+  metadata   String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  @@index([createdAt])
+  @@index([action])
 }

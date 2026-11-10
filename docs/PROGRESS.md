@@ -528,8 +528,12 @@ Total output lines: 287
 
 ## Phase 3 - Subdomain tenant resolution and tenant config loading - 2026-11-10
 - Built: strict Host-header-only tenant resolution (no query/cookie tenant switching), Edge-safe middleware moved to src/middleware.ts, signed school session carrying schoolId + schoolSlug, cross-subdomain session mismatch rejection, suspended/unknown tenant status page, safe CSS colour/logo sanitisation, 60s tenant config cache, platform console host routing, and removal of legacy mary_session auth cookies.
-- Tested: 
-pm run lint (0 warnings), 
-pm run typecheck (0 errors), 
-pm test (17 files, 91 tests), 
-pm run build compiles with middleware; manual HTTP checks: / 200, /dashboard redirects to /?reason=signin without a session, unknown subdomain renders the tenant-not-found page, demo login returns 200 and sets school_session.
+- Tested: `npm run lint` (0 warnings), `npm run typecheck` (0 errors), `npm test` (17 files, 91 tests), `npm run build` compiles with middleware; manual HTTP checks: `/` 200, `/dashboard` redirects to `/?reason=signin` without a session, unknown subdomain renders the tenant-not-found page, demo login returns 200 and sets `school_session`.
+
+## Phase 4/5 - Super Admin console and idempotent school provisioning - 2026-11-10
+- Built: Super Admin login/logout with hashed credentials, per-IP and per-email rate limits, failed-login lockout, platform audit events, and a `platform_session` cookie; guarded platform console on `superadmin.localhost` and bare localhost development. Added a paginated school list with search, live stats and recent platform activity; an Add School form for identity, branding, contact, first Director and logo; and a confirmation screen that shows the generated Director password once.
+- Built: `ProvisioningJob` and `School.provisioningKey` make provision requests idempotent and retryable, with a five-minute stale-lock reclaim. One transaction creates the school, blank payment config, CBC levels, admission and receipt counters, school profile/academic defaults and the first Director with a forced password change. Logos are validated and converted to WebP server-side, stored privately, and served from `/api/public/school-logo/<slug>`.
+- Built: Added versioned PostgreSQL `0008_platform_provisioning` and matching SQLite migration for the new platform/auth columns and tables. School login now accepts the optional username as an identifier. Portal header, password-change screen and generated-school chrome now read the tenant name/logo instead of hard-coded Mary Royal branding.
+- Tested: `npm run lint` 0 warnings; `npm run typecheck` 0 errors; `npm test` 20 files / 104 tests. Manual HTTP: platform login 200; school list 200 with two tenants; unauthenticated platform API 401 and console 307; provisioning returned 201 with one school; retry with the same key returned 200 and no duplicate; WebP logo returned 200 `image/webp`; generated Director login returned 200 with `forcePasswordChange: true`; password change and dashboard returned 200; the new tenant page rendered its own name.
+- Known: Phase 7 must still scope every dashboard/API query by `schoolId`; the generated-school dashboard currently includes school-wide counts and recent audit rows from other tenants. Demo Super Admin/Director credentials remain seed-only and must be replaced with environment-sourced bootstrap before production.
+- Next: Phase 6 payment settings with encrypted Daraja credentials, then Phase 7 systematic tenant scoping and route permission guards.

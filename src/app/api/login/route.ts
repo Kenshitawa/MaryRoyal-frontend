@@ -77,6 +77,7 @@ export async function POST(request: Request) {
       OR: [
         ...(isEmail ? [{ email: identifier }] : []),
         ...(phones.length ? [{ phone: { in: phones } }] : []),
+        { username: identifier },
         { staffNumber: identifier },
       ],
     },

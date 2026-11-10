@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, Lock, CheckCircle2, ShieldCheck, Loader2 } from "lucide-react";
 
-export default function ChangePasswordForm() {
+export default function ChangePasswordForm({ schoolName }: { schoolName: string }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -64,7 +64,7 @@ export default function ChangePasswordForm() {
         Set your permanent password
       </h1>
       <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-        Mary Royal School requires all accounts to set a private password at first sign-in.
+        {schoolName} requires all accounts to set a private password at first sign-in.
       </p>
 
       <div className="mt-6 space-y-4">
