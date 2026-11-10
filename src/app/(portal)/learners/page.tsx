@@ -6,7 +6,7 @@ import { canInScope } from "@/lib/permissions";
 import LearnerDirectory from "./directory";
 
 export default async function LearnersPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 

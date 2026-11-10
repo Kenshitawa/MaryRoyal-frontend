@@ -6,7 +6,7 @@ import { canInScope } from "@/lib/permissions";
 import { StaffWizard } from "./staff-wizard";
 
 export default async function AddStaffPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 

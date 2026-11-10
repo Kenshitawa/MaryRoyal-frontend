@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 const imageTypes = ["image/png", "image/jpeg", "image/webp"] as const;
 const photoSchema = z.object({ type: z.enum(imageTypes), size: z.number().int().positive().max(2 * 1024 * 1024) });
 async function currentUser() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, name: true, email: true, role: true, avatarUrl: true, suspended: true, forcePasswordChange: true } });

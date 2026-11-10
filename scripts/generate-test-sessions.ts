@@ -3,7 +3,7 @@ import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { makeSession, makeActivitySession } from "../src/lib/session";
 import { completedAdmissionSchema } from "../src/lib/admissions";
-import { DEMO_SCHOOL_ID } from "../src/lib/tenant-constants";
+import { DEMO_SCHOOL_ID, DEMO_SCHOOL_SLUG } from "../src/lib/tenant-constants";
 
 const localTestDatabaseUrl = "file:./round3-e2e.test.db";
 const db = new PrismaClient();
@@ -43,13 +43,13 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
       continue;
     }
 
-    const sessionToken = await makeSession(user);
+    const sessionToken = await makeSession({ ...user, schoolSlug: DEMO_SCHOOL_SLUG });
     const activityToken = await makeActivitySession(user.id);
 
     const storageState = {
       cookies: [
         {
-          name: "mary_session",
+          name: "school_session",
           value: sessionToken,
           domain,
           path: "/",
@@ -59,7 +59,7 @@ export async function generateStorageStates(outDir = path.resolve(process.cwd(),
           sameSite: "Lax",
         },
         {
-          name: "mary_activity",
+          name: "school_activity",
           value: activityToken,
           domain,
           path: "/",

@@ -5,10 +5,10 @@ import { readSession } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import TimetableClient from "./timetable-client";
 
-export const metadata = { title: "School Timetable — Mary Royal School" };
+export const metadata = { title: "School Timetable â€” Mary Royal School" };
 
 export default async function TimetablePage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
   const user = await db.user.findUnique({

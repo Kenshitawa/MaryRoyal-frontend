@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
-async function actor(){const token=(await cookies()).get("mary_session")?.value;const session=token?await readSession(token):null;if(!session)return null;const user=await db.user.findUnique({where:{id:session.id},select:{id:true,role:true,suspended:true,forcePasswordChange:true}});return user&&!user.suspended&&!user.forcePasswordChange?user:null;}
+async function actor(){const token=(await cookies()).get("school_session")?.value;const session=token?await readSession(token):null;if(!session)return null;const user=await db.user.findUnique({where:{id:session.id},select:{id:true,role:true,suspended:true,forcePasswordChange:true}});return user&&!user.suspended&&!user.forcePasswordChange?user:null;}
 const itemSchema=z.object({category:z.enum(["TUITION","TRANSPORT","LUNCH","BOARDING","UNIFORM","ACTIVITY","EXAM","OTHER"]),description:z.string().trim().min(2).max(120),amount:z.number().int().positive().max(10_000_000)});
 const invoiceSchema=z.object({learnerId:z.string().min(1),term:z.string().regex(/^\d{4} Term [123]$/),dueAt:z.string().datetime().optional(),items:z.array(itemSchema).min(1).max(12).optional(),structureLineIds:z.array(z.string().min(1)).max(20).optional()});
 export async function GET(){

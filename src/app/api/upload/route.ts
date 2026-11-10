@@ -7,7 +7,7 @@ import { writeStoredFile } from "@/lib/file-storage";
 import { MAX_MULTIPART_BODY_BYTES, MAX_UPLOAD_FILE_BYTES } from "@/lib/upload-limits";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({

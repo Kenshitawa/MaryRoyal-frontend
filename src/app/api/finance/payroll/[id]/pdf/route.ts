@@ -9,7 +9,7 @@ import { readSession } from "@/lib/session";
 import { generateQrMatrix } from "@/lib/qr";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({
@@ -118,7 +118,7 @@ export async function GET(
     color: royalBlue
   });
 
-  page.drawText("Obunga, Kisumu, Kenya · Motto: \"Hard work pays\" · Slogan: \"Nurturing Excellence Through CBE\"", {
+  page.drawText("Obunga, Kisumu, Kenya Â· Motto: \"Hard work pays\" Â· Slogan: \"Nurturing Excellence Through CBE\"", {
     x: textStartX,
     y: y - 36,
     size: 8.5,
@@ -126,7 +126,7 @@ export async function GET(
     color: slateGray
   });
 
-  page.drawText("Human Resources & Finance Department · P.O. Box Obunga, Kisumu", {
+  page.drawText("Human Resources & Finance Department Â· P.O. Box Obunga, Kisumu", {
     x: textStartX,
     y: y - 50,
     size: 8,
@@ -194,7 +194,7 @@ export async function GET(
   page.drawText(staff.tscNumber || "N/A", { x: midX + 85, y: y - 34, size: 8.5, font: fontRegular, color: darkNavy });
 
   page.drawText("Email / Phone:", { x: midX, y: y - 50, size: 8.5, font: fontBold, color: slateGray });
-  page.drawText(`${staff.email} ${staff.phone ? `· ${staff.phone}` : ""}`, { x: midX + 85, y: y - 50, size: 8.5, font: fontRegular, color: darkNavy });
+  page.drawText(`${staff.email} ${staff.phone ? `Â· ${staff.phone}` : ""}`, { x: midX + 85, y: y - 50, size: 8.5, font: fontRegular, color: darkNavy });
 
   page.drawText("Disbursement:", { x: midX, y: y - 66, size: 8.5, font: fontBold, color: slateGray });
   const statusColor = entry.status === "PAID" ? successGreen : rgb(0.8, 0.5, 0.0);
@@ -349,7 +349,7 @@ export async function GET(
 
   // Footer microprint
   page.drawText(
-    `Official Mary Royal School System Document · Generated on ${new Intl.DateTimeFormat("en-KE", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Nairobi" }).format(new Date())} · Obunga, Kisumu`,
+    `Official Mary Royal School System Document Â· Generated on ${new Intl.DateTimeFormat("en-KE", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Nairobi" }).format(new Date())} Â· Obunga, Kisumu`,
     {
       x: 40,
       y: 42,

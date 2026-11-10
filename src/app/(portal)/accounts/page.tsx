@@ -7,7 +7,7 @@ import AccountDirectory from "./account-directory";
 import GuardianLinks from "./guardian-links";
 
 export default async function AccountsPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 

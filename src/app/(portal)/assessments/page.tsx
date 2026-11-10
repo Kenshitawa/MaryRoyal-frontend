@@ -6,7 +6,7 @@ import { readSession } from "@/lib/session";
 import AssessmentWorkspace from "./workspace";
 
 export default async function AssessmentsPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 

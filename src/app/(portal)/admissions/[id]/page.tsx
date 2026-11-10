@@ -6,7 +6,7 @@ import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 
 export default async function AdmissionDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

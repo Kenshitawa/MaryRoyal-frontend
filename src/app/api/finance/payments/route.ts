@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
-async function actor(){const token=(await cookies()).get("mary_session")?.value;const session=token?await readSession(token):null;if(!session)return null;const user=await db.user.findUnique({where:{id:session.id},select:{id:true,role:true,suspended:true,forcePasswordChange:true}});return user&&!user.suspended&&!user.forcePasswordChange?user:null;}
+async function actor(){const token=(await cookies()).get("school_session")?.value;const session=token?await readSession(token):null;if(!session)return null;const user=await db.user.findUnique({where:{id:session.id},select:{id:true,role:true,suspended:true,forcePasswordChange:true}});return user&&!user.suspended&&!user.forcePasswordChange?user:null;}
 const schema=z.object({invoiceId:z.string().min(1),amount:z.number().int().positive().max(100_000_000),method:z.enum(["CASH","MPESA","BANK","CHEQUE"]),mpesaCode:z.string().trim().toUpperCase().min(8).max(20).regex(/^[A-Z0-9]+$/).optional(),reference:z.string().trim().max(80).optional()}).refine(x=>x.method!=="MPESA"||Boolean(x.mpesaCode),{message:"M-Pesa code is required."});
 function yearEAT(){return new Intl.DateTimeFormat("en-CA",{year:"numeric",timeZone:"Africa/Nairobi"}).format(new Date());}
 export async function POST(request:Request){

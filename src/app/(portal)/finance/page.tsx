@@ -10,7 +10,7 @@ import { Layers } from "lucide-react";
 import { PageHeader } from "@/components/ui/primitives";
 
 export default async function FinancePage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 

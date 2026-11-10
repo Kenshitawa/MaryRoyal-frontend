@@ -1,6 +1,29 @@
 import { db } from "./db";
+import { safeHexColour, safeLogoUrl } from "./tenant-host";
+import type { TenantConfig } from "./tenant-types";
 
-export interface TenantConfig {
+export type { TenantConfig, TenantPaymentConfig } from "./tenant-types";
+export { PLATFORM_TENANT, DEMO_FALLBACK_TENANT } from "./tenant-types";
+
+interface CacheEntry {
+  data: TenantConfig | null;
+  expiresAt: number;
+}
+
+const tenantCache = new Map<string, CacheEntry>();
+const DEFAULT_TTL_MS = 60_000;
+
+function cacheTtl(): number {
+  const configured = Number(process.env.TENANT_CACHE_TTL_MS);
+  if (!Number.isFinite(configured) || configured < 1_000) return DEFAULT_TTL_MS;
+  return Math.min(configured, 5 * 60_000);
+}
+
+function normaliseKey(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function toTenantConfig(school: {
   id: string;
   name: string;
   slug: string;
@@ -14,8 +37,8 @@ export interface TenantConfig {
   contactPhone: string | null;
   poBox: string | null;
   physicalAddress: string | null;
-  status: "ACTIVE" | "SUSPENDED" | string;
-  paymentConfig?: {
+  status: string;
+  paymentConfig: {
     paybillNumber: string | null;
     accountFormat: string;
     tillNumber: string | null;
@@ -25,84 +48,64 @@ export interface TenantConfig {
     bankAccountName: string | null;
     darajaShortcode: string | null;
     darajaEnvironment: string;
+    darajaConsumerKeyEncrypted: string | null;
+    darajaConsumerSecretEncrypted: string | null;
+    darajaPasskeyEncrypted: string | null;
   } | null;
-}
-
-// In-memory cache with short TTL (60 seconds) for fast edge/server performance
-interface CacheEntry {
-  data: TenantConfig | null;
-  expiresAt: number;
-}
-const tenantCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 60_000;
-
-/**
- * Parses the incoming Host header to extract the subdomain/tenant slug or super-admin indicator.
- */
-export function resolveHostTenant(hostHeader: string | null | undefined): {
-  isSuperAdmin: boolean;
-  slug: string;
-} {
-  if (!hostHeader) {
-    return { isSuperAdmin: false, slug: "maryroyal" };
-  }
-
-  // Remove port if present (e.g. "school.localhost:3000" -> "school.localhost")
-  const hostname = hostHeader.split(":")[0].toLowerCase().trim();
-
-  // Check if it's the dedicated Super Admin host
-  if (
-    hostname.startsWith("superadmin.") ||
-    hostname.startsWith("admin.") ||
-    hostname === "superadmin"
-  ) {
-    return { isSuperAdmin: true, slug: "" };
-  }
-
-  // Handle localhost subdomains: e.g. "maryroyal.localhost", "stjude.localhost"
-  if (hostname.endsWith(".localhost")) {
-    const parts = hostname.split(".");
-    if (parts.length >= 2 && parts[0] !== "www") {
-      const slug = parts[0] === "demo" ? "maryroyal" : parts[0];
-      return { isSuperAdmin: false, slug };
-    }
-  }
-
-  // Handle domain subdomains: e.g. "maryroyal.schoolcore.co.ke", "stjude.yourdomain.com"
-  const parts = hostname.split(".");
-  // If e.g. ["maryroyal", "domain", "co", "ke"] or ["stjude", "domain", "com"]
-  if (parts.length > 2 && parts[0] !== "www") {
-    const slug = parts[0] === "demo" ? "maryroyal" : parts[0];
-    return { isSuperAdmin: false, slug };
-  }
-
-  // Default fallback for root/local dev without subdomain
-  return { isSuperAdmin: false, slug: "maryroyal" };
+}): TenantConfig {
+  return {
+    id: school.id,
+    name: school.name,
+    slug: school.slug,
+    motto: school.motto,
+    slogan: school.slogan,
+    logoUrl: safeLogoUrl(school.logoUrl),
+    primaryColour: safeHexColour(school.primaryColour, "#1d4ed8"),
+    secondaryColour: safeHexColour(school.secondaryColour, "#102653"),
+    accentColour: safeHexColour(school.accentColour, "#d97706"),
+    contactEmail: school.contactEmail,
+    contactPhone: school.contactPhone,
+    poBox: school.poBox,
+    physicalAddress: school.physicalAddress,
+    status: school.status,
+    paymentConfig: school.paymentConfig
+      ? {
+          paybillNumber: school.paymentConfig.paybillNumber,
+          accountFormat: school.paymentConfig.accountFormat,
+          tillNumber: school.paymentConfig.tillNumber,
+          bankName: school.paymentConfig.bankName,
+          bankBranch: school.paymentConfig.bankBranch,
+          bankAccountNumber: school.paymentConfig.bankAccountNumber,
+          bankAccountName: school.paymentConfig.bankAccountName,
+          darajaShortcode: school.paymentConfig.darajaShortcode,
+          darajaEnvironment: school.paymentConfig.darajaEnvironment,
+          darajaConfigured: Boolean(
+            school.paymentConfig.darajaConsumerKeyEncrypted &&
+              school.paymentConfig.darajaConsumerSecretEncrypted &&
+              school.paymentConfig.darajaPasskeyEncrypted,
+          ),
+        }
+      : null,
+  };
 }
 
 /**
- * Loads tenant configuration by slug or id, utilizing an in-memory cache with short TTL.
+ * Load tenant configuration by slug or id, using a short-lived per-instance
+ * cache. Payment secrets are deliberately never selected.
  */
-export async function getTenantConfig(
-  slugOrId: string,
-  forceRefresh = false
-): Promise<TenantConfig | null> {
-  const normalized = slugOrId.toLowerCase().trim();
+export async function getTenantConfig(slugOrId: string, forceRefresh = false): Promise<TenantConfig | null> {
+  const normalized = normaliseKey(slugOrId);
+  if (!normalized) return null;
+
   const cacheKey = `tenant:${normalized}`;
   const now = Date.now();
-
   if (!forceRefresh) {
     const cached = tenantCache.get(cacheKey);
-    if (cached && cached.expiresAt > now) {
-      return cached.data;
-    }
+    if (cached && cached.expiresAt > now) return cached.data;
   }
 
-  // Query database
   const school = await db.school.findFirst({
-    where: {
-      OR: [{ slug: normalized }, { id: normalized }],
-    },
+    where: { OR: [{ slug: normalized }, { id: normalized }] },
     include: {
       paymentConfig: {
         select: {
@@ -115,51 +118,33 @@ export async function getTenantConfig(
           bankAccountName: true,
           darajaShortcode: true,
           darajaEnvironment: true,
+          darajaConsumerKeyEncrypted: true,
+          darajaConsumerSecretEncrypted: true,
+          darajaPasskeyEncrypted: true,
         },
       },
     },
   });
 
   if (!school) {
-    // Cache negative lookup briefly (10 seconds) to mitigate repeat 404 queries
     tenantCache.set(cacheKey, { data: null, expiresAt: now + 10_000 });
     return null;
   }
 
-  const config: TenantConfig = {
-    id: school.id,
-    name: school.name,
-    slug: school.slug,
-    motto: school.motto,
-    slogan: school.slogan,
-    logoUrl: school.logoUrl,
-    primaryColour: school.primaryColour,
-    secondaryColour: school.secondaryColour,
-    accentColour: school.accentColour,
-    contactEmail: school.contactEmail,
-    contactPhone: school.contactPhone,
-    poBox: school.poBox,
-    physicalAddress: school.physicalAddress,
-    status: school.status,
-    paymentConfig: school.paymentConfig,
-  };
-
-  tenantCache.set(cacheKey, { data: config, expiresAt: now + CACHE_TTL_MS });
-  // Also index by ID if queried by slug
-  if (school.slug !== school.id) {
-    tenantCache.set(`tenant:${school.id.toLowerCase()}`, {
-      data: config,
-      expiresAt: now + CACHE_TTL_MS,
-    });
-  }
+  const config = toTenantConfig(school);
+  const ttl = cacheTtl();
+  tenantCache.set(cacheKey, { data: config, expiresAt: now + ttl });
+  tenantCache.set(`tenant:${normaliseKey(school.id)}`, { data: config, expiresAt: now + ttl });
+  tenantCache.set(`tenant:${normaliseKey(school.slug)}`, { data: config, expiresAt: now + ttl });
 
   return config;
 }
 
-/**
- * Invalidate cached tenant configuration (e.g. after updating school settings).
- */
-export function invalidateTenantCache(slugOrId: string) {
-  const normalized = slugOrId.toLowerCase().trim();
+export function invalidateTenantCache(slugOrId: string): void {
+  const normalized = normaliseKey(slugOrId);
   tenantCache.delete(`tenant:${normalized}`);
+}
+
+export function clearTenantCache(): void {
+  tenantCache.clear();
 }

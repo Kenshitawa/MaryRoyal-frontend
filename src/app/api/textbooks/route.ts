@@ -7,7 +7,7 @@ import { can } from "@/lib/permissions";
 import { createNotification } from "@/lib/notify";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true, name: true } });

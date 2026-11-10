@@ -7,7 +7,7 @@ import { loadCurriculumCatalog } from "@/lib/curriculum-catalog";
 import AssignmentsClient from "./assignments-client";
 
 export default async function AssignmentsPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

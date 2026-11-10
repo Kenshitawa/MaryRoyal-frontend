@@ -59,7 +59,7 @@ type MetricItem = {
 };
 
 export default async function Dashboard() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
   const user = await db.user.findUnique({ where: { id: session.id } });
@@ -199,7 +199,7 @@ export default async function Dashboard() {
       { label: "Released Results", value: String(released), note: "Ready for families", iconName: "book", tone: "amber" },
       { label: "Fees Collected", value: kesShort(collected), note: `${collectionPercent}% of invoiced fees`, iconName: "wallet", tone: "emerald" },
       { label: "Fee Balances", value: kesShort(balance), note: "Outstanding across all terms", iconName: "clock", tone: "amber" },
-      { label: "Payroll This Month", value: kesShort(payrollSummary.total), note: `${payrollSummary.staffCount} staff · ${period}`, iconName: "dollar", tone: "blue" },
+      { label: "Payroll This Month", value: kesShort(payrollSummary.total), note: `${payrollSummary.staffCount} staff Â· ${period}`, iconName: "dollar", tone: "blue" },
       { label: "Payroll Pending", value: kesShort(payrollSummary.pending), note: "Net pay awaiting payment", iconName: "clipboard", tone: "rose" },
     ];
   } else if (role === "HEAD_TEACHER") {
@@ -473,7 +473,7 @@ export default async function Dashboard() {
         help={roleCopy[role] ?? "Welcome to your Mary Royal School portal."}
         meta={
           <>
-            {dateLabel} · {roleTitles[role] ?? role}
+            {dateLabel} Â· {roleTitles[role] ?? role}
           </>
         }
       />
@@ -497,7 +497,7 @@ export default async function Dashboard() {
         <div className="grid gap-3 xl:grid-cols-[1.35fr_.85fr]">
           <Card
             title="Fee collection by class"
-            description={`Collected ${kes(feeRows.reduce((sum, row) => sum + row.collected, 0))} · Outstanding ${kes(feeRows.reduce((sum, row) => sum + row.balance, 0))}`}
+            description={`Collected ${kes(feeRows.reduce((sum, row) => sum + row.collected, 0))} Â· Outstanding ${kes(feeRows.reduce((sum, row) => sum + row.balance, 0))}`}
             action={<Link href="/finance" className="btn btn-secondary btn-sm">Finance</Link>}
           >
             {feeRows.length ? (
@@ -508,7 +508,7 @@ export default async function Dashboard() {
                     <li key={row.grade} className="min-w-0">
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="truncate text-body font-semibold text-ink">{row.grade}</span>
-                        <span className="shrink-0 text-caption tabular-nums text-ink-3">{percent}% · {kes(row.balance)} due</span>
+                        <span className="shrink-0 text-caption tabular-nums text-ink-3">{percent}% Â· {kes(row.balance)} due</span>
                       </div>
                       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-label={`${row.grade} fees collected`} aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
                         <div className="h-full rounded-full bg-brand" style={{ width: `${percent}%` }} />
@@ -522,7 +522,7 @@ export default async function Dashboard() {
             )}
           </Card>
 
-          <Card title="Staff payroll" description={`${payrollSummary.period || "Current month"} · ${payrollSummary.staffCount} staff on this pay run`}>
+          <Card title="Staff payroll" description={`${payrollSummary.period || "Current month"} Â· ${payrollSummary.staffCount} staff on this pay run`}>
             <p className="text-caption text-ink-3">Net payroll this month</p>
             <p className="mt-1 text-kpi tabular-nums text-ink">{kes(payrollSummary.total)}</p>
             <dl className="mt-3 grid grid-cols-2 gap-3 border-t border-line-soft pt-3">
@@ -550,7 +550,7 @@ export default async function Dashboard() {
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-label font-semibold text-brand-ink">{lesson.period}</span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-body font-semibold text-ink">{lesson.subject}</p>
-                      <p className="text-caption text-ink-3">{lesson.grade}{lesson.room ? ` · ${lesson.room}` : ""}</p>
+                      <p className="text-caption text-ink-3">{lesson.grade}{lesson.room ? ` Â· ${lesson.room}` : ""}</p>
                     </div>
                     <span className="shrink-0 text-caption tabular-nums text-ink-3">{lesson.time}</span>
                   </li>
@@ -564,7 +564,7 @@ export default async function Dashboard() {
             {assignments.length ? (
               <ul className="flex flex-wrap gap-1.5">
                 {assignments.map((item) => (
-                  <li key={`${item.grade}-${item.subject}`} className="pill pill-blue">{item.grade} · {item.subject}</li>
+                  <li key={`${item.grade}-${item.subject}`} className="pill pill-blue">{item.grade} Â· {item.subject}</li>
                 ))}
               </ul>
             ) : (
@@ -603,7 +603,7 @@ export default async function Dashboard() {
                 <span className="block truncate text-body font-semibold text-ink">{action.label}</span>
                 <span className="block truncate text-caption text-ink-3">{action.note}</span>
               </span>
-              <span aria-hidden="true" className="text-ink-3">›</span>
+              <span aria-hidden="true" className="text-ink-3">â€º</span>
             </Link>
           ))}
         </div>

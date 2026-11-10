@@ -1,14 +1,29 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { makeActivitySession, makeSession } from "@/lib/session";
-import { getTenantConfig, resolveHostTenant } from "@/lib/tenant";
+import { getTenantConfig } from "@/lib/tenant";
 
-const schema = z.object({
-  email: z.string().trim().email().max(254),
-  password: z.string().min(1).max(200),
-});
+const DETACHED_HASH = "$2b$12$joG/OZPiW1YdGzMRBDHxMuFoihGNphKdzoabNjGK6TRR83dd0NhWa";
+
+const schema = z
+  .object({
+    email: z.string().trim().max(254).optional(),
+    identifier: z.string().trim().max(254).optional(),
+    password: z.string().min(1).max(200),
+  })
+  .strict()
+  .refine((value) => Boolean(value.identifier || value.email), "An email, username or phone number is required.");
+
+function phoneVariants(value: string): string[] {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length < 9) return [];
+  const local = digits.startsWith("254") ? `0${digits.slice(3)}` : digits.startsWith("0") ? digits : `0${digits.slice(-9)}`;
+  const international = `+254${local.slice(1)}`;
+  return [...new Set([digits, local, international, `254${local.slice(1)}`, local.slice(1)])];
+}
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
@@ -16,8 +31,7 @@ export async function POST(request: Request) {
   const bucket =
     (globalThis as typeof globalThis & { loginBuckets?: Map<string, { count: number; start: number }> }).loginBuckets ??
     new Map();
-  (globalThis as typeof globalThis & { loginBuckets?: Map<string, { count: number; start: number }> }).loginBuckets =
-    bucket;
+  (globalThis as typeof globalThis & { loginBuckets?: Map<string, { count: number; start: number }> }).loginBuckets = bucket;
 
   const state = bucket.get(ip);
   if (state && now - state.start < 60_000 && state.count >= 12) {
@@ -33,36 +47,44 @@ export async function POST(request: Request) {
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Enter a valid email and password." }, { status: 400 });
+    return NextResponse.json({ error: "Enter a valid email, username or phone number and password." }, { status: 400 });
   }
 
-  // Resolve tenant school
-  const host = request.headers.get("host");
-  const { slug } = resolveHostTenant(host);
-  const schoolSlug = request.headers.get("x-school-slug") || slug || "maryroyal";
-  const school = await getTenantConfig(schoolSlug);
-
-  if (!school) {
+  const reqHeaders = await headers();
+  const schoolSlug = reqHeaders.get("x-school-slug");
+  if (!schoolSlug) {
     return NextResponse.json({ error: "School portal not found." }, { status: 404 });
   }
 
+  const school = await getTenantConfig(schoolSlug);
+  if (!school) {
+    return NextResponse.json({ error: "School portal not found." }, { status: 404 });
+  }
   if (school.status === "SUSPENDED") {
     return NextResponse.json(
       { error: "This school portal has been suspended. Please contact platform administration." },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
-  const user = await db.user.findUnique({
+  const identifier = (parsed.data.identifier ?? parsed.data.email ?? "").trim().toLowerCase();
+  const isEmail = identifier.includes("@");
+  const phones = phoneVariants(identifier);
+
+  const user = await db.user.findFirst({
     where: {
-      schoolId_email: {
-        schoolId: school.id,
-        email: parsed.data.email.toLowerCase(),
-      },
+      schoolId: school.id,
+      OR: [
+        ...(isEmail ? [{ email: identifier }] : []),
+        ...(phones.length ? [{ phone: { in: phones } }] : []),
+        { staffNumber: identifier },
+      ],
     },
   });
 
-  const passwordOk = user ? await bcrypt.compare(parsed.data.password, user.passwordHash) : false;
+  const passwordOk = user
+    ? await bcrypt.compare(parsed.data.password, user.passwordHash)
+    : (await bcrypt.compare(parsed.data.password, DETACHED_HASH), false);
 
   if (!user || user.suspended || user.failedLogins >= 8 || !passwordOk) {
     bucket.set(ip, { count: (state?.count ?? 0) + 1, start: state?.start ?? now });
@@ -82,12 +104,12 @@ export async function POST(request: Request) {
     if (user && (user.suspended || user.failedLogins >= 8)) {
       return NextResponse.json(
         { error: "This account has been locked. Please contact the school administrator." },
-        { status: 401 }
+        { status: 401 },
       );
     }
     return NextResponse.json(
-      { error: "Wrong password or email address. Please check your details and try again." },
-      { status: 401 }
+      { error: "Wrong password or account. Please check your details and try again." },
+      { status: 401 },
     );
   }
 
@@ -108,6 +130,7 @@ export async function POST(request: Request) {
   const sessionToken = await makeSession({
     id: user.id,
     schoolId: school.id,
+    schoolSlug: school.slug,
     role: user.role,
     forcePasswordChange: user.forcePasswordChange,
   });
@@ -121,22 +144,6 @@ export async function POST(request: Request) {
     maxAge: 60 * 60 * 8,
   });
   response.cookies.set("school_activity", activityToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 600,
-  });
-
-  // Keep mary_session cookie aligned for backwards compatibility
-  response.cookies.set("mary_session", sessionToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-  });
-  response.cookies.set("mary_activity", activityToken, {
     httpOnly: true,
     secure: isProduction,
     sameSite: "lax",

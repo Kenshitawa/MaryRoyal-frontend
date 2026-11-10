@@ -10,7 +10,7 @@ export default async function AuditPage({
 }: {
   searchParams: Promise<{ action?: string; entity?: string }>;
 }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 
@@ -135,7 +135,7 @@ export default async function AuditPage({
               href="/audit"
               className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-600 transition hover:bg-rose-50 dark:border-slate-700 dark:bg-slate-800"
             >
-              Clear Filters ✕
+              Clear Filters âœ•
             </a>
           )}
         </div>
@@ -167,7 +167,7 @@ export default async function AuditPage({
 
                   <p className="truncate font-semibold text-slate-800 dark:text-slate-200">
                     {event.actor
-                      ? `${event.actor.name} · ${event.actor.role.replaceAll("_", " ")}`
+                      ? `${event.actor.name} Â· ${event.actor.role.replaceAll("_", " ")}`
                       : "System"}
                   </p>
 
@@ -186,7 +186,7 @@ export default async function AuditPage({
 
                   <p className="text-slate-600 dark:text-slate-300">{event.entity}</p>
 
-                  <p className="truncate font-mono text-[10px] text-slate-400">{event.entityId ?? "—"}</p>
+                  <p className="truncate font-mono text-[10px] text-slate-400">{event.entityId ?? "â€”"}</p>
                 </div>
               ))
             ) : (

@@ -92,7 +92,7 @@ function displayDateTime(val: Date | null | undefined) {
 const value = (input: unknown) => (input === null || input === undefined ? "" : String(input).trim());
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
@@ -133,7 +133,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const parsed = admissionDraftDataSchema.safeParse(raw);
   const data   = parsed.success ? parsed.data : {};
 
-  // ── Colour palette ──────────────────────────────────────────────────────────
+  // â”€â”€ Colour palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const deepNavy   = rgb(0.027, 0.071, 0.141);
   const royal      = rgb(0.114, 0.306, 0.847);
   const darkRoyal  = rgb(0.086, 0.22,  0.58);
@@ -163,7 +163,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const COL_GAP = 7;
   const COL_W   = (CW - COL_GAP) / 2;
 
-  // ── Load logo ───────────────────────────────────────────────────────────────
+  // â”€â”€ Load logo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let logo: PDFImage | null = null;
   try {
     const bytes = await readFile(join(process.cwd(), "public", "mary-royal-logo.png"));
@@ -172,7 +172,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     logo = null;
   }
 
-  // ── Load applicant photo ────────────────────────────────────────────────────
+  // â”€â”€ Load applicant photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let photo: PDFImage | null = null;
   const attachedPhoto = draft.documents.find((document) => document.category === "PASSPORT_PHOTO");
   if (attachedPhoto && attachedPhoto.contentType !== "application/pdf" && /^[a-f0-9-]{36}\.(jpg|png)$/.test(attachedPhoto.storageKey)) {
@@ -197,12 +197,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const reference   = `MR-ADM/${draft.admissionNo}`;
   const learner     = data.learner;
 
-  // ── Multi-page support ──────────────────────────────────────────────────────
+  // â”€â”€ Multi-page support â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let page: PDFPage = pdf.addPage([pageW, pageH]);
   let pageIndex = 1;
   let y = 0;
 
-  // ── Page border helper ──────────────────────────────────────────────────────
+  // â”€â”€ Page border helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const drawPageBorder = (p: PDFPage) => {
     p.drawRectangle({ x: 14, y: 14, width: pageW - 28, height: pageH - 28, borderColor: royal, borderWidth: 1 });
     p.drawRectangle({ x: 17, y: 17, width: pageW - 34, height: pageH - 34, borderColor: gold,  borderWidth: 0.4 });
@@ -218,7 +218,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
   };
 
-  // ── Draw logo helper ────────────────────────────────────────────────────────
+  // â”€â”€ Draw logo helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const drawLogo = (p: PDFPage, lx: number, top: number, maxSize: number) => {
     if (logo) {
       const scale = Math.min(maxSize / logo.width, maxSize / logo.height);
@@ -237,9 +237,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return maxSize;
   };
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 1 HEADER — centered masthead
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // PAGE 1 HEADER â€” centered masthead
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const drawPageOneHeader = () => {
     drawPageBorder(page);
 
@@ -339,9 +339,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     y = RIBBON_TOP - 28;
   };
 
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // CONTINUATION HEADER
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const drawContinuationHeader = () => {
     drawPageBorder(page);
 
@@ -369,9 +369,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (y - height < CONTENT_FLOOR) breakPage();
   };
 
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // HELPERS
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const FIELD_H = 14;
   const LABEL_W = 110;
 
@@ -437,12 +437,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     page.drawText("OFFICIAL ENROLMENT SEAL", { x: centerX - 29, y: centerY - 14, size: 4.4, font: bold, color: gold });
   };
 
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // RENDER
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   drawPageOneHeader();
 
-  // ── Identity Hero ───────────────────────────────────────────────────────────
+  // â”€â”€ Identity Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const HERO_H  = 54;
   const PHOTO_W = 42;
   const PHOTO_H = HERO_H;
@@ -508,7 +508,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   y -= HERO_H + 6;
 
-  // ── Section 01: Learner Identification ─────────────────────────────────────
+  // â”€â”€ Section 01: Learner Identification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("01", "Learner Identification & CBE Placement");
   drawGrid2([
     ["Grade Applied",           value(learner?.grade)],
@@ -524,7 +524,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     drawWide("Reason for Leaving Previous School", learner.reasonForLeaving);
   }
 
-  // ── Section 02: Residence ───────────────────────────────────────────────────
+  // â”€â”€ Section 02: Residence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("02", "Residential Address & Commute Particulars");
   const residence = data.residence;
   drawGrid2([
@@ -544,7 +544,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     drawWide("Physical Residential Address", fullAddress);
   }
 
-  // ── Section 03: Guardians ───────────────────────────────────────────────────
+  // â”€â”€ Section 03: Guardians â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("03", "Parents & Authorized Legal Guardians");
   const guardians = data.guardians ?? [];
   if (!guardians.length) {
@@ -570,7 +570,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     });
   }
 
-  // ── Section 04: Emergency Contacts ─────────────────────────────────────────
+  // â”€â”€ Section 04: Emergency Contacts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("04", "Emergency Contacts & Authorized Pickup");
   const emergencyContacts = data.emergencyContacts ?? [];
   const emergencyPairs: Array<[string, string]> = [];
@@ -595,7 +595,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
   drawGrid2(emergencyPairs);
 
-  // ── Section 05: Health (Confidential) ──────────────────────────────────────
+  // â”€â”€ Section 05: Health (Confidential) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("05", "Health & Medical Information (Confidential)");
   ensure(16);
   page.drawText("CONFIDENTIAL - RESTRICTED TO AUTHORIZED SCHOOL LEADERS AND CLASS TEACHER", {
@@ -614,7 +614,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (value(health?.currentMedication)) drawWide("Current Medication",       value(health?.currentMedication));
   if (value(health?.specialNeeds))    drawWide("Special Educational Needs",  value(health?.specialNeeds));
 
-  // ── Section 06: Fee Handoff ─────────────────────────────────────────────────
+  // â”€â”€ Section 06: Fee Handoff â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("06", "Fee Handoff & Optional Services");
   drawGrid2([
     ["Admission Term",          value(data.fee?.term)],
@@ -624,7 +624,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   ]);
   if (value(data.fee?.handoffNote)) drawWide("Accountant Handoff Note", value(data.fee?.handoffNote));
 
-  // ── Section 07: Document Checklist ─────────────────────────────────────────
+  // â”€â”€ Section 07: Document Checklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("07", "Verified Admission Document Checklist");
   const documentEntries = Object.entries(admissionDocumentCategoryLabels);
   const checklistColW   = CW / 2;
@@ -650,7 +650,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
   y -= 4;
 
-  // ── Section 08: Audit History ───────────────────────────────────────────────
+  // â”€â”€ Section 08: Audit History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   drawSection("08", "Admission Packet Audit & History");
   drawGrid2([
     ["Record Created",         displayDateTime(draft.createdAt)],
@@ -661,7 +661,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     ["Document Security Ref",  reference]
   ]);
 
-  // ── Section 09: Declaration & Endorsement ──────────────────────────────────
+  // â”€â”€ Section 09: Declaration & Endorsement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const declaration = "The parent or legal guardian confirms that the information furnished in this admission dossier is true, complete, and accurate. The school confirms receipt of the admission documents listed above. Final enrolment is subject to Head Teacher approval and official registration under the Kenya Basic Education Act and CBC/CBE guidelines.";
   const declarationLines = wrap(declaration, font, 7.3, CW);
   const sigCardH   = 62;
@@ -702,7 +702,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   y -= sigCardH + 10;
 
-  // ── QR Verification panel ───────────────────────────────────────────────────
+  // â”€â”€ QR Verification panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   ensure(panelH + 6);
   page.drawRectangle({ x: MX, y: y - panelH, width: CW, height: panelH, color: wash, borderColor: cardBorder, borderWidth: 0.7 });
   page.drawRectangle({ x: MX, y: y - panelH, width: 3, height: panelH, color: royal });
@@ -742,9 +742,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   });
   y -= panelH;
 
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // RUNNING FOOTER on every page
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const totalPages = pdf.getPageCount();
   for (let idx = 0; idx < totalPages; idx += 1) {
     const fp = pdf.getPage(idx);
@@ -774,7 +774,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     });
   }
 
-  // ── Audit event ─────────────────────────────────────────────────────────────
+  // â”€â”€ Audit event â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   await db.auditEvent.create({
     data: { actorId: user.id, action: "ADMISSION_FORM_EXPORTED", entity: "AdmissionDraft", entityId: id }
   });

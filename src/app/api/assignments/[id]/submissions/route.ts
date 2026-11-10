@@ -12,7 +12,7 @@ const submitSchema = z.object({
 });
 const markSchema = z.object({ learnerId: z.string().min(1), score: z.number().int().min(0).max(1000), feedback: z.string().trim().max(600).optional() });
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

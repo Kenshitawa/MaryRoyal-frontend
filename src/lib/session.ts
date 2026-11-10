@@ -11,11 +11,24 @@ function getSecret() {
   return cachedSecret;
 }
 
-export async function makeSession(user: { id: string; schoolId?: string; role: string; forcePasswordChange: boolean }) {
+export type SchoolSession = {
+  id: string;
+  schoolId: string;
+  schoolSlug: string;
+  role: string;
+  forcePasswordChange: boolean;
+};
+
+export async function makeSession(user: SchoolSession) {
+  if (!user.schoolId || !user.schoolSlug) {
+    throw new Error("A school session requires both schoolId and schoolSlug.");
+  }
   return new SignJWT({
-    schoolId: user.schoolId ?? "school_demo_mary_royal",
+    typ: "school",
+    schoolId: user.schoolId,
+    schoolSlug: user.schoolSlug,
     role: user.role,
-    forcePasswordChange: user.forcePasswordChange
+    forcePasswordChange: user.forcePasswordChange,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
@@ -24,14 +37,19 @@ export async function makeSession(user: { id: string; schoolId?: string; role: s
     .sign(getSecret());
 }
 
-export async function readSession(token: string) {
+export async function readSession(token: string): Promise<SchoolSession | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
+    if (payload.typ !== "school") return null;
+    if (typeof payload.schoolId !== "string" || !payload.schoolId) return null;
+    if (typeof payload.schoolSlug !== "string" || !payload.schoolSlug) return null;
+    if (typeof payload.sub !== "string" || !payload.sub) return null;
     return {
-      id: payload.sub!,
-      schoolId: String(payload.schoolId ?? "school_demo_mary_royal"),
+      id: payload.sub,
+      schoolId: payload.schoolId,
+      schoolSlug: payload.schoolSlug,
       role: String(payload.role),
-      forcePasswordChange: Boolean(payload.forcePasswordChange)
+      forcePasswordChange: Boolean(payload.forcePasswordChange),
     };
   } catch {
     return null;
@@ -39,20 +57,25 @@ export async function readSession(token: string) {
 }
 
 export async function makeActivitySession(userId: string) {
-  return new SignJWT({ kind: "idle" }).setProtectedHeader({ alg: "HS256" }).setSubject(userId).setIssuedAt().setExpirationTime("10m").sign(getSecret());
+  return new SignJWT({ kind: "idle", typ: "activity" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(userId)
+    .setIssuedAt()
+    .setExpirationTime("10m")
+    .sign(getSecret());
 }
 
 export async function readActivitySession(token: string, userId: string) {
   try {
     const { payload } = await jwtVerify(token, getSecret());
-    return payload.kind === "idle" && payload.sub === userId;
+    return payload.typ === "activity" && payload.kind === "idle" && payload.sub === userId;
   } catch {
     return false;
   }
 }
 
 export async function makeSuperAdminSession(admin: { id: string; email: string }) {
-  return new SignJWT({ isSuperAdmin: true, email: admin.email })
+  return new SignJWT({ typ: "platform", isSuperAdmin: true, email: admin.email })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(admin.id)
     .setIssuedAt()
@@ -63,11 +86,11 @@ export async function makeSuperAdminSession(admin: { id: string; email: string }
 export async function readSuperAdminSession(token: string) {
   try {
     const { payload } = await jwtVerify(token, getSecret());
-    if (!payload.isSuperAdmin) return null;
+    if (payload.typ !== "platform" || !payload.isSuperAdmin) return null;
     return {
-      id: payload.sub!,
+      id: String(payload.sub),
       email: String(payload.email),
-      isSuperAdmin: true
+      isSuperAdmin: true as const,
     };
   } catch {
     return null;

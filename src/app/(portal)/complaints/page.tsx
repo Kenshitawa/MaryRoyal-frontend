@@ -6,7 +6,7 @@ import { canInScope } from "@/lib/permissions";
 import ComplaintsClient from "./complaints-client";
 
 export default async function ComplaintsPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, name: true, role: true, suspended: true, forcePasswordChange: true } });

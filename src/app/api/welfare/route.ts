@@ -7,7 +7,7 @@ import { canInScope } from "@/lib/permissions";
 import { createNotification } from "@/lib/notify";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true, name: true } });
@@ -16,7 +16,7 @@ async function actor() {
 
 const VIEWER_ROLES = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SECRETARY", "ACCOUNTANT", "TEACHER", "WELFARE_CHAIR", "NON_TEACHING_STAFF"];
 
-// GET /api/welfare — returns member info, contributions, loans (self or all for admin/welfare chair)
+// GET /api/welfare â€” returns member info, contributions, loans (self or all for admin/welfare chair)
 export async function GET(request: Request) {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ member });
   }
 
-  // Self — find own member record
+  // Self â€” find own member record
   const member = await db.welfareMember.findUnique({
     where: { userId: user.id },
     include: {
@@ -258,7 +258,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
 
-// PATCH /api/welfare — approve/reject/disburse loans
+// PATCH /api/welfare â€” approve/reject/disburse loans
 export async function PATCH(request: Request) {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
@@ -282,7 +282,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // Director approves PENDING_DIRECTOR → disburse
+  // Director approves PENDING_DIRECTOR â†’ disburse
   if (parsed.data.action === "approve" && loan.status === "PENDING_DIRECTOR") {
     if (user.role !== "DIRECTOR") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await db.welfareLoan.update({ where: { id: loan.id }, data: { status: "APPROVED", directorNotes: parsed.data.notes ?? null } });

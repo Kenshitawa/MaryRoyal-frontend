@@ -6,7 +6,7 @@ import { completedAdmissionSchema } from "@/lib/admissions";
 import { readSession } from "@/lib/session";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

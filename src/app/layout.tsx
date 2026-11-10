@@ -6,39 +6,54 @@ import "./globals.css";
 import IdleSessionGuard from "@/components/idle-session-guard";
 import { ThemeProvider } from "@/components/design-system/theme-provider";
 import { TenantProvider } from "@/components/tenant-provider";
-import { getTenantConfig, type TenantConfig } from "@/lib/tenant";
+import { TenantStatusPage } from "@/components/tenant-status-page";
+import { getTenantConfig } from "@/lib/tenant";
+import { PLATFORM_TENANT, type TenantConfig } from "@/lib/tenant-types";
 
 const inter = localFont({
   src: "../assets/fonts/inter-latin.woff2",
-  weight: "400 600",
-  style: "normal",
-  display: "swap",
   variable: "--font-inter",
+  display: "swap",
+  weight: "400 700",
+  style: "normal",
   preload: true,
 });
 
-const DEFAULT_DEMO_TENANT: TenantConfig = {
-  id: "school_demo_mary_royal",
-  name: "Mary Royal School",
-  slug: "maryroyal",
-  motto: "Hard work pays",
-  slogan: "Nurturing Excellence Through CBE",
-  logoUrl: "/mary-royal-logo.png",
-  primaryColour: "#1d4ed8",
-  secondaryColour: "#102653",
-  accentColour: "#d97706",
-  contactEmail: "maryroyalschool81@gmail.com",
-  contactPhone: "+254 718 216 374",
-  poBox: "P.O. Box 40100, Kisumu",
-  physicalAddress: "Obunga, near Breweries, Kisumu",
-  status: "ACTIVE",
-};
+export const viewport: Viewport = { themeColor: "#1d4ed8" };
+
+type ResolvedLayoutTenant =
+  | { kind: "ready"; tenant: TenantConfig }
+  | { kind: "unavailable"; reason: "no-school" | "not-found" | "suspended"; name?: string };
+
+async function resolveLayoutTenant(): Promise<ResolvedLayoutTenant> {
+  const reqHeaders = await headers();
+  const kind = reqHeaders.get("x-tenant-kind");
+
+  if (kind === "super-admin") {
+    return { kind: "ready", tenant: PLATFORM_TENANT };
+  }
+  if (kind === "root") {
+    return { kind: "unavailable", reason: "no-school" };
+  }
+
+  const slug = reqHeaders.get("x-school-slug");
+  if (!slug) return { kind: "unavailable", reason: "no-school" };
+
+  const tenant = await getTenantConfig(slug);
+  if (!tenant) return { kind: "unavailable", reason: "not-found" };
+  if (tenant.status === "SUSPENDED") return { kind: "unavailable", reason: "suspended", name: tenant.name };
+  return { kind: "ready", tenant };
+}
 
 export async function generateMetadata(): Promise<Metadata> {
-  const reqHeaders = await headers();
-  const schoolSlug = reqHeaders.get("x-school-slug") ?? "maryroyal";
-  const tenant = (await getTenantConfig(schoolSlug)) ?? DEFAULT_DEMO_TENANT;
-
+  const resolved = await resolveLayoutTenant();
+  if (resolved.kind === "unavailable") {
+    return {
+      title: "School portal unavailable",
+      robots: { index: false, follow: false },
+    };
+  }
+  const tenant = resolved.tenant;
   return {
     title: `${tenant.name} | ${tenant.motto}`,
     description: `${tenant.name} · ${tenant.slogan ?? "Nurturing Excellence Through CBE"}`,
@@ -53,33 +68,36 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = { themeColor: "#1d4ed8" };
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const reqHeaders = await headers();
-  const schoolSlug = reqHeaders.get("x-school-slug") ?? "maryroyal";
-  const tenant = (await getTenantConfig(schoolSlug)) ?? DEFAULT_DEMO_TENANT;
+  const resolved = await resolveLayoutTenant();
+  const tenant = resolved.kind === "ready" ? resolved.tenant : null;
 
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
-        <style id="tenant-dynamic-theme" dangerouslySetInnerHTML={{
-          __html: `
-            :root {
-              --brand: ${tenant.primaryColour};
-              --brand-hover: ${tenant.secondaryColour};
-              --chrome-from: ${tenant.primaryColour};
-              --chrome-to: ${tenant.secondaryColour};
-              --head-from: ${tenant.primaryColour};
-              --head-to: ${tenant.secondaryColour};
-              --focus-ring: ${tenant.primaryColour};
-            }
-          `
-        }} />
+        {tenant && (
+          <style
+            id="tenant-dynamic-theme"
+            dangerouslySetInnerHTML={{
+              __html: `
+                :root {
+                  --brand: ${tenant.primaryColour};
+                  --brand-hover: ${tenant.secondaryColour};
+                  --chrome-from: ${tenant.primaryColour};
+                  --chrome-to: ${tenant.secondaryColour};
+                  --head-from: ${tenant.primaryColour};
+                  --head-to: ${tenant.secondaryColour};
+                  --focus-ring: ${tenant.primaryColour};
+                  --accent: ${tenant.accentColour};
+                }
+              `,
+            }}
+          />
+        )}
         <Script
           id="mary-theme-init"
           strategy="beforeInteractive"
@@ -93,24 +111,33 @@ export default async function RootLayout({
           }}
         />
         <Script
-          id="mary-sw-init"
+          id="mary-sw-register"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
-              window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
-              });
-            }`,
+            __html: `try {
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').catch(() => {});
+                });
+              }
+            } catch {}`,
           }}
         />
       </head>
       <body>
-        <TenantProvider tenant={tenant}>
-          <ThemeProvider>
-            {children}
-            <IdleSessionGuard />
-          </ThemeProvider>
-        </TenantProvider>
+        {tenant ? (
+          <TenantProvider tenant={tenant}>
+            <ThemeProvider>
+              {children}
+              <IdleSessionGuard />
+            </ThemeProvider>
+          </TenantProvider>
+        ) : (
+          <TenantStatusPage
+            reason={resolved.kind === "unavailable" ? resolved.reason : "not-found"}
+            name={resolved.kind === "unavailable" ? resolved.name : undefined}
+          />
+        )}
       </body>
     </html>
   );

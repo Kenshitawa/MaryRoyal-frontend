@@ -8,7 +8,7 @@ import { ShieldCheck, Users } from "lucide-react";
 import { StaffDirectoryClient } from "./staff-directory-client";
 
 export default async function StaffDirectoryPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 
@@ -60,7 +60,7 @@ export default async function StaffDirectoryPage() {
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-400/20 px-3 py-1 text-xs font-bold text-blue-200 ring-1 ring-inset ring-blue-300/30">
                 <ShieldCheck size={14} className="text-blue-300" />
-                Staff Directory · Mary Royal School
+                Staff Directory Â· Mary Royal School
               </span>
               <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
                 School Faculty &amp; Staff

@@ -4,14 +4,14 @@ import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });
   return user && !user.suspended && !user.forcePasswordChange ? user : null;
 }
 
-// GET /api/notifications — list unread + recent (auto-delete read older than 5 days)
+// GET /api/notifications â€” list unread + recent (auto-delete read older than 5 days)
 export async function GET() {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
@@ -43,7 +43,7 @@ export async function GET() {
   return NextResponse.json({ notifications, unreadCount });
 }
 
-// PATCH /api/notifications — mark read or action done
+// PATCH /api/notifications â€” mark read or action done
 export async function PATCH(request: Request) {
   const user = await actor();
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });

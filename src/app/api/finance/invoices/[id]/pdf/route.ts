@@ -9,7 +9,7 @@ import { readSession } from "@/lib/session";
 import { generateQrMatrix } from "@/lib/qr";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({
@@ -64,7 +64,7 @@ export async function GET(
   // Generate PDF document
   const pdfDoc = await PDFDocument.create();
   pdfDoc.setTitle(`Fee Invoice - ${invoice.term} - ${invoice.learner.name}`);
-  pdfDoc.setAuthor("Mary Royal Primary & Junior School · Obunga, Kisumu");
+  pdfDoc.setAuthor("Mary Royal Primary & Junior School Â· Obunga, Kisumu");
 
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -136,7 +136,7 @@ export async function GET(
     color: darkNavy
   });
 
-  page.drawText("P.O. Box 40100, Kisumu, Kenya · Tel: +254 718 216 374 · Email: maryroyalschool81@gmail.com", {
+  page.drawText("P.O. Box 40100, Kisumu, Kenya Â· Tel: +254 718 216 374 Â· Email: maryroyalschool81@gmail.com", {
     x: textStartX,
     y: y - 35,
     size: 7.8,
@@ -144,7 +144,7 @@ export async function GET(
     color: slateGray
   });
 
-  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya · Finance & Bursar's Office", {
+  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya Â· Finance & Bursar's Office", {
     x: textStartX,
     y: y - 47,
     size: 7.5,
@@ -152,7 +152,7 @@ export async function GET(
     color: slateGray
   });
 
-  page.drawText("Motto: \"Hard Work Pays\"  ·  Slogan: \"Nurturing Excellence Through CBE\"", {
+  page.drawText("Motto: \"Hard Work Pays\"  Â·  Slogan: \"Nurturing Excellence Through CBE\"", {
     x: textStartX,
     y: y - 59,
     size: 7.5,
@@ -349,10 +349,10 @@ export async function GET(
   });
 
   page.drawText("BANK & M-PESA PAYMENT MODES", { x: 45, y: y - 16, size: 8, font: fontBold, color: royalBlue });
-  page.drawText("• M-Pesa Till / Paybill: Mary Royal School Kisumu", { x: 45, y: y - 30, size: 7.5, font: fontRegular, color: darkNavy });
-  page.drawText(`• Account Reference: ${invoice.learner.admissionNo} (Always use Learner ADM No)`, { x: 45, y: y - 44, size: 7.5, font: fontBold, color: darkNavy });
-  page.drawText("• Direct Bank Deposit: Official School Account (Cooperative Bank)", { x: 45, y: y - 58, size: 7.5, font: fontRegular, color: darkNavy });
-  page.drawText("• Present bank deposit slip or M-Pesa reference for immediate receipting.", { x: 45, y: y - 72, size: 7.2, font: fontRegular, color: slateGray });
+  page.drawText("â€¢ M-Pesa Till / Paybill: Mary Royal School Kisumu", { x: 45, y: y - 30, size: 7.5, font: fontRegular, color: darkNavy });
+  page.drawText(`â€¢ Account Reference: ${invoice.learner.admissionNo} (Always use Learner ADM No)`, { x: 45, y: y - 44, size: 7.5, font: fontBold, color: darkNavy });
+  page.drawText("â€¢ Direct Bank Deposit: Official School Account (Cooperative Bank)", { x: 45, y: y - 58, size: 7.5, font: fontRegular, color: darkNavy });
+  page.drawText("â€¢ Present bank deposit slip or M-Pesa reference for immediate receipting.", { x: 45, y: y - 72, size: 7.2, font: fontRegular, color: slateGray });
 
   y -= 105;
 
@@ -433,7 +433,7 @@ export async function GET(
     timeZone: "Africa/Nairobi"
   }).format(new Date());
 
-  page.drawText(`Mary Royal Primary & Junior School · P.O. Box 40100, Kisumu · Official Finance Invoice · Generated ${printTimestamp} EAT`, {
+  page.drawText(`Mary Royal Primary & Junior School Â· P.O. Box 40100, Kisumu Â· Official Finance Invoice Â· Generated ${printTimestamp} EAT`, {
     x: 35,
     y: 28,
     size: 7,

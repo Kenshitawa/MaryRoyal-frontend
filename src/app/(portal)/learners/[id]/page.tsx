@@ -81,14 +81,14 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 py-2.5 text-xs last:border-0 dark:border-slate-800/80">
       <span className="font-medium text-slate-500 dark:text-slate-400">{label}</span>
-      <span className="text-right font-bold text-slate-900 dark:text-slate-100">{value || "—"}</span>
+      <span className="text-right font-bold text-slate-900 dark:text-slate-100">{value || "â€”"}</span>
     </div>
   );
 }
 
 export default async function LearnerProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 
@@ -419,17 +419,17 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                   href={actor.role === "PARENT" ? "/portal" : actor.role === "LEARNER" ? "/learning" : "/learners"}
                   className="mb-2 inline-flex items-center text-xs font-semibold text-blue-200 transition hover:text-white"
                 >
-                  ← {actor.role === "PARENT" ? "My children" : actor.role === "LEARNER" ? "My learning" : "Learner Register"}
+                  â† {actor.role === "PARENT" ? "My children" : actor.role === "LEARNER" ? "My learning" : "Learner Register"}
                 </Link>
                 <p className="text-[11px] font-bold uppercase tracking-[.18em] text-blue-200">{relationTitle}</p>
                 <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-4xl text-white">{learner.name}</h1>
                 <p className="mt-1.5 text-xs text-blue-100 sm:text-sm">
-                  <span className="font-mono font-bold text-white">{learner.admissionNo}</span> · {learner.grade}
-                  {profile?.stream ? ` · Stream ${profile.stream}` : ""} ·{" "}
+                  <span className="font-mono font-bold text-white">{learner.admissionNo}</span> Â· {learner.grade}
+                  {profile?.stream ? ` Â· Stream ${profile.stream}` : ""} Â·{" "}
                   <span className="rounded-md bg-white/20 px-2 py-0.5 font-semibold text-white">
                     {learner.admissionStatus.toLowerCase()}
                   </span>
-                  {age !== null ? ` · Age ${age}` : ""} · {learner.gender}
+                  {age !== null ? ` Â· Age ${age}` : ""} Â· {learner.gender}
                 </p>
               </div>
             </div>
@@ -543,7 +543,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 <GraduationCap size={16} className="text-purple-600 dark:text-purple-400" />
               </div>
               <p className="mt-2 text-xl font-black text-purple-700 dark:text-purple-400">
-                {averageScore !== null ? `${averageScore}%` : "—"}
+                {averageScore !== null ? `${averageScore}%` : "â€”"}
               </p>
               <p className="mt-1 text-[11px] text-slate-500">
                 {averageScore !== null ? cbcLevel(averageScore) : `${assessments.length} records`}
@@ -561,7 +561,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 {attendancePercentage}%
               </p>
               <p className="mt-1 text-[11px] text-slate-500">
-                {presentCount} Present · {absentCount} Absent
+                {presentCount} Present Â· {absentCount} Absent
               </p>
             </div>
           )}
@@ -709,7 +709,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                         <div>
                           <p className="font-mono font-bold text-blue-700 dark:text-blue-400">{payment.receiptNo}</p>
                           <p className="text-[11px] text-slate-500">
-                            {payment.invoice.term} · {payment.method} · {dateTime(payment.createdAt)}
+                            {payment.invoice.term} Â· {payment.method} Â· {dateTime(payment.createdAt)}
                           </p>
                         </div>
                         <div className="text-right">
@@ -718,7 +718,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                             href={`/receipts/${payment.id}`}
                             className="mt-0.5 inline-block text-[11px] font-bold text-blue-700 hover:underline dark:text-blue-400"
                           >
-                            Print Receipt →
+                            Print Receipt â†’
                           </Link>
                         </div>
                       </div>
@@ -761,7 +761,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-900 dark:text-white">{subject}</span>
                         <span className="rounded-md bg-purple-100 px-2 py-0.5 text-xs font-black text-purple-800 dark:bg-purple-950 dark:text-purple-300">
-                          {avg}% · {cbcLevel(avg)}
+                          {avg}% Â· {cbcLevel(avg)}
                         </span>
                       </div>
                       <div className="mt-3 flex h-16 items-end gap-2 border-b border-slate-200 pb-1 dark:border-slate-700">
@@ -802,11 +802,11 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-ink-2">
-                      {a.term} · <span className="font-semibold text-ink">{a.score}% · {cbcLevel(a.score)}</span>
+                      {a.term} Â· <span className="font-semibold text-ink">{a.score}% Â· {cbcLevel(a.score)}</span>
                     </p>
                     <p className="mt-1.5 text-sm text-ink-2">
                       {a.strand ? <span className="font-semibold">{a.strand}</span> : "General"}
-                      {a.competency ? ` · ${a.competency}` : ""}
+                      {a.competency ? ` Â· ${a.competency}` : ""}
                     </p>
                     {a.comment && <p className="mt-1.5 text-sm italic text-ink-2">&ldquo;{a.comment}&rdquo;</p>}
                   </article>
@@ -837,12 +837,12 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                         <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{a.term}</td>
                         <td className="px-4 py-3">
                           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-black text-blue-800 dark:bg-blue-950/80 dark:text-blue-300">
-                            {a.score}% · {cbcLevel(a.score)}
+                            {a.score}% Â· {cbcLevel(a.score)}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                           {a.strand ? <span className="font-semibold">{a.strand}</span> : "General"}
-                          {a.competency ? ` · ${a.competency}` : ""}
+                          {a.competency ? ` Â· ${a.competency}` : ""}
                         </td>
                         <td className="px-4 py-3 italic text-slate-600 dark:text-slate-400">
                           {a.comment ? `"${a.comment}"` : "Demonstrating steady competency growth."}
@@ -1123,10 +1123,10 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
                   <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Emergency &amp; Pick-Up</h3>
                   {profile?.emergencyContacts.map((c) => (
-                    <Row key={c.id} label={`Emergency · ${c.relationship}`} value={`${c.fullName} (${c.phone})`} />
+                    <Row key={c.id} label={`Emergency Â· ${c.relationship}`} value={`${c.fullName} (${c.phone})`} />
                   ))}
                   {profile?.pickupPersons.map((p) => (
-                    <Row key={p.id} label={`Pick-Up · ${p.relationship}`} value={`${p.fullName} (${p.phone})`} />
+                    <Row key={p.id} label={`Pick-Up Â· ${p.relationship}`} value={`${p.fullName} (${p.phone})`} />
                   ))}
                 </div>
               )}
@@ -1185,7 +1185,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                       <span className="font-bold text-slate-800 dark:text-slate-200">{doc.category.replaceAll("_", " ")}</span>
                       <span className="ml-2 font-mono text-[10px] text-slate-400">{doc.originalName}</span>
                     </div>
-                    <span className="font-bold text-blue-700 dark:text-blue-400">Download →</span>
+                    <span className="font-bold text-blue-700 dark:text-blue-400">Download â†’</span>
                   </a>
                 ))
               ) : (

@@ -4,32 +4,21 @@ import Link from "next/link";
 import { cookies, headers } from "next/headers";
 import { readSession } from "@/lib/session";
 import { getTenantConfig } from "@/lib/tenant";
+import { DEMO_FALLBACK_TENANT } from "@/lib/tenant-types";
 import { BookOpenCheck, ShieldCheck, Sparkles } from "lucide-react";
 import LoginForm from "./login-form";
 
 export default async function Home() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("school_session")?.value ?? cookieStore.get("mary_session")?.value;
+  const token = cookieStore.get("school_session")?.value;
   if (token) {
     const user = await readSession(token);
     if (user) redirect("/dashboard");
   }
 
   const reqHeaders = await headers();
-  const schoolSlug = reqHeaders.get("x-school-slug") ?? "maryroyal";
-  const tenant = (await getTenantConfig(schoolSlug)) ?? {
-    id: "school_demo_mary_royal",
-    name: "Mary Royal School",
-    slug: "maryroyal",
-    motto: "Hard work pays",
-    slogan: "Nurturing Excellence Through CBE",
-    logoUrl: "/mary-royal-logo.png",
-    primaryColour: "#1d4ed8",
-    secondaryColour: "#102653",
-    accentColour: "#d97706",
-    physicalAddress: "Obunga, Kisumu",
-    status: "ACTIVE",
-  };
+  const schoolSlug = reqHeaders.get("x-school-slug");
+  const tenant = (schoolSlug ? await getTenantConfig(schoolSlug) : null) ?? DEMO_FALLBACK_TENANT;
 
   const locationSnippet = tenant.physicalAddress ?? "Obunga, Kisumu";
 
@@ -61,7 +50,7 @@ export default async function Home() {
         </Link>
         <div className="relative z-10 mt-9 max-w-xl lg:mt-0">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-blue-50 backdrop-blur">
-            <Sparkles size={13} /> School motto · {tenant.motto}
+            <Sparkles size={13} /> School motto Â· {tenant.motto}
           </span>
           <h1 className="mt-5 text-[32px] font-extrabold leading-[1.12] tracking-tight sm:text-4xl lg:text-5xl xl:text-[58px]">
             Every learner.
@@ -69,7 +58,7 @@ export default async function Home() {
             <span className="text-blue-200">Every possibility.</span>
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-blue-100 sm:text-base">
-            {tenant.slogan ?? "Nurturing Excellence Through CBE"}. A connected school community, built around every child’s growth.
+            {tenant.slogan ?? "Nurturing Excellence Through CBE"}. A connected school community, built around every childâ€™s growth.
           </p>
           <div className="mt-6 hidden items-center gap-5 text-xs font-medium text-blue-100 sm:flex">
             <span className="inline-flex items-center gap-2">
@@ -81,7 +70,7 @@ export default async function Home() {
           </div>
         </div>
         <p className="relative z-10 mt-6 hidden text-[11px] text-blue-200 lg:block">
-          © {new Date().getFullYear()} {tenant.name} · {locationSnippet}
+          Â© {new Date().getFullYear()} {tenant.name} Â· {locationSnippet}
         </p>
         <div aria-hidden="true" className="absolute bottom-0 right-0 hidden h-48 w-48 translate-x-1/3 translate-y-1/3 rounded-full border-[28px] border-white/[.06] lg:block" />
       </section>
@@ -102,7 +91,7 @@ export default async function Home() {
             </Link>
           </div>
           <p className="mt-7 text-center text-[10px] text-slate-400 lg:hidden">
-            {tenant.name} · {locationSnippet}
+            {tenant.name} Â· {locationSnippet}
           </p>
         </div>
       </section>

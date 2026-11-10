@@ -29,7 +29,7 @@ export default async function FamilyPortal({
 }: {
   searchParams: Promise<{ child?: string }>;
 }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 
@@ -218,7 +218,7 @@ export default async function FamilyPortal({
                   </span>
                 </div>
                 <p className="mt-1 font-mono text-xs text-slate-500 dark:text-slate-400">
-                  Admission No: {child.admissionNo} · Gender: {child.gender}
+                  Admission No: {child.admissionNo} Â· Gender: {child.gender}
                 </p>
               </div>
             </div>
@@ -237,7 +237,7 @@ export default async function FamilyPortal({
                 href={`/learners/${child.id}`}
                 className="inline-flex items-center gap-1.5 rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-2 text-xs font-bold text-blue-800 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300"
               >
-                Open Complete Profile →
+                Open Complete Profile â†’
               </Link>
             </div>
           </div>
@@ -256,7 +256,7 @@ export default async function FamilyPortal({
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
-                {attendancePct === null ? "—" : `${attendancePct}%`}
+                {attendancePct === null ? "â€”" : `${attendancePct}%`}
               </span>
             </div>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -502,7 +502,7 @@ export default async function FamilyPortal({
                             </span>
                           </div>
                           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            Total Invoiced: {kes(total)} · Paid: {kes(paid)}
+                            Total Invoiced: {kes(total)} Â· Paid: {kes(paid)}
                           </p>
                         </div>
 
@@ -535,7 +535,7 @@ export default async function FamilyPortal({
                               className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50/70 px-2.5 py-1 text-[11px] font-bold text-blue-800 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300"
                             >
                               <Receipt size={12} />
-                              {p.receiptNo} · {kes(p.amount)}
+                              {p.receiptNo} Â· {kes(p.amount)}
                             </Link>
                           ))}
                         </div>
@@ -550,7 +550,7 @@ export default async function FamilyPortal({
         )}
 
         <footer className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">
-          Mary Royal School · Obunga, Kisumu, Kenya · CBC Excellence
+          Mary Royal School Â· Obunga, Kisumu, Kenya Â· CBC Excellence
         </footer>
       </section>
     </>

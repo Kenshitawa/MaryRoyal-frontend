@@ -12,7 +12,7 @@ function escapeCsv(value: string | number | null | undefined): string {
 }
 
 export async function GET() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
@@ -70,9 +70,9 @@ export async function GET() {
     escapeCsv(a.term),
     escapeCsv(a.score),
     escapeCsv(cbcLevel(a.score)),
-    escapeCsv(a.strand ?? "—"),
-    escapeCsv(a.competency ?? "—"),
-    escapeCsv(a.comment ?? "—"),
+    escapeCsv(a.strand ?? "â€”"),
+    escapeCsv(a.competency ?? "â€”"),
+    escapeCsv(a.comment ?? "â€”"),
     escapeCsv(new Intl.DateTimeFormat("en-KE", { dateStyle: "short", timeZone: "Africa/Nairobi" }).format(a.createdAt))
   ].join(","));
 

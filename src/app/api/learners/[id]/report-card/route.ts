@@ -13,7 +13,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
@@ -89,7 +89,7 @@ export async function GET(
 
   const pdf = await PDFDocument.create();
   pdf.setTitle(`Report Card - ${learner.name} (${learner.admissionNo}) - ${targetTerm}`);
-  pdf.setAuthor("Mary Royal Primary & Junior School · Obunga, Kisumu");
+  pdf.setAuthor("Mary Royal Primary & Junior School Â· Obunga, Kisumu");
 
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -144,7 +144,7 @@ export async function GET(
     color: darkNavy
   });
 
-  page.drawText("P.O. Box 40100, Kisumu, Kenya · Tel: +254 718 216 374 · Email: maryroyalschool81@gmail.com", {
+  page.drawText("P.O. Box 40100, Kisumu, Kenya Â· Tel: +254 718 216 374 Â· Email: maryroyalschool81@gmail.com", {
     x: textStartX,
     y: y - 35,
     size: 7.8,
@@ -152,7 +152,7 @@ export async function GET(
     color: slateMuted
   });
 
-  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya · MOE / CBE Reg.", {
+  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya Â· MOE / CBE Reg.", {
     x: textStartX,
     y: y - 47,
     size: 7.5,
@@ -160,7 +160,7 @@ export async function GET(
     color: slateMuted
   });
 
-  page.drawText("Motto: \"Hard Work Pays\"  ·  Slogan: \"Nurturing Excellence Through CBE\"", {
+  page.drawText("Motto: \"Hard Work Pays\"  Â·  Slogan: \"Nurturing Excellence Through CBE\"", {
     x: textStartX,
     y: y - 59,
     size: 7.5,
@@ -346,7 +346,7 @@ export async function GET(
       page.drawText(level, { x: 270, y: y - 8, size: 7.5, font: bold, color: white });
 
       const remark = item.comment || (level === "EE" ? "Exemplary understanding and mastery" : level === "ME" ? "Competent with consistent effort" : level === "AE" ? "Steady progress; needs practice" : "Requires remedial guidance");
-      const cleanRemark = remark.length > 40 ? remark.slice(0, 39) + "…" : remark;
+      const cleanRemark = remark.length > 40 ? remark.slice(0, 39) + "â€¦" : remark;
       page.drawText(cleanRemark, { x: 330, y: y - 8, size: 7.5, font, color: slateMuted });
 
       y -= rowH;
@@ -399,7 +399,7 @@ export async function GET(
     color: royalBlue
   });
 
-  page.drawText("Discipline & Conduct: Outstanding · Exemplifies school motto 'Hard Work Pays'", {
+  page.drawText("Discipline & Conduct: Outstanding Â· Exemplifies school motto 'Hard Work Pays'", {
     x: 45,
     y: y - 28,
     size: 7.8,
@@ -514,7 +514,7 @@ export async function GET(
   }).format(new Date());
 
   page.drawText(
-    `Mary Royal Primary & Junior School · P.O. Box 40100, Kisumu · Official Academic Report · Generated ${printTimestamp} EAT`,
+    `Mary Royal Primary & Junior School Â· P.O. Box 40100, Kisumu Â· Official Academic Report Â· Generated ${printTimestamp} EAT`,
     {
       x: 35,
       y: 28,

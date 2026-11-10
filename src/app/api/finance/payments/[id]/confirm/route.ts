@@ -7,7 +7,7 @@ import { canInScope } from "@/lib/permissions";
 
 const inputSchema = z.object({ reason: z.string().trim().max(180).optional() });
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   const actor = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

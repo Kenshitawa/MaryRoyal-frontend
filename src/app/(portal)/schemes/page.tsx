@@ -6,10 +6,10 @@ import { can } from "@/lib/permissions";
 import SchemesClient from "./schemes-client";
 import { loadCurriculumCatalog } from "@/lib/curriculum-catalog";
 
-export const metadata = { title: "Schemes of Work — Mary Royal School" };
+export const metadata = { title: "Schemes of Work â€” Mary Royal School" };
 
 export default async function SchemesPage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, name: true, suspended: true, forcePasswordChange: true } });

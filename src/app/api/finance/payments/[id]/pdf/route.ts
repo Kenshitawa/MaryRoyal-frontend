@@ -9,7 +9,7 @@ import { readSession } from "@/lib/session";
 import { generateQrMatrix } from "@/lib/qr";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({
@@ -69,8 +69,8 @@ export async function GET(
 
   // Generate PDF document
   const pdfDoc = await PDFDocument.create();
-  pdfDoc.setTitle(`Fee Receipt - ${payment.receiptNo} · Mary Royal School`);
-  pdfDoc.setAuthor("Mary Royal Primary & Junior School · Obunga, Kisumu");
+  pdfDoc.setTitle(`Fee Receipt - ${payment.receiptNo} Â· Mary Royal School`);
+  pdfDoc.setAuthor("Mary Royal Primary & Junior School Â· Obunga, Kisumu");
 
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -145,7 +145,7 @@ export async function GET(
     color: darkNavy
   });
 
-  page.drawText("P.O. Box 40100, Kisumu, Kenya · Tel: +254 718 216 374 · Email: maryroyalschool81@gmail.com", {
+  page.drawText("P.O. Box 40100, Kisumu, Kenya Â· Tel: +254 718 216 374 Â· Email: maryroyalschool81@gmail.com", {
     x: textStartX,
     y: y - 35,
     size: 7.8,
@@ -153,7 +153,7 @@ export async function GET(
     color: slateGray
   });
 
-  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya · Finance & Bursar's Office", {
+  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya Â· Finance & Bursar's Office", {
     x: textStartX,
     y: y - 47,
     size: 7.5,
@@ -161,7 +161,7 @@ export async function GET(
     color: slateGray
   });
 
-  page.drawText("Motto: \"Hard Work Pays\"  ·  Slogan: \"Nurturing Excellence Through CBE\"", {
+  page.drawText("Motto: \"Hard Work Pays\"  Â·  Slogan: \"Nurturing Excellence Through CBE\"", {
     x: textStartX,
     y: y - 59,
     size: 7.5,
@@ -258,7 +258,7 @@ export async function GET(
   page.drawText(dateFormatted, { x: col1 + 80, y: detailY, size: 8.5, font: fontRegular, color: darkNavy });
 
   page.drawText("Payment Method:", { x: col2, y: detailY, size: 8.5, font: fontBold, color: slateGray });
-  const methodDetail = payment.method + (payment.mpesaCode ? ` (${payment.mpesaCode})` : "") + (payment.reference ? ` · Ref: ${payment.reference}` : "");
+  const methodDetail = payment.method + (payment.mpesaCode ? ` (${payment.mpesaCode})` : "") + (payment.reference ? ` Â· Ref: ${payment.reference}` : "");
   page.drawText(methodDetail, { x: col2 + 85, y: detailY, size: 8.5, font: fontBold, color: darkNavy });
 
   detailY -= 18;
@@ -386,7 +386,7 @@ export async function GET(
     font: fontBold,
     color: royalBlue
   });
-  page.drawText(`Token: ${payment.receiptNo.slice(-6).toUpperCase()} · Tamper-proof`, {
+  page.drawText(`Token: ${payment.receiptNo.slice(-6).toUpperCase()} Â· Tamper-proof`, {
     x: qrX + qrSize + 12,
     y: qrY + 28,
     size: 7,
@@ -455,7 +455,7 @@ export async function GET(
     timeZone: "Africa/Nairobi"
   }).format(new Date());
 
-  page.drawText(`Mary Royal Primary & Junior School · P.O. Box 40100, Kisumu · Official Finance Document · Generated ${printTimestamp} EAT`, {
+  page.drawText(`Mary Royal Primary & Junior School Â· P.O. Box 40100, Kisumu Â· Official Finance Document Â· Generated ${printTimestamp} EAT`, {
     x: 35,
     y: 28,
     size: 7,

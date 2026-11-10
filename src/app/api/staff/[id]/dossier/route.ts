@@ -84,7 +84,7 @@ function displayDateTime(input: Date | null | undefined) {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
@@ -246,14 +246,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     page.drawText("MARY ROYAL PRIMARY & JUNIOR SCHOOL", { x: textX, y: pageH - 68, size: 14.5, font: bold, color: navy });
     page.drawText("Nurturing Excellence Through CBE", { x: textX, y: pageH - 81, size: 7.8, font: bold, color: royal });
-    page.drawText("P.O. Box 40100, Kisumu, Kenya  ·  Tel +254 718 216 374  ·  maryroyalschool81@gmail.com", {
+    page.drawText("P.O. Box 40100, Kisumu, Kenya  Â·  Tel +254 718 216 374  Â·  maryroyalschool81@gmail.com", {
       x: textX,
       y: pageH - 92,
       size: 7.2,
       font,
       color: slate
     });
-    page.drawText("Obunga, near Breweries, Kisumu  ·  Ministry of Education / CBE registered", {
+    page.drawText("Obunga, near Breweries, Kisumu  Â·  Ministry of Education / CBE registered", {
       x: textX,
       y: pageH - 101,
       size: 7.2,
@@ -292,7 +292,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const logoWidth = drawLogo(MX, pageH - 38, 22);
     const textX = MX + (logoWidth ? logoWidth + 10 : 0);
     page.drawText("MARY ROYAL PRIMARY & JUNIOR SCHOOL", { x: textX, y: pageH - 46, size: 8, font: bold, color: navy });
-    page.drawText(`Staff dossier  ·  ${reference}  ·  continued`, { x: textX, y: pageH - 56, size: 6.8, font, color: slate });
+    page.drawText(`Staff dossier  Â·  ${reference}  Â·  continued`, { x: textX, y: pageH - 56, size: 6.8, font, color: slate });
     const label = `Page ${pageIndex}`;
     page.drawText(label, { x: pageW - MX - font.widthOfTextAtSize(label, 7.5), y: pageH - 46, size: 7.5, font: bold, color: royal });
     page.drawLine({ start: { x: MX, y: pageH - 68 }, end: { x: pageW - MX, y: pageH - 68 }, thickness: 0.6, color: rule });
@@ -465,7 +465,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   section("06", "Emergency contacts and next of kin");
   if (profile?.emergencyContacts.length) {
     profile.emergencyContacts.forEach((contact, index) => {
-      subHeading(`${index + 1}. ${contact.fullName}${contact.isNextOfKin ? " · Next of kin" : ""}`);
+      subHeading(`${index + 1}. ${contact.fullName}${contact.isNextOfKin ? " Â· Next of kin" : ""}`);
       record([
         ["Relationship", contact.relationship],
         ["Phone", contact.phone]
@@ -478,7 +478,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   section("07", "Referees");
   if (profile?.referees.length) {
     profile.referees.forEach((referee, index) => {
-      subHeading(`${index + 1}. ${referee.fullName}${referee.title ? ` · ${referee.title}` : ""}`);
+      subHeading(`${index + 1}. ${referee.fullName}${referee.title ? ` Â· ${referee.title}` : ""}`);
       record(
         [
           ["Organisation", value(referee.organization)],
@@ -497,8 +497,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     profile.documents.forEach((document, index) => {
       const size = document.sizeBytes >= 1024 * 1024 ? `${(document.sizeBytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(document.sizeBytes / 1024))} KB`;
       record([
-        [`Document ${index + 1}`, `${DOCUMENT_LABELS[document.category] ?? document.category} · ${document.originalName}`],
-        ["Received", `${displayDate(document.createdAt)} · ${size}`]
+        [`Document ${index + 1}`, `${DOCUMENT_LABELS[document.category] ?? document.category} Â· ${document.originalName}`],
+        ["Received", `${displayDate(document.createdAt)} Â· ${size}`]
       ]);
     });
   } else {
@@ -515,7 +515,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     ["Present", String(attendanceCounts.PRESENT ?? 0)],
     ["Late", String(attendanceCounts.LATE ?? 0)],
     ["Absent", String(attendanceCounts.ABSENT ?? 0)],
-    ["Most recent check-in", attendance[0] ? `${displayDate(attendance[0].date)} · ${attendance[0].status}` : ""]
+    ["Most recent check-in", attendance[0] ? `${displayDate(attendance[0].date)} Â· ${attendance[0].status}` : ""]
   ]);
 
   if (canSeeStatutory) {
@@ -534,7 +534,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       record(
         payroll.map((entry) => [
           entry.period,
-          `KES ${Number(entry.netAmount).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · ${entry.status}`
+          `KES ${Number(entry.netAmount).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Â· ${entry.status}`
         ])
       );
     }
@@ -543,7 +543,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (showHistory) {
     section("11", "Record edit history (Director)");
     if (editHistory.length) {
-      record(editHistory.map((entry) => [`${displayDate(entry.createdAt)} · ${entry.actor.name}`, entry.field]));
+      record(editHistory.map((entry) => [`${displayDate(entry.createdAt)} Â· ${entry.actor.name}`, entry.field]));
     } else {
       record([["Edits recorded", ""]]);
     }
@@ -601,7 +601,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   for (const [index, item] of wrap("Scan the code or quote the reference at the school office to confirm this staff record.", font, 7.4, textWidth).slice(0, 2).entries()) {
     page.drawText(item, { x: textX, y: y - 28 - index * 9.5, size: 7.4, font, color: navy });
   }
-  const verifyLine = `Reference ${reference}  ·  ${roleLabel}  ·  Issued ${generatedAt}`;
+  const verifyLine = `Reference ${reference}  Â·  ${roleLabel}  Â·  Issued ${generatedAt}`;
   page.drawText(verifyLine, { x: textX, y: y - 48, size: fitSize(verifyLine, font, 6.6, 5.2, textWidth), font, color: slate });
   y -= panelHeight;
 
@@ -609,8 +609,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   for (let index = 0; index < totalPages; index += 1) {
     const footerPage = pdf.getPage(index);
     footerPage.drawLine({ start: { x: MX, y: 46 }, end: { x: pageW - MX, y: 46 }, thickness: 0.6, color: rule });
-    footerPage.drawText(`Mary Royal Primary & Junior School · Obunga, Kisumu · ${reference}`, { x: MX, y: 34, size: 6.5, font, color: slate });
-    const right = `Page ${index + 1} of ${totalPages} · generated ${generatedStamp} EAT`;
+    footerPage.drawText(`Mary Royal Primary & Junior School Â· Obunga, Kisumu Â· ${reference}`, { x: MX, y: 34, size: 6.5, font, color: slate });
+    const right = `Page ${index + 1} of ${totalPages} Â· generated ${generatedStamp} EAT`;
     footerPage.drawText(right, { x: pageW - MX - font.widthOfTextAtSize(right, 6.5), y: 34, size: 6.5, font, color: slate });
   }
 

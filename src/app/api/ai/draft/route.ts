@@ -17,7 +17,7 @@ const weeklySchema = z.object({ topics: z.string().min(10).max(1200), reflection
 const textbookSchema = z.object({ title: z.string().min(3).max(120), publisher: z.string().max(80), curriculumCode: z.string().max(40) });
 
 export async function POST(request: Request) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   const actor = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

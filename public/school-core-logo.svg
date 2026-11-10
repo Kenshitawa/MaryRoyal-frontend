@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="School Core">
+  <rect width="64" height="64" rx="14" fill="#0f766e"/>
+  <path d="M32 13 51 22 32 31 13 22Z" fill="#fff" opacity=".95"/>
+  <path d="M20 27v12c0 5 5.4 9 12 9s12-4 12-9V27l-12 6Z" fill="#fbbf24"/>
+  <path d="M48 25v12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

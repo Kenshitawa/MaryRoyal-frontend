@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default async function AttendancePage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 
@@ -164,7 +164,7 @@ export default async function AttendancePage() {
                         <div className={`h-full rounded-full transition-[width] duration-500 ${isDone ? "bg-success" : "bg-brand"}`} style={{ width: `${pct}%` }} />
                       </div>
                       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 text-label text-ink-2">
-                        <span>{item.present} present · {item.absent} absent · {item.late} late</span>
+                        <span>{item.present} present Â· {item.absent} absent Â· {item.late} late</span>
                         <span className="font-semibold text-ink">{item.total} learners</span>
                       </div>
                     </article>

@@ -8,7 +8,7 @@ import { youtubeVideoId } from "@/lib/learning-videos";
 
 const input = z.object({ url: z.string().url().max(500), grade: z.string().min(2).max(20), subject: z.string().min(2).max(60), strand: z.string().min(2).max(120), subStrand: z.string().max(120).optional() });
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   return session ? db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } }) : null;
 }

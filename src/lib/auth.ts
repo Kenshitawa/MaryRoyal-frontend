@@ -30,7 +30,7 @@ export type SchoolActor = {
  */
 export async function getSchoolActor(): Promise<SchoolActor | null> {
   const store = await cookies();
-  const token = store.get("school_session")?.value ?? store.get("mary_session")?.value;
+  const token = store.get("school_session")?.value ?? store.get("school_session")?.value;
   if (!token) return null;
 
   const session = await readSession(token);
@@ -46,10 +46,13 @@ export async function getSchoolActor(): Promise<SchoolActor | null> {
       schoolId: true,
       suspended: true,
       forcePasswordChange: true,
+      school: { select: { slug: true, status: true } },
     },
   });
 
   if (!user || user.suspended || user.forcePasswordChange) return null;
+  if (user.school.status === "SUSPENDED") return null;
+  if (user.school.slug !== session.schoolSlug) return null;
   return {
     id: user.id,
     name: user.name,

@@ -7,7 +7,7 @@ import { can } from "@/lib/permissions";
 import { createNotification } from "@/lib/notify";
 
 async function actor() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return null;
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true, name: true } });
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   // Notify deputy + head teacher
   const deputies = await db.user.findMany({ where: { role: { in: ["DEPUTY", "HEAD_TEACHER"] } }, select: { id: true } });
   for (const d of deputies) {
-    await createNotification({ userId: d.id, title: "New Scheme of Work Submitted", message: `${user.name} submitted a scheme for ${parsed.data.grade} ${parsed.data.subject} — Term ${parsed.data.term} Week ${parsed.data.week}.`, type: "ACTION", link: "/schemes", actionRequired: true });
+    await createNotification({ userId: d.id, title: "New Scheme of Work Submitted", message: `${user.name} submitted a scheme for ${parsed.data.grade} ${parsed.data.subject} â€” Term ${parsed.data.term} Week ${parsed.data.week}.`, type: "ACTION", link: "/schemes", actionRequired: true });
   }
   return NextResponse.json({ scheme }, { status: 201 });
 }
@@ -96,7 +96,7 @@ export async function PATCH(request: Request) {
   if (parsed.data.action === "verify-head") {
     if (!["HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await db.schemeOfWork.update({ where: { id: scheme.id }, data: { status: "VERIFIED_BY_HEADTEACHER", headteacherFeedback: parsed.data.feedback ?? null, headteacherVerifiedAt: new Date() } });
-    await createNotification({ userId: scheme.teacherId, title: "Scheme Verified ✓", message: `Your scheme for ${scheme.grade} ${scheme.subject} Week ${scheme.week} has been fully verified by the Head Teacher.`, type: "SUCCESS", link: "/schemes" });
+    await createNotification({ userId: scheme.teacherId, title: "Scheme Verified âœ“", message: `Your scheme for ${scheme.grade} ${scheme.subject} Week ${scheme.week} has been fully verified by the Head Teacher.`, type: "SUCCESS", link: "/schemes" });
     return NextResponse.json({ ok: true });
   }
 

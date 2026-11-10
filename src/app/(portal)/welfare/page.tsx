@@ -5,10 +5,10 @@ import { readSession } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import WelfareClient from "./welfare-client";
 
-export const metadata = { title: "Staff Welfare — Mary Royal School" };
+export const metadata = { title: "Staff Welfare â€” Mary Royal School" };
 
 export default async function WelfarePage() {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, name: true, suspended: true, forcePasswordChange: true } });

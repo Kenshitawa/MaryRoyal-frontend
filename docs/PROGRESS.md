@@ -525,3 +525,11 @@ Total output lines: 287
   - Strict Single-Page Architecture: Formatted the complete Learner Admission Slip as a compact, self-contained single-page A4 document (`Page 1 of 1`), containing the learner bio hero with passport photo, Enrolment Details & CBE Placement (01), Residential Address & Commute (02), Parent & Legal Guardian (03), Emergency Contacts & Authorized Pickup (04), Legal Declaration with 3 signature blocks (Parent, Secretary, Head Teacher/Director with official seal graphic) (05), and digital verification QR code panel.
   - Professional Footer: Double royal blue / gold dividing rules, left-aligned school name and Obunga Kisumu campus info with accreditation and "This slip is NOT a fee receipt" notice, right-aligned `Page 1 of 1 | Reference | Nairobi EAT timestamp`, and centered Kenya Basic Education Act statutory authority notice.
 - Tested: `npm run typecheck` passed (0 errors), `npm run lint` passed (0 errors, 0 warnings), `npm test` passed (15 test files, 74/74 tests passing), and high-resolution screenshot generated via Playwright/Chrome headless preview.
+
+## Phase 3 - Subdomain tenant resolution and tenant config loading - 2026-11-10
+- Built: strict Host-header-only tenant resolution (no query/cookie tenant switching), Edge-safe middleware moved to src/middleware.ts, signed school session carrying schoolId + schoolSlug, cross-subdomain session mismatch rejection, suspended/unknown tenant status page, safe CSS colour/logo sanitisation, 60s tenant config cache, platform console host routing, and removal of legacy mary_session auth cookies.
+- Tested: 
+pm run lint (0 warnings), 
+pm run typecheck (0 errors), 
+pm test (17 files, 91 tests), 
+pm run build compiles with middleware; manual HTTP checks: / 200, /dashboard redirects to /?reason=signin without a session, unknown subdomain renders the tenant-not-found page, demo login returns 200 and sets school_session.

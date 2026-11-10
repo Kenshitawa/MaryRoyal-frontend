@@ -12,7 +12,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ use
   const { userId, filename } = await params;
   const extension = filename.split(".").pop()?.toLowerCase() ?? "";
   if (!/^[a-z0-9_-]{8,80}$/i.test(userId) || !/^[a-f0-9-]{36}\.(jpg|png|webp)$/i.test(filename) || !types[extension]) return NextResponse.json({ error: "Photo not found." }, { status: 404 });
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   const viewer = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

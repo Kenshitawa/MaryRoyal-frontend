@@ -8,7 +8,7 @@ import { canInScope } from "@/lib/permissions";
 const inputSchema = z.object({ grade: z.string().min(2).max(20), subject: z.string().min(2).max(60), topic: z.string().trim().min(3).max(200) });
 const outputSchema = z.object({ title: z.string().min(3).max(120), instructions: z.string().min(5).max(2000), answerKey: z.string().max(500).optional() });
 export async function POST(request: Request) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   const actor = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 
   // Robust local rule-based CBC draft question generator
   const fallbackDraft = {
-    title: `${topic} — ${subject} Task`,
+    title: `${topic} â€” ${subject} Task`,
     instructions: `Instructions for ${grade} Learners:\n\n1. Define or explain what is meant by "${topic}" in your own words.\n2. Give two practical real-life examples related to ${topic} observed in your school or home environment.\n3. Solve or demonstrate understanding: Write down 3 key principles or steps learned about ${topic}.\n\nWrite your responses clearly in complete sentences.`,
     answerKey: `Model Answers:\n1. Accurate definition demonstrating understanding of ${topic}.\n2. Two valid practical examples.\n3. Key principles accurately stated.`
   };

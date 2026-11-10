@@ -7,7 +7,7 @@ import { readSession } from "@/lib/session";
 
 const schema = z.object({ gameKey: z.enum(["NUMBER_QUEST", "SCIENCE_EXPLORER"]), score: z.number().int().min(0).max(20), maxScore: z.number().int().min(1).max(20) }).refine(value => value.score <= value.maxScore, "The score cannot exceed the total.");
 export async function POST(request: Request) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });

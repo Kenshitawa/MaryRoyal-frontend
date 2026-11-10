@@ -23,7 +23,7 @@ export default async function ReceiptPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const token = (await cookies()).get("mary_session")?.value;
+  const token = (await cookies()).get("school_session")?.value;
   const session = token ? await readSession(token) : null;
   if (!session) redirect("/");
 
@@ -112,7 +112,7 @@ export default async function ReceiptPage({
                 </span>
                 <div>
                   <h1 className="text-lg font-black tracking-tight text-white">Mary Royal School</h1>
-                  <p className="text-xs text-blue-200">Obunga, Kisumu · Hard work pays</p>
+                  <p className="text-xs text-blue-200">Obunga, Kisumu Â· Hard work pays</p>
                 </div>
               </div>
 
@@ -165,7 +165,7 @@ export default async function ReceiptPage({
               <div>
                 <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Class &amp; Term</dt>
                 <dd className="mt-1 text-xs font-medium text-slate-700 dark:text-slate-300">
-                  {payment.invoice.learner.grade} · {payment.invoice.term}
+                  {payment.invoice.learner.grade} Â· {payment.invoice.term}
                 </dd>
               </div>
 
@@ -184,8 +184,8 @@ export default async function ReceiptPage({
                 <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Method &amp; Ref</dt>
                 <dd className="mt-1 font-mono text-xs font-medium text-slate-800 dark:text-slate-200">
                   {payment.method}
-                  {payment.mpesaCode ? ` · M-PESA: ${payment.mpesaCode}` : ""}
-                  {payment.reference ? ` · Ref: ${payment.reference}` : ""}
+                  {payment.mpesaCode ? ` Â· M-PESA: ${payment.mpesaCode}` : ""}
+                  {payment.reference ? ` Â· Ref: ${payment.reference}` : ""}
                 </dd>
               </div>
             </div>
