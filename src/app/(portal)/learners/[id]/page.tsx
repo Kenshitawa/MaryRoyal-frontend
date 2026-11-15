@@ -421,10 +421,10 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 >
                   ← {actor.role === "PARENT" ? "My children" : actor.role === "LEARNER" ? "My learning" : "Learner Register"}
                 </Link>
-                <p className="text-[11px] font-bold uppercase tracking-[.18em] text-blue-200">{relationTitle}</p>
-                <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-4xl text-white">{learner.name}</h1>
-                <p className="mt-1.5 text-xs text-blue-100 sm:text-sm">
-                  <span className="font-mono font-bold text-white">{learner.admissionNo}</span> · {learner.grade}
+                <p className="text-[10.5px] font-semibold uppercase tracking-wider text-blue-200">{relationTitle}</p>
+                <h1 className="mt-1 text-xl font-bold tracking-tight text-white sm:text-2xl">{learner.name}</h1>
+                <p className="mt-1 text-xs text-blue-100">
+                  <span className="font-mono font-semibold text-white">{learner.admissionNo}</span> · {learner.grade}
                   {profile?.stream ? ` · Stream ${profile.stream}` : ""} ·{" "}
                   <span className="rounded-md bg-white/20 px-2 py-0.5 font-semibold text-white">
                     {learner.admissionStatus.toLowerCase()}
@@ -435,11 +435,11 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
             </div>
 
             {/* Quick Actions */}
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               {canInScope(actor.role, "exports", "view", "school") && (
                 <a
                   href={`/api/learners/${learner.id}/export`}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/20 px-4 py-2.5 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/30"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/15 px-3.5 py-2 text-xs font-semibold text-white shadow-xs backdrop-blur transition hover:bg-white/25 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <FileDown size={14} /> Export Learner Data
                 </a>
@@ -447,7 +447,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
               {canEditLearner && (
                 <Link
                   href={`/learners/${learner.id}/edit`}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/20 px-4 py-2.5 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/30"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/15 px-3.5 py-2 text-xs font-semibold text-white shadow-xs backdrop-blur transition hover:bg-white/25 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <Edit3 size={14} /> Edit Profile
                 </Link>
@@ -458,7 +458,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                   href={`/api/learners/${learner.id}/report-card`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/20 px-4 py-2.5 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/30"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/15 px-3.5 py-2 text-xs font-semibold text-white shadow-xs backdrop-blur transition hover:bg-white/25 hover:-translate-y-0.5 active:translate-y-0"
                   title="Download Official CBE Term Report Card"
                 >
                   <FileDown size={14} /> Report Card PDF
@@ -468,7 +468,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 href={`/api/learners/${learner.id}/admission-slip`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/40 bg-white/20 px-4 py-2.5 text-xs font-bold text-white shadow-sm backdrop-blur transition hover:bg-white/30"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/15 px-3.5 py-2 text-xs font-semibold text-white shadow-xs backdrop-blur transition hover:bg-white/25 hover:-translate-y-0.5 active:translate-y-0"
                 title="Download Official Learner Admission Slip & Enrolment Certificate"
               >
                 <FileDown size={14} /> Admission Slip
@@ -476,7 +476,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
               {admissionDraft && canInScope(actor.role, "admissions", "view", "school") && (
                 <Link
                   href={`/api/admissions/${admissionDraft.id}/form`}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-blue-800 shadow-sm transition hover:bg-blue-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-blue-900 shadow-xs transition hover:bg-blue-50 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <FileDown size={14} /> Full Admission Dossier
                 </Link>

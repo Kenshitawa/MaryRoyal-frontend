@@ -177,19 +177,19 @@ export default async function ReportsPage() {
 
   return (
     <>
-      <section className="mx-auto max-w-7xl space-y-6 p-4 pb-28 sm:p-6 lg:p-8">
+      <section className="mx-auto max-w-7xl space-y-5 p-4 pb-28 sm:p-6 lg:p-8">
         {/* Executive Hero Header */}
-        <div className="bento-card overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 p-6 text-white shadow-xl shadow-blue-950/15 sm:p-8 dark:border-blue-900/50">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="animate-boardui-in overflow-hidden rounded-2xl border border-blue-900/30 bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 p-5 text-white shadow-lg shadow-blue-950/15 sm:p-7 dark:border-blue-900/50">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-400/20 px-3 py-1 text-xs font-bold text-blue-200 ring-1 ring-inset ring-blue-300/30">
-                <FileBarChart2 size={14} className="text-blue-300" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-400/20 px-3 py-0.5 text-[11px] font-semibold text-blue-200 ring-1 ring-inset ring-blue-300/30">
+                <FileBarChart2 size={13} className="text-blue-300" />
                 Director Executive Intelligence &amp; Data Hub
               </span>
-              <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+              <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl">
                 School Analytics &amp; Verified Reports
               </h1>
-              <p className="mt-1 text-xs text-blue-100/90 sm:text-sm">
+              <p className="mt-1 text-xs text-blue-100/90">
                 Interactive executive charts paired with live CSV exports for MOE compliance, audit, and strategic review.
               </p>
             </div>
@@ -197,19 +197,19 @@ export default async function ReportsPage() {
         </div>
 
         {/* High Level Metrics Bar */}
-        <section className="grid gap-4 sm:grid-cols-3" aria-label="Executive summary metrics">
+        <section className="grid gap-3.5 sm:grid-cols-3" aria-label="Executive summary metrics">
           {totals.map(({ label, value, icon: Icon, description, tone }) => (
             <article
               key={label}
-              className="bento-card flex items-center justify-between rounded-2xl border border-slate-200/90 bg-white/95 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/90"
+              className="card flex items-center justify-between rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-xs backdrop-blur dark:border-slate-800 dark:bg-slate-900/90"
             >
               <div>
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
-                <p className="mt-1 text-3xl font-black text-slate-900 dark:text-white">{value}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+                <p className="mt-0.5 text-2xl font-bold text-slate-900 tabular-nums dark:text-white">{value}</p>
                 <p className="mt-0.5 text-[11px] text-slate-400">{description}</p>
               </div>
-              <span className={`grid h-12 w-12 place-items-center rounded-2xl ${toneStyles[tone]}`}>
-                <Icon size={22} />
+              <span className={`grid h-10 w-10 place-items-center rounded-xl ${toneStyles[tone]}`}>
+                <Icon size={18} />
               </span>
             </article>
           ))}

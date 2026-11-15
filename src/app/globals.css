@@ -284,27 +284,32 @@ html[data-theme="dark"] ::selection {
 }
 
 /* ------------------------------------------------------------------ */
-/* Type scale — every legacy utility snaps to the documented scale.    */
-/* There is no text below 12px anywhere.                               */
+/* Type scale — BoardUI refined friendly scale.                       */
+/* Reduced font sizes with clear, friendly visual hierarchy.           */
 /* ------------------------------------------------------------------ */
 .text-xs,
-[class~="text-[8.5px]"],
-[class~="text-[9px]"],
-[class~="text-[10px]"],
 [class~="text-[11px]"],
 [class~="text-[12px]"] {
-  font-size: 0.8125rem;
-  line-height: 1.45;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+[class~="text-[8.5px]"],
+[class~="text-[9px]"],
+[class~="text-[10px]"] {
+  font-size: 0.6875rem;
+  line-height: 1.35;
 }
 
 .text-sm,
 [class~="text-[13px]"],
 [class~="text-[13.5px]"] {
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  line-height: 1.45;
 }
 
 .text-base,
+[class~="text-[14px]"],
 [class~="text-[15px]"] {
   font-size: 0.875rem;
   line-height: 1.5;
@@ -316,8 +321,8 @@ html[data-theme="dark"] ::selection {
 }
 
 .text-xl {
-  font-size: 1.25rem;
-  line-height: 1.3;
+  font-size: 1.1875rem;
+  line-height: 1.35;
 }
 
 .text-2xl,
@@ -330,8 +335,8 @@ html[data-theme="dark"] ::selection {
 [class~="text-[34px]"],
 [class~="text-[40px]"],
 [class~="text-[58px]"] {
-  font-size: 1.5rem;
-  line-height: 1.15;
+  font-size: 1.375rem;
+  line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
@@ -344,12 +349,18 @@ h1.text-5xl {
   line-height: 1.3;
 }
 
-.font-medium,
-.font-semibold,
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
 .font-bold,
 .font-extrabold,
 .font-black {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .font-light,
@@ -376,6 +387,12 @@ h1.text-5xl {
   border: 1px solid var(--card-border);
   border-radius: 1rem;
   box-shadow: var(--card-shadow);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease;
+}
+
+.card:hover,
+.bento-card:hover {
+  border-color: var(--brand-line);
 }
 
 .glass,
@@ -643,51 +660,63 @@ html[data-style="glass"] .card {
   }
 }
 
-/* Buttons ------------------------------------------------------------ */
+/* Buttons (BoardUI refined style & micro-interactions) --------------- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 16px;
+  min-height: 40px;
+  padding: 0 15px;
   border-radius: 12px;
   border: 1px solid transparent;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.2;
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  position: relative;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.985);
+  transform: translateY(0) scale(0.985);
+  filter: brightness(0.95);
 }
 
 .btn:disabled,
 .btn[aria-disabled="true"] {
-  opacity: 0.55;
+  opacity: 0.5;
   pointer-events: none;
+  transform: none;
 }
 
 .btn.btn-primary {
-  background: var(--brand);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(29, 78, 216, 0.35);
 }
-.btn.btn-primary:hover {
-  background: var(--brand-hover);
+.btn.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 2px 8px -1px rgba(29, 78, 216, 0.45);
 }
 
 .btn.btn-secondary {
   background: var(--surface);
   border-color: var(--line);
   color: var(--ink);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
-.btn.btn-secondary:hover {
+.btn.btn-secondary:hover:not(:disabled) {
   background: var(--surface-2);
+  border-color: var(--brand-line);
 }
 
 .btn.btn-soft {
@@ -695,15 +724,16 @@ html[data-style="glass"] .card {
   color: var(--brand-ink);
   border-color: var(--brand-line);
 }
-.btn.btn-soft:hover {
-  background: var(--brand-line);
+.btn.btn-soft:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: var(--brand);
 }
 
 .btn.btn-ghost {
   background: transparent;
   color: var(--ink-2);
 }
-.btn.btn-ghost:hover {
+.btn.btn-ghost:hover:not(:disabled) {
   background: var(--surface-2);
   color: var(--ink);
 }
@@ -713,33 +743,37 @@ html[data-style="glass"] .card {
   border-color: var(--danger-line);
   color: var(--danger);
 }
-.btn.btn-danger:hover {
-  filter: saturate(1.15);
+.btn.btn-danger:hover:not(:disabled) {
+  filter: saturate(1.2);
 }
 
 .btn-sm {
-  min-height: 44px;
+  min-height: 36px;
   padding: 0 12px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   border-radius: 10px;
 }
 
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 12px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--ink-2);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
-.icon-btn:hover {
+.icon-btn:hover:not(:disabled) {
   background: var(--surface-2);
   color: var(--ink);
+  transform: translateY(-1px);
+}
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 /* Fields ------------------------------------------------------------- */
@@ -952,6 +986,39 @@ a.list-row:hover {
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* BoardUI micro-animations ------------------------------------------- */
+@keyframes boardui-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes boardui-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-boardui-in {
+  animation: boardui-fade-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-boardui-slide {
+  animation: boardui-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Toasts ------------------------------------------------------------- */

@@ -92,19 +92,19 @@ export function StatCard({
   const IconComp = iconName ? iconMap[iconName] : null;
 
   return (
-    <ThemedCard tint={tint} className="relative overflow-hidden p-5 sm:p-6">
-      <div className="flex items-start justify-between gap-4">
+    <ThemedCard tint={tint} className="relative overflow-hidden p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             {title}
           </p>
-          <p className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <p className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {displayValue}
           </p>
         </div>
 
-        <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${toneStyles[tone]}`}>
-          {IconComp ? <IconComp size={20} /> : icon ? icon : <span className="h-2.5 w-2.5 rounded-full bg-current" />}
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneStyles[tone]}`}>
+          {IconComp ? <IconComp size={18} /> : icon ? icon : <span className="h-2 w-2 rounded-full bg-current" />}
         </div>
       </div>
 

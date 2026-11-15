@@ -95,83 +95,83 @@ export default async function ReceiptPage({
           <PageNavigation active="Fee receipt" homeHref={homeHref} userId={user.id} />
         </nav>
       </header>
-      <main id="receipt" className="mx-auto my-8 max-w-2xl px-4 sm:px-6 print:my-0 print:max-w-none print:px-0">
-        <div className="bento-card overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl shadow-blue-950/5 print:border-0 print:shadow-none dark:border-slate-800 dark:bg-slate-900">
+      <main id="receipt" className="mx-auto my-6 max-w-2xl px-4 sm:px-6 print:m-0 print:max-w-none print:p-0">
+        <div className="animate-boardui-in overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-lg shadow-blue-950/5 print:rounded-none print:border print:border-slate-300 print:shadow-none dark:border-slate-800 dark:bg-slate-900">
           {/* Header banner */}
-          <div className="border-b border-slate-100 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 px-6 py-6 text-white sm:px-8">
+          <div className="border-b border-blue-950/20 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 px-5 py-5 text-white sm:px-7 print:bg-white print:text-slate-950 print:border-b-2 print:border-slate-900">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white p-1.5 shadow">
+              <div className="flex items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white p-1.5 shadow-sm print:border print:border-slate-200">
                   <Image
                     src="/mary-royal-logo.png"
-                    width={48}
-                    height={48}
+                    width={44}
+                    height={44}
                     alt="Mary Royal School logo"
                     className="h-full w-full object-contain"
                   />
                 </span>
                 <div>
-                  <h1 className="text-lg font-black tracking-tight text-white">Mary Royal School</h1>
-                  <p className="text-xs text-blue-200">Obunga, Kisumu · Hard work pays</p>
+                  <h1 className="text-base font-bold tracking-tight text-white print:text-slate-950">Mary Royal School</h1>
+                  <p className="text-[11px] font-medium text-blue-200 print:text-slate-600">P.O. Box 40100, Kisumu, Kenya</p>
                 </div>
               </div>
 
               <div className="text-right">
                 <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
                     payment.status === "VOID"
-                      ? "bg-rose-500/20 text-rose-200 ring-1 ring-rose-400/30"
-                      : "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/30"
+                      ? "bg-rose-500/20 text-rose-200 ring-1 ring-rose-400/30 print:bg-slate-100 print:text-rose-700"
+                      : "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/30 print:bg-slate-100 print:text-emerald-800"
                   }`}
                 >
                   {payment.status === "VOID" ? (
                     <>
-                      <AlertCircle size={13} /> VOIDED
+                      <AlertCircle size={12} /> VOIDED
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 size={13} /> OFFICIAL RECEIPT
+                      <CheckCircle2 size={12} /> OFFICIAL RECEIPT
                     </>
                   )}
                 </span>
-                <p className="mt-1 font-mono text-xs text-blue-200">{payment.receiptNo}</p>
+                <p className="mt-1 font-mono text-[11px] font-semibold text-blue-200 print:text-slate-700">{payment.receiptNo}</p>
               </div>
             </div>
           </div>
 
-          <div className="p-6 sm:p-8">
+          <div className="p-5 sm:p-7">
             {payment.status === "VOID" && (
-              <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300">
+              <div className="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-800 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300">
                 <span className="font-bold">Void Reason:</span> {payment.voidReason || "Transaction invalidated by finance administrator"}
               </div>
             )}
 
             {/* Learner & Payment Details Grid */}
-            <div className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-800/40 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3.5 rounded-xl border border-slate-200/80 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-800/40 sm:grid-cols-2">
               <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Learner</dt>
-                <dd className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">Learner</dt>
+                <dd className="mt-0.5 text-xs font-bold text-slate-900 dark:text-white">
                   <LearnerLink id={payment.invoice.learnerId} name={payment.invoice.learner.name} />
                 </dd>
               </div>
 
               <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Admission No</dt>
-                <dd className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-200">
+                <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">Admission No</dt>
+                <dd className="mt-0.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
                   <LearnerLink id={payment.invoice.learnerId} admissionNo={payment.invoice.learner.admissionNo} />
                 </dd>
               </div>
 
               <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Class &amp; Term</dt>
-                <dd className="mt-1 text-xs font-medium text-slate-700 dark:text-slate-300">
+                <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">Class &amp; Term</dt>
+                <dd className="mt-0.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                   {payment.invoice.learner.grade} · {payment.invoice.term}
                 </dd>
               </div>
 
               <div>
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Payment Date</dt>
-                <dd className="mt-1 text-xs font-medium text-slate-700 dark:text-slate-300">
+                <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">Payment Date</dt>
+                <dd className="mt-0.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                   {new Intl.DateTimeFormat("en-KE", {
                     dateStyle: "medium",
                     timeStyle: "short",
@@ -181,8 +181,8 @@ export default async function ReceiptPage({
               </div>
 
               <div className="sm:col-span-2">
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Method &amp; Ref</dt>
-                <dd className="mt-1 font-mono text-xs font-medium text-slate-800 dark:text-slate-200">
+                <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">Method &amp; Ref</dt>
+                <dd className="mt-0.5 font-mono text-xs font-medium text-slate-800 dark:text-slate-200">
                   {payment.method}
                   {payment.mpesaCode ? ` · M-PESA: ${payment.mpesaCode}` : ""}
                   {payment.reference ? ` · Ref: ${payment.reference}` : ""}
@@ -191,50 +191,50 @@ export default async function ReceiptPage({
             </div>
 
             {/* Fee Items Breakdown */}
-            <div className="mt-6">
-              <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                <FileText size={14} /> Invoice Fee Items
+            <div className="mt-5">
+              <h2 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <FileText size={13} /> Fee Statement Lines
               </h2>
-              <div className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-100 dark:divide-slate-800 dark:border-slate-800">
+              <div className="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900/50">
                 {payment.invoice.lines.map((line) => (
-                  <div key={line.id} className="flex justify-between px-4 py-2.5 text-xs text-slate-700 dark:text-slate-300">
-                    <span>{line.description}</span>
-                    <span className="font-semibold">{kes(line.amount)}</span>
+                  <div key={line.id} className="flex justify-between px-3.5 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    <span className="font-medium">{line.description}</span>
+                    <span className="font-semibold tabular-nums">{kes(line.amount)}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Total Paid & QR Verification Section */}
-            <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-blue-100 bg-blue-50/50 p-5 dark:border-blue-900/40 dark:bg-blue-950/30 sm:flex-row">
+            <div className="mt-5 flex flex-col items-center justify-between gap-4 rounded-xl border border-blue-100 bg-blue-50/40 p-4 dark:border-blue-900/40 dark:bg-blue-950/20 sm:flex-row print:border-slate-300 print:bg-slate-50">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300">
+                <p className="text-[10.5px] font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300 print:text-slate-700">
                   Amount Received
                 </p>
-                <p className="mt-1 text-2xl font-black text-blue-950 dark:text-white">
+                <p className="mt-0.5 text-xl font-extrabold text-blue-950 tabular-nums dark:text-white print:text-slate-950">
                   {kes(payment.amount)}
                 </p>
-                <span className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-                  <ShieldCheck size={14} className="text-emerald-600" />
-                  Authenticated by Mary Royal Accounts
+                <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                  <ShieldCheck size={13} className="text-emerald-600" />
+                  Authenticated by Mary Royal Accounts Office
                 </span>
               </div>
 
               {/* QR Verification Stamp */}
-              <div className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <div className="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-xs dark:border-slate-700 dark:bg-slate-800 print:shadow-none">
                 <div
-                  className="h-20 w-20 [&>svg]:h-full [&>svg]:w-full"
+                  className="h-18 w-18 [&>svg]:h-full [&>svg]:w-full"
                   dangerouslySetInnerHTML={{ __html: qrSvg }}
                 />
-                <span className="text-[10px] font-bold text-slate-500">Scan to Verify</span>
+                <span className="text-[9.5px] font-bold text-slate-500">Scan to Verify</span>
               </div>
             </div>
 
-            <p className="mt-6 text-center text-[11px] text-slate-400">
+            <p className="mt-5 text-center text-[10.5px] text-slate-400">
               Official computerized receipt issued by Mary Royal School, Obunga, Kisumu. Valid without physical signature.
             </p>
 
-            <div className="mt-6 flex justify-center">
+            <div className="mt-5 flex justify-center">
               <PrintButton receiptId={payment.id} />
             </div>
           </div>

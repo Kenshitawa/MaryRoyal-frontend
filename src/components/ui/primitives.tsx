@@ -29,7 +29,7 @@ export function Card({
         <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
           <div className="min-w-0">
             {title ? <h2 className="section-title break-words">{title}</h2> : null}
-            {description ? <p className="mt-0.5 text-label text-ink-2">{description}</p> : null}
+            {description ? <p className="mt-0.5 text-xs text-ink-2">{description}</p> : null}
           </div>
           {action ? <div className="shrink-0">{action}</div> : null}
         </div>
@@ -54,12 +54,12 @@ export function PageHeader({
   meta?: ReactNode;
 }) {
   return (
-    <div className="page-head">
+    <div className="page-head animate-boardui-in">
       {meta ? <div className="meta">{meta}</div> : null}
       <div className="page-head-row">
         <div className="min-w-0">
           <h1 className="page-title break-words">{title}</h1>
-          {help ? <p className="page-help mt-1">{help}</p> : null}
+          {help ? <p className="page-help mt-1 text-xs">{help}</p> : null}
         </div>
         {action ? <div className="flex min-w-0 flex-wrap items-center gap-2">{action}</div> : null}
       </div>
@@ -95,20 +95,20 @@ export function StatCard({
   const body = (
     <>
       <div className="flex min-w-0 items-start justify-between gap-2">
-        <p className="min-w-0 text-label font-semibold leading-snug text-ink-2">{label}</p>
+        <p className="min-w-0 text-[11px] font-semibold uppercase tracking-wider text-ink-2">{label}</p>
         {Icon ? (
-          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${tones[tone]}`} aria-hidden="true">
-            <Icon size={16} strokeWidth={2} />
+          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${tones[tone]}`} aria-hidden="true">
+            <Icon size={15} strokeWidth={2} />
           </span>
         ) : null}
       </div>
-      <p className="mt-2 text-kpi font-semibold tracking-tight text-ink tabular-nums break-words">{value}</p>
-      {note ? <p className="mt-1 text-caption text-ink-3">{note}</p> : null}
+      <p className="mt-1.5 text-xl font-bold tracking-tight text-ink tabular-nums break-words sm:text-2xl">{value}</p>
+      {note ? <p className="mt-0.5 text-[11px] text-ink-3">{note}</p> : null}
     </>
   );
-  const className = "card stat-card min-w-0 p-3.5 sm:p-4";
+  const className = "card stat-card min-w-0 p-3.5 transition-all hover:-translate-y-0.5 sm:p-4";
   return href ? (
-    <a href={href} className={`${className} block no-underline transition hover:border-brand-line`}>
+    <a href={href} className={`${className} block no-underline hover:border-brand-line`}>
       {body}
     </a>
   ) : (
@@ -141,8 +141,8 @@ export function ListRow({
     <>
       {leading ? <span className="shrink-0">{leading}</span> : null}
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-body font-semibold text-ink">{title}</span>
-        {subtitle ? <span className="mt-0.5 block truncate text-label text-ink-2">{subtitle}</span> : null}
+        <span className="block truncate text-xs font-semibold text-ink">{title}</span>
+        {subtitle ? <span className="mt-0.5 block truncate text-[11px] text-ink-2">{subtitle}</span> : null}
       </span>
       {trailing ? <span className="flex shrink-0 items-center gap-2">{trailing}</span> : null}
     </>

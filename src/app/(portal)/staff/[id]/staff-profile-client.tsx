@@ -289,58 +289,62 @@ export function StaffProfileClient({
                   </span>
                 )}
               </div>
-              <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
+              <h1 className="mt-1 text-xl font-bold tracking-tight text-white sm:text-2xl">
                 {staff.name}
               </h1>
-              <p className="mt-1 text-xs text-blue-100 sm:text-sm">
+              <p className="mt-0.5 text-xs text-blue-100">
                 {staff.employmentTitle || roleLabel} · {staff.email}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
+              type="button"
               onClick={printStaffSlip}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-white/20"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/15 px-3.5 py-2 text-xs font-semibold text-white shadow-xs backdrop-blur transition hover:bg-white/25 hover:-translate-y-0.5 active:translate-y-0"
+              title="Print official staff record and credential slip"
             >
-              <Printer size={13} /> Print Staff Slip
+              <Printer size={14} /> Print Staff Slip
             </button>
 
             {canEdit && (
               <button
+                type="button"
                 onClick={() => {
                   setShowEditModal(true);
                   setEditError("");
                   setEditSuccess(false);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-bold text-blue-900 shadow-sm transition hover:bg-blue-50"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-blue-900 shadow-xs transition hover:bg-blue-50 hover:-translate-y-0.5 active:translate-y-0"
               >
-                <Edit3 size={13} /> Edit Profile
+                <Edit3 size={14} /> Edit Profile
               </button>
             )}
           </div>
         </div>
       </section>
 
-      {/* Tabs Navigation Bar */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200 pb-2 dark:border-slate-800">
+      {/* Tabs Navigation Bar (BoardUI segmented pill style) */}
+      <div className="flex flex-wrap items-center gap-1.5 rounded-2xl bg-slate-100/80 p-1 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3.5 py-2 text-xs font-bold transition shrink-0 ${
+              className={`flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3.5 py-2 text-xs font-semibold transition shrink-0 ${
                 isActive
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                  ? "bg-white text-blue-700 shadow-xs dark:bg-slate-900 dark:text-blue-400"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               }`}
             >
-              <Icon size={14} className={tab.restricted ? "text-amber-400" : ""} />
+              <Icon size={14} className={tab.restricted ? "text-amber-500" : ""} />
               {tab.label}
               {tab.restricted && (
-                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-black uppercase text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                <span className="rounded-full bg-amber-100 px-1.5 py-0.2 text-[9.5px] font-bold uppercase text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                   Restricted
                 </span>
               )}
