@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import {
-  Download,
   FileBarChart2,
   Wallet,
   BookOpenCheck,
   Users,
-  Layers,
   ShieldCheck,
 } from "lucide-react";
+import { PillTab, PillTabList } from "@/components/base/tabs/pill-tab";
+import { ButtonLink } from "@/components/base/buttons/button";
+import { RiDownloadLine } from "@remixicon/react";
 
 export interface FinanceData {
   totalInvoiced: number;
@@ -71,62 +72,25 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
 
   return (
     <div className="space-y-8">
-      {/* View Switcher Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-4 dark:border-slate-800">
-        <div className="flex flex-wrap items-center gap-1.5 rounded-2xl bg-slate-100/80 p-1 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
-          <button
-            type="button"
-            onClick={() => setActiveTab("all")}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
-              activeTab === "all"
-                ? "bg-white text-blue-700 shadow-xs dark:bg-slate-900 dark:text-blue-400"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-            }`}
-          >
-            <Layers size={14} />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-separator-border pb-4">
+        <PillTabList className="max-w-full overflow-x-auto rounded-full border border-separator-border bg-background-secondary-default p-1">
+          <PillTab variant="gray" isSelected={activeTab === "all"} onSelect={() => setActiveTab("all")}>
             Executive Overview
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("finance")}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
-              activeTab === "finance"
-                ? "bg-white text-blue-700 shadow-xs dark:bg-slate-900 dark:text-blue-400"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-            }`}
-          >
-            <Wallet size={14} />
+          </PillTab>
+          <PillTab variant="gray" isSelected={activeTab === "finance"} onSelect={() => setActiveTab("finance")}>
             Finance &amp; Collections
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("academics")}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
-              activeTab === "academics"
-                ? "bg-white text-blue-700 shadow-xs dark:bg-slate-900 dark:text-blue-400"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-            }`}
-          >
-            <BookOpenCheck size={14} />
+          </PillTab>
+          <PillTab variant="gray" isSelected={activeTab === "academics"} onSelect={() => setActiveTab("academics")}>
             CBC Assessment Marks
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("learners")}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all ${
-              activeTab === "learners"
-                ? "bg-white text-blue-700 shadow-xs dark:bg-slate-900 dark:text-blue-400"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-            }`}
-          >
-            <Users size={14} />
+          </PillTab>
+          <PillTab variant="gray" isSelected={activeTab === "learners"} onSelect={() => setActiveTab("learners")}>
             Learner Demographics
-          </button>
-        </div>
+          </PillTab>
+        </PillTabList>
 
-        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-          <ShieldCheck size={14} className="text-emerald-600" />
-          <span>Live encrypted database exports</span>
+        <div className="flex items-center gap-1.5 text-caption-1-regular text-text-secondary">
+          <ShieldCheck size={14} className="text-accent-700" />
+          <span>Role-restricted school data</span>
         </div>
       </div>
 
@@ -266,13 +230,15 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
               </div>
 
               <div className="mt-6 pt-4 border-t border-emerald-200/70 dark:border-emerald-900/50">
-                <a
+                <ButtonLink
                   href="/api/reports/finance"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 hover:-translate-y-0.5 active:translate-y-0"
+                  variant="primary"
+                  size="small"
+                  leadingIcon={RiDownloadLine}
+                  className="min-h-11 w-full"
                 >
-                  <Download size={15} />
-                  <span>Download Finance CSV</span>
-                </a>
+                  Download Finance CSV
+                </ButtonLink>
                 <p className="mt-2 text-center text-[10px] text-slate-400">
                   Live snapshot generated at download request
                 </p>
@@ -448,13 +414,15 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
               </div>
 
               <div className="mt-6 pt-4 border-t border-purple-200/70 dark:border-purple-900/50">
-                <a
+                <ButtonLink
                   href="/api/reports/assessments"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-purple-700 hover:-translate-y-0.5 active:translate-y-0"
+                  variant="primary"
+                  size="small"
+                  leadingIcon={RiDownloadLine}
+                  className="min-h-11 w-full"
                 >
-                  <Download size={15} />
-                  <span>Download Assessment CSV</span>
-                </a>
+                  Download Assessment CSV
+                </ButtonLink>
                 <p className="mt-2 text-center text-[10px] text-slate-400">
                   Live snapshot generated at download request
                 </p>
@@ -556,13 +524,15 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
               </div>
 
               <div className="mt-6 pt-4 border-t border-blue-200/70 dark:border-blue-900/50">
-                <a
+                <ButtonLink
                   href="/api/reports/learners"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-blue-800 hover:-translate-y-0.5 active:translate-y-0"
+                  variant="primary"
+                  size="small"
+                  leadingIcon={RiDownloadLine}
+                  className="min-h-11 w-full"
                 >
-                  <Download size={15} />
-                  <span>Download Register CSV</span>
-                </a>
+                  Download Register CSV
+                </ButtonLink>
                 <p className="mt-2 text-center text-[10px] text-slate-400">
                   Audit-logged live export
                 </p>

@@ -22,6 +22,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { Button } from "@/components/base/buttons/button";
 
 type DateLike = Date | string;
 
@@ -299,27 +300,33 @@ export function StaffProfileClient({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={printStaffSlip}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/15 px-3.5 py-2 text-xs font-semibold text-white shadow-xs backdrop-blur transition hover:bg-white/25 hover:-translate-y-0.5 active:translate-y-0"
+              variant="primary"
+              size="small"
+              leadingIcon={Printer}
+              className="min-h-11"
               title="Print official staff record and credential slip"
             >
-              <Printer size={14} /> Print Staff Slip
-            </button>
+              Print Staff Slip
+            </Button>
 
             {canEdit && (
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setShowEditModal(true);
                   setEditError("");
                   setEditSuccess(false);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-blue-900 shadow-xs transition hover:bg-blue-50 hover:-translate-y-0.5 active:translate-y-0"
+                variant="secondary"
+                size="small"
+                leadingIcon={Edit3}
+                className="min-h-11"
               >
-                <Edit3 size={14} /> Edit Profile
-              </button>
+                Edit Profile
+              </Button>
             )}
           </div>
         </div>

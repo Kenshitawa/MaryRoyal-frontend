@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
+import "@/styles/globals.css";
 import "./globals.css";
 import IdleSessionGuard from "@/components/idle-session-guard";
 import { ThemeProvider } from "@/components/design-system/theme-provider";
+import { DirectionProvider } from "@/components/foundations/direction/direction";
 
 const inter = localFont({
   src: "../assets/fonts/inter-latin.woff2",
@@ -43,7 +45,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `try {
               const t = localStorage.getItem("mary-theme");
-              document.documentElement.dataset.theme = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+              const dark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+              document.documentElement.dataset.theme = dark ? "dark" : "light";
+              document.documentElement.classList.toggle("dark", dark);
               const s = localStorage.getItem("mary-style");
               if (s) document.documentElement.dataset.style = s;
             } catch {}`
@@ -62,10 +66,12 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ThemeProvider>
-          {children}
-          <IdleSessionGuard />
-        </ThemeProvider>
+        <DirectionProvider locale="en-US">
+          <ThemeProvider>
+            {children}
+            <IdleSessionGuard />
+          </ThemeProvider>
+        </DirectionProvider>
       </body>
     </html>
   );

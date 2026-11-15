@@ -96,6 +96,8 @@ Remaining:
 
 Shared responsive primitives, Bento/Glass/theme controls, page redesigns, profile/history sections, report charts and CSV links exist. `docs/UI_UPGRADE_CHECKLIST.md` is now an honest source inventory, not a passed visual audit.
 
+BoardUI tokens and components are wired into the shared shell, sign-in, report switcher/export actions, receipt actions and staff-profile actions. This is a targeted foundation, not a complete route migration. The latest local development smoke check passed the sign-in page at 390/768/1440px in light mode and at 390px in dark mode; authenticated report/staff UI verification remains open.
+
 Remaining: rebuilt route-by-route mobile/desktop/keyboard/screen-reader/dark-mode checks for every role, including staff creation, learner edit, exams/rubrics, videos, library, schemes, timetable and welfare. Finish responsive sortable/paginated tables, URL-backed state, safe command-palette search, complete report-card/statement print output and accessible charts. Separate Parent overview/results/fees/attendance pages and own phone/email editing are not built; current `/portal` is shared and `/profile` remains photo/password settings. Audit forbidden dashboard shortcuts and unsupported “safe,” “verified,” delivery and compliance copy.
 
 Deputy timetable, textbook library and schemes foundations now exist, so their earlier “pages do not exist” note is obsolete. Standalone duty/events/discipline pages remain absent; validate timetable clash enforcement and library transaction/audit integrity rather than certifying the entire operations module from these pages.

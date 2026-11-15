@@ -1,28 +1,33 @@
 "use client";
 
-import { Printer, Download } from "lucide-react";
+import { RiDownloadLine, RiPrinterLine } from "@remixicon/react";
+import { Button, ButtonLink } from "@/components/base/buttons/button";
 
 export function PrintButton({ receiptId }: { receiptId?: string }) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 print:hidden">
-      <button
+      <Button
         type="button"
         onClick={() => window.print()}
-        className="btn btn-secondary text-xs shadow-xs transition hover:scale-[1.02] active:scale-[0.98]"
+        variant="secondary"
+        size="small"
+        leadingIcon={RiPrinterLine}
+        className="min-h-11"
       >
-        <Printer size={15} className="text-blue-600 dark:text-blue-400" />
         Print Receipt
-      </button>
+      </Button>
 
       {receiptId && (
-        <a
+        <ButtonLink
           href={`/api/finance/payments/${receiptId}/pdf`}
           download={`receipt-${receiptId}.pdf`}
-          className="btn btn-primary text-xs shadow-sm transition hover:scale-[1.02] active:scale-[0.98]"
+          variant="primary"
+          size="small"
+          leadingIcon={RiDownloadLine}
+          className="min-h-11"
         >
-          <Download size={15} />
           Download PDF
-        </a>
+        </ButtonLink>
       )}
     </div>
   );

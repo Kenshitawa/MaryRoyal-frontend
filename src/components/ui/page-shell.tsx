@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { Search, ShieldCheck, UserRound } from "lucide-react";
+import { RiSearchLine } from "@remixicon/react";
+import { ShieldCheck, UserRound } from "lucide-react";
 import NotificationBell from "@/components/notification-bell";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 import { CommandPalette } from "@/components/design-system/command-palette";
@@ -14,6 +15,8 @@ import { getRoleNavigation, getSectionForPath } from "@/lib/navigation";
 import { PortalHeader } from "@/components/ui/portal-header";
 import { PortalNav } from "@/components/ui/portal-nav";
 import { ToastProvider } from "@/components/ui/toast";
+import { Avatar } from "@/components/base/avatar/avatar";
+import { Button } from "@/components/base/buttons/button";
 
 type ShellUser = {
   id: string;
@@ -110,11 +113,17 @@ export function PageShell({
               <span className="font-semibold text-ink">{section}</span>
             </p>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setSearchOpen(true)} className="btn btn-secondary btn-sm">
-                <Search size={15} aria-hidden="true" />
-                <span>Search</span>
-                <kbd className="ml-1 hidden rounded border border-line px-1.5 text-caption text-ink-3 xl:inline">Ctrl K</kbd>
-              </button>
+              <Button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                variant="secondary"
+                size="small"
+                leadingIcon={RiSearchLine}
+                className="shrink-0"
+              >
+                Search
+                <kbd className="ml-1 hidden rounded border border-border-button-default px-1.5 text-caption-2-regular text-text-tertiary xl:inline">Ctrl K</kbd>
+              </Button>
               <ThemeStyleControls compact />
               <NotificationBell />
               <span className="ml-1 hidden text-right xl:block">
@@ -123,19 +132,15 @@ export function PageShell({
               </span>
               <details className="relative">
                 <summary aria-label="Open profile menu" className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded-full">
-                  <span className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-brand-soft text-label font-semibold text-brand-ink ring-1 ring-brand-line">
-                    {user.avatarUrl ? (
-                      <Image src={user.avatarUrl} alt="" width={36} height={36} className="h-9 w-9 object-cover" unoptimized />
-                    ) : (
-                      user.name
-                        .trim()
-                        .split(/\s+/)
-                        .map((part) => part[0])
-                        .slice(0, 2)
-                        .join("")
-                        .toUpperCase()
-                    )}
-                  </span>
+                  <Avatar
+                    src={user.avatarUrl ?? undefined}
+                    alt=""
+                    initials={user.name.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
+                    color="blue"
+                    size="lg"
+                    aria-hidden="true"
+                    className="ring-1 ring-brand-line"
+                  />
                 </summary>
                 <div className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-line bg-surface p-2 text-ink shadow-lg">
                   <div className="px-2 py-1.5">

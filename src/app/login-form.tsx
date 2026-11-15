@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, LockKeyhole, Mail, LoaderCircle, AlertCircle } from "lucide-react";
+import { RiArrowRightLine, RiEyeLine, RiEyeOffLine, RiLoader2Line } from "@remixicon/react";
+import { Button } from "@/components/base/buttons/button";
+import { InputBase } from "@/components/base/input/input";
+import { Label } from "@/components/base/input/label";
 
 export default function LoginForm() {
   const [error, setError] = useState("");
@@ -20,69 +23,71 @@ export default function LoginForm() {
   }
   return (
     <form onSubmit={submit} className="mt-6 space-y-4" aria-busy={busy}>
-      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
-        Email address
-        <span className="relative mt-1.5 block">
-          <Mail size={16} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            required
-            name="email"
-            type="email"
-            autoComplete="username"
-            className="h-[44px] w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-4 text-xs font-medium text-slate-900 outline-none transition placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-900/40"
-            placeholder="name@maryroyal.ac.ke"
-          />
-        </span>
-      </label>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="login-email" isRequired>Email address</Label>
+        <InputBase
+          id="login-email"
+          required
+          name="email"
+          type="email"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          dir="ltr"
+          className="px-3 text-body-regular"
+          fieldClassName="min-h-11 w-full rounded-xl"
+          placeholder="name@maryroyal.ac.ke"
+        />
+      </div>
 
-      <div>
-        <label htmlFor="login-password" className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
-          Password
-        </label>
-        <span className="relative mt-1.5 block">
-          <LockKeyhole size={16} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            id="login-password"
-            required
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            className="h-[44px] w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-11 text-xs font-medium text-slate-900 outline-none transition placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-3 focus:ring-blue-100 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-900/40"
-            placeholder="Enter your password"
-          />
-          <button
-            type="button"
-            aria-label={showPassword ? "Hide password" : "Show password"}
-            aria-pressed={showPassword}
-            onClick={() => setShowPassword((value) => !value)}
-            className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-blue-600 dark:hover:bg-slate-800"
-          >
-            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-          </button>
-        </span>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="login-password" isRequired>Password</Label>
+        <InputBase
+          id="login-password"
+          required
+          name="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          className="px-3 text-body-regular"
+          fieldClassName="min-h-11 w-full rounded-xl"
+          placeholder="Enter your password"
+          trailingAddon={
+            <Button
+              type="button"
+              variant="ghost"
+              size="small"
+              iconOnly
+              leadingIcon={showPassword ? RiEyeOffLine : RiEyeLine}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((value) => !value)}
+            />
+          }
+        />
       </div>
 
       {error && (
-        <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-          <AlertCircle size={15} className="mt-0.5 shrink-0 text-red-500" aria-hidden="true" />
+        <div role="alert" className="rounded-xl border border-border-error-default bg-background-tertiary-error p-3 text-body-regular text-text-error-primary">
           <span>{error}</span>
         </div>
       )}
 
-      <button
+      <Button
+        type="submit"
         disabled={busy}
-        className="group flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-700 to-blue-600 text-xs font-semibold text-white shadow-md shadow-blue-700/20 transition hover:-translate-y-0.5 hover:from-blue-800 hover:to-blue-700 hover:shadow-blue-700/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 disabled:translate-y-0 disabled:cursor-wait disabled:opacity-70 active:translate-y-0"
+        aria-live="polite"
+        aria-busy={busy}
+        data-loading={busy ? "true" : "false"}
+        leadingIcon={busy ? RiLoader2Line : undefined}
+        trailingIcon={busy ? undefined : RiArrowRightLine}
+        className="min-h-12 w-full [&>svg:first-child]:motion-safe:animate-spin"
       >
         {busy ? (
-          <>
-            <LoaderCircle size={15} className="animate-spin" /> Signing you in…
-          </>
+          "Signing you in…"
         ) : (
-          <>
-            Sign in securely <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
-          </>
+          "Sign in securely"
         )}
-      </button>
+      </Button>
     </form>
   );
 }
