@@ -17,6 +17,24 @@ export async function GET() {
   const user = await actor();
   if (!user || user.suspended || user.forcePasswordChange) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   if (canInScope(user.role, "learningVideos", "view", "self")) {
+    const activeLearners = await db.guardianLink.findMany({
+      where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: { in: ["PENDING", "APPROVED"] } } },
+      select: { learnerId: true, learner: { select: { grade: true, admissionStatus: true } } },
+    });
+    const pendingLearners = activeLearners.filter(link => link.learner.admissionStatus === "PENDING");
+    if (pendingLearners.length) {
+      const learnerIds = pendingLearners.map(link => link.learnerId);
+      const grades = [...new Set(pendingLearners.map(link => link.learner.grade))];
+      const videos = await db.learningVideo.findMany({
+        where: { grade: { in: grades }, status: "VERIFIED" },
+        include: { watches: { where: { learnerId: { in: learnerIds }, userId: user.id }, select: { watchedAt: true } } },
+        orderBy: [{ subject: "asc" }, { strand: "asc" }],
+      });
+      return NextResponse.json({
+        videos: videos.map(({ watches, ...video }) => ({ ...video, watched: watches.length > 0, watchedAt: watches[0]?.watchedAt ?? null })),
+        weakTopics: [],
+      });
+    }
     const link = await db.guardianLink.findFirst({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: "APPROVED" } }, select: { learnerId: true, learner: { select: { grade: true } } } });
     if (!link) return NextResponse.json({ videos: [], weakTopics: [] });
     const assessments = await db.assessment.findMany({ where: { learnerId: link.learnerId, status: "RELEASED" }, select: { subject: true, score: true, strand: true, term: true }, orderBy: { term: "desc" }, take: 100 });

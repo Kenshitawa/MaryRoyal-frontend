@@ -87,7 +87,7 @@ export default async function ReceiptPage({
               <ArrowLeft size={16} aria-hidden="true" />
               {user.role === "PARENT" ? "Back to portal" : "Back to finance"}
             </Link>
-            <span className="ml-auto text-sm font-semibold text-blue-100">Fee receipt</span>
+            <span className="ml-auto text-sm font-semibold text-blue-100">Fee receipt · {payment.receiptNo}</span>
           </div>
           <PageNavigation active="Fee receipt" homeHref={homeHref} userId={user.id} />
         </nav>
@@ -110,6 +110,7 @@ export default async function ReceiptPage({
                 <div>
                   <h1 className="text-base font-bold tracking-tight text-white print:text-slate-950">Mary Royal School</h1>
                   <p className="text-[11px] font-medium text-blue-200 print:text-slate-600">P.O. Box 40100, Kisumu, Kenya</p>
+                  <p className="text-caption-1-semibold text-text-white print:text-text-secondary">Motto: Hard work pays</p>
                 </div>
               </div>
 
@@ -231,11 +232,11 @@ export default async function ReceiptPage({
             <p className="mt-5 text-center text-base text-slate-400">
               {payment.status === "VOID"
                 ? `Receipt ${payment.receiptNo} has been voided. Retain this copy for reference.`
-                : "Payment receipt issued by Mary Royal School, Obunga, Kisumu. Retain this copy for your records."}
+                : "Payment receipt issued by Mary Royal School. Retain this copy for your records."}
             </p>
 
             <div className="mt-5 flex justify-center">
-              <PrintButton receiptId={payment.id} />
+              <PrintButton receiptId={payment.id} receiptNo={payment.receiptNo} />
             </div>
           </div>
         </div>

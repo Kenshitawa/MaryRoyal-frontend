@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import { cx } from "@/utils/cx";
 
 /* ------------------------------------------------------------------ */
 /* Card                                                                */
@@ -86,27 +87,31 @@ export function StatCard({
   href?: string;
 }) {
   const tones: Record<string, string> = {
-    brand: "bg-brand-soft text-brand-ink",
-    success: "bg-success-soft text-success",
-    warning: "bg-warning-soft text-warning",
-    danger: "bg-danger-soft text-danger",
-    neutral: "bg-surface-2 text-ink-2",
+    brand: "bg-accent-50 text-accent-700",
+    success: "bg-background-secondary-default text-state-success-text",
+    warning: "bg-background-secondary-default text-text-secondary",
+    danger: "bg-background-secondary-default text-text-error-primary",
+    neutral: "bg-background-secondary-default text-foreground-icon-secondary",
   };
   const body = (
     <>
       <div className="flex min-w-0 items-start justify-between gap-2">
-        <p className="min-w-0 text-[11px] font-semibold uppercase tracking-wider text-ink-2">{label}</p>
+        <p className="min-w-0 text-caption-1-semibold text-text-secondary">{label}</p>
         {Icon ? (
-          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${tones[tone]}`} aria-hidden="true">
+          <span className={cx("grid size-8 shrink-0 place-items-center rounded-xl", tones[tone])} aria-hidden="true">
             <Icon size={15} strokeWidth={2} />
           </span>
         ) : null}
       </div>
-      <p className="mt-1.5 text-xl font-bold tracking-tight text-ink tabular-nums break-words sm:text-2xl">{value}</p>
-      {note ? <p className="mt-0.5 text-[11px] text-ink-3">{note}</p> : null}
+      <p className="mt-1.5 break-words text-title-3-semibold tabular-nums text-text-primary">{value}</p>
+      {note ? <p className="mt-0.5 text-body-2-regular text-text-secondary">{note}</p> : null}
     </>
   );
-  const className = "card stat-card min-w-0 p-3.5 transition-all hover:-translate-y-0.5 sm:p-4";
+  const className = cx(
+    "min-w-0 rounded-3xl border border-border-button-default bg-background-primary-default p-3.5 shadow-xs transition-colors duration-150 sm:p-4",
+    href && "hover:border-accent-300 active:bg-background-primary-active",
+    href && "outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+  );
   return href ? (
     <a href={href} className={`${className} block no-underline hover:border-brand-line`}>
       {body}

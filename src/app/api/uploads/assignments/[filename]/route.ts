@@ -25,7 +25,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ fil
     ]);
     type = assignment?.attachmentType ?? submission?.attachmentType ?? null;
   } else if (user.role === "LEARNER") {
-    const links = await db.guardianLink.findMany({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: "APPROVED" } }, select: { learnerId: true, learner: { select: { grade: true } } } });
+    const links = await db.guardianLink.findMany({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: { in: ["PENDING", "APPROVED"] } } }, select: { learnerId: true, learner: { select: { grade: true } } } });
     const learnerIds = links.map(link => link.learnerId);
     const grades = links.map(link => link.learner.grade);
     const [assignment, submission] = await Promise.all([

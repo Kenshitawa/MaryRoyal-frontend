@@ -209,7 +209,7 @@ export default async function Dashboard() {
       db.assessment.count({ where: { status: "RELEASED" } }),
       db.attendance.count({ where: { date: today, status: "ABSENT" } }),
       db.learner.groupBy({ by: ["grade"], where: { archivedAt: null }, _count: { id: true }, orderBy: { grade: "asc" } }),
-      db.auditEvent.findMany({ take: 5, orderBy: { createdAt: "desc" }, include: { actor: { select: { name: true } } } }),
+      db.auditEvent.findMany({ take: 3, orderBy: { createdAt: "desc" }, include: { actor: { select: { name: true } } } }),
       db.feeInvoice.findMany({
         select: {
           lines: { select: { amount: true } },
@@ -377,7 +377,7 @@ export default async function Dashboard() {
 
   if (canInScope(role, "audit", "view", "school")) {
     activity = await db.auditEvent.findMany({
-      take: 5,
+      take: 3,
       orderBy: { createdAt: "desc" },
       include: { actor: { select: { name: true } } },
     });

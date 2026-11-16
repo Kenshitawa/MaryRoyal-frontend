@@ -13,7 +13,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   if (!canInScope(user.role, "learningVideos", "view", "self")) { await db.auditEvent.create({ data: { actorId: user.id, action: "ACCESS_DENIED", entity: "LearningVideo" } }); return NextResponse.json({ error: "Forbidden" }, { status: 403 }); }
   const { id } = await params;
   if (!z.string().cuid().safeParse(id).success) return NextResponse.json({ error: "Video not found." }, { status: 404 });
-  const link = await db.guardianLink.findFirst({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: "APPROVED" } }, select: { learnerId: true, learner: { select: { grade: true } } } });
+  const link = await db.guardianLink.findFirst({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: { in: ["PENDING", "APPROVED"] } } }, select: { learnerId: true, learner: { select: { grade: true } } } });
   if (!link) return NextResponse.json({ error: "Your learning account is not linked to an active learner." }, { status: 403 });
   const video = await db.learningVideo.findFirst({ where: { id, grade: link.learner.grade, status: "VERIFIED" }, select: { id: true } });
   if (!video) return NextResponse.json({ error: "Video not found for your class." }, { status: 404 });

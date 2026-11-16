@@ -68,8 +68,8 @@ export async function GET(
 
   // Generate PDF document
   const pdfDoc = await PDFDocument.create();
-  pdfDoc.setTitle(`Fee Receipt - ${payment.receiptNo} · Mary Royal School`);
-  pdfDoc.setAuthor("Mary Royal Primary & Junior School · Obunga, Kisumu");
+  pdfDoc.setTitle(`Mary Royal School Fee Receipt ${payment.receiptNo}`);
+  pdfDoc.setAuthor("Mary Royal Primary & Junior School");
 
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -152,17 +152,9 @@ export async function GET(
     color: slateGray
   });
 
-  page.drawText("Physical Location: Obunga (Near Breweries), Kisumu, Kenya · Finance & Bursar's Office", {
+  page.drawText("Motto: \"Hard Work Pays\"", {
     x: textStartX,
     y: y - 47,
-    size: 7.5,
-    font: fontRegular,
-    color: slateGray
-  });
-
-  page.drawText("Motto: \"Hard Work Pays\"  ·  Slogan: \"Nurturing Excellence Through CBE\"", {
-    x: textStartX,
-    y: y - 59,
     size: 7.5,
     font: fontBold,
     color: royalBlue
@@ -213,7 +205,7 @@ export async function GET(
     color: darkNavy
   });
 
-  page.drawText("OFFICIAL STUDENT FEE PAYMENT RECEIPT", {
+  page.drawText(`OFFICIAL FEE RECEIPT · ${payment.receiptNo}`, {
     x: 165,
     y: y - 15,
     size: 10,
@@ -440,11 +432,12 @@ export async function GET(
   });
 
   const pdfBytes = await pdfDoc.save();
+  const safeReceiptNo = payment.receiptNo.replace(/[^a-zA-Z0-9._-]/g, "-");
 
   return new Response(Buffer.from(pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="MaryRoyal-Receipt-${payment.receiptNo}.pdf"`,
+      "Content-Disposition": `attachment; filename="Mary-Royal-Receipt-${safeReceiptNo}.pdf"`,
       "Cache-Control": "private, max-age=3600"
     }
   });

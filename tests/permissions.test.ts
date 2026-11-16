@@ -34,7 +34,7 @@ const grants: Record<Role, string[]> = {
   ],
   [Role.HEAD_TEACHER]: [
     "dashboard:view", "learners:view", "learners:update", "learners:approve", "staff:view",
-    "staff:create", "staff:update",
+    "staff:update",
     "staffAttendance:view",
     "staffAttendance:create", "staffAttendance:update", "admissions:view", "admissions:approve", "admissions:delete", "attendance:view",
     "assessments:view", "assessments:approve", "assessments:review", "discipline:view", "discipline:create", "discipline:update",
@@ -59,7 +59,7 @@ const grants: Record<Role, string[]> = {
   ],
   [Role.SECRETARY]: [
     "dashboard:view", "staff:view", "staffAttendance:view", "learners:view", "learners:update", "admissions:view",
-    "admissions:create", "admissions:update", "admissions:submit", "admissions:delete", "learnerAccounts:create", "finance:view",
+    "admissions:create", "admissions:update", "admissions:submit", "admissions:delete", "finance:view",
     "invoices:view", "feeStructures:view",
     "welfare:view", "welfare:apply", "notifications:view", "notifications:update"
   ],
@@ -127,7 +127,9 @@ describe("permission matrix", () => {
     expect(canInScope(Role.HEAD_TEACHER, "admissions", "approve", "school")).toBe(true);
     expect(canInScope(Role.DEPUTY, "admissions", "view", "school")).toBe(true);
     expect(can(Role.ACCOUNTANT, "admissions", "view")).toBe(false);
-    expect(canInScope(Role.SECRETARY, "learnerAccounts", "create", "school")).toBe(true);
+    expect(canInScope(Role.SECRETARY, "learnerAccounts", "create", "school")).toBe(false);
+    expect(canInScope(Role.HEAD_TEACHER, "learnerAccounts", "create", "school")).toBe(false);
+    expect(canInScope(Role.DIRECTOR, "learnerAccounts", "create", "school")).toBe(true);
     expect(can(Role.SECRETARY, "accounts", "create")).toBe(false);
     expect(can(Role.DIRECTOR, "accounts", "create")).toBe(true);
   });
@@ -238,7 +240,7 @@ describe("permission matrix", () => {
     expect(can(Role.DIRECTOR, "staff", "create")).toBe(true);
     expect(can(Role.DIRECTOR, "staff", "update")).toBe(true);
     expect(can(Role.DIRECTOR, "staff", "delete")).toBe(true);
-    expect(can(Role.HEAD_TEACHER, "staff", "create")).toBe(true);
+    expect(can(Role.HEAD_TEACHER, "staff", "create")).toBe(false);
     expect(can(Role.HEAD_TEACHER, "staff", "update")).toBe(true);
     expect(can(Role.HEAD_TEACHER, "staff", "delete")).toBe(false);
     expect(can(Role.DEPUTY, "staff", "create")).toBe(false);

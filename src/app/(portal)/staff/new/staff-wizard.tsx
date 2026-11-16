@@ -19,10 +19,12 @@ import {
   Download,
   Copy,
   Check,
+  LoaderCircle,
   Plus,
   Trash2,
   Lock,
 } from "lucide-react";
+import { ProgressBar } from "@/components/base/progress/progress";
 
 interface StaffWizardProps {
   userRole: string;
@@ -42,6 +44,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const formRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [error, setError] = useState("");
   const [successResult, setSuccessResult] = useState<{
     user: { id: string; name: string; email: string; role: string };
@@ -159,7 +162,8 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     void loadDraft();
   }, []);
 
-  async function saveDraft() {
+  async function saveDraft(): Promise<boolean> {
+    setSavingDraft(true);
     try {
       const payload = {
         personal,
@@ -170,15 +174,21 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
         statutory,
         documents,
       };
-      await fetch("/api/staff/drafts", {
+      const response = await fetch("/api/staff/drafts", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ currentStep, payload }),
       });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? "Draft could not be saved.");
       setDraftSaved(true);
       setTimeout(() => setDraftSaved(false), 2000);
+      return true;
     } catch {
-      // Ignore
+      setError("Draft could not be saved. Check your connection and try again.");
+      return false;
+    } finally {
+      setSavingDraft(false);
     }
   }
 
@@ -216,11 +226,10 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     return true;
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (!validateCurrentStep()) return;
     if (currentStep < 7) {
-      setCurrentStep(currentStep + 1);
-      void saveDraft();
+      if (await saveDraft()) setCurrentStep(step => step + 1);
     }
   }
 
@@ -500,10 +509,13 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => void saveDraft()}
+              disabled={savingDraft}
+              aria-live="polite"
               className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              {draftSaved ? "✓ Draft Saved" : "Save Draft"}
+              {savingDraft ? "Saving…" : draftSaved ? "Draft saved" : "Save Draft"}
             </button>
             <Link
               href="/staff"
@@ -513,6 +525,14 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
             </Link>
           </div>
         </div>
+
+        <ProgressBar
+          aria-label="Staff onboarding progress"
+          label="Onboarding progress"
+          value={(currentStep / STEPS.length) * 100}
+          size="sm"
+          className="mt-5"
+        />
 
         {/* Stepper Dots */}
         <div className="mt-6 grid grid-cols-4 gap-2 pb-2 sm:grid-cols-7">
@@ -1339,9 +1359,10 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
               <button
                 type="button"
                 onClick={handleNext}
+                disabled={savingDraft}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-blue-700 px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-800"
               >
-                Next Step <ArrowRight size={14} />
+                {savingDraft ? <><LoaderCircle size={14} className="animate-spin"/> Saving…</> : <>Next Step <ArrowRight size={14} /></>}
               </button>
             ) : (
               <button

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { Button } from "@/components/base/buttons/button";
 import {
   AlertTriangle,
   Check,
@@ -52,6 +53,8 @@ export default function AccountDirectory() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [createStep, setCreateStep] = useState(1);
+  const createFormRef = useRef<HTMLFormElement>(null);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -81,6 +84,10 @@ export default function AccountDirectory() {
 
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (createStep < 3) {
+      advanceCreateStep();
+      return;
+    }
     const form = event.currentTarget;
     setError("");
     setTemp("");
@@ -100,12 +107,24 @@ export default function AccountDirectory() {
       setTemp(`${data.account.email} · ${data.temporaryPassword}`);
       form.reset();
       setShowCreate(false);
+      setCreateStep(1);
       await load();
     } catch {
       setError("Could not connect. Try again.");
     } finally {
       setSaving(false);
     }
+  }
+
+  function advanceCreateStep() {
+    if (createStep === 1) {
+      const form = createFormRef.current;
+      const name = form?.elements.namedItem("name");
+      const email = form?.elements.namedItem("email");
+      if (name instanceof HTMLInputElement && !name.checkValidity()) { name.reportValidity(); return; }
+      if (email instanceof HTMLInputElement && !email.checkValidity()) { email.reportValidity(); return; }
+    }
+    setCreateStep(step => Math.min(step + 1, 3));
   }
 
   async function action(account: Account, actionName: string) {
@@ -278,8 +297,16 @@ export default function AccountDirectory() {
             </div>
           </div>
 
-          <form onSubmit={create} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-3">
+          <ol aria-label="Account setup steps" className="mb-5 grid grid-cols-3 gap-2">
+            {["Identity", "Role", "Staff details"].map((label, index) => (
+              <li key={label} aria-current={createStep === index + 1 ? "step" : undefined} className={`rounded-xl border px-3 py-2 text-center text-caption-1-semibold ${createStep === index + 1 ? "border-border-focus-ring bg-background-secondary-default text-text-primary" : "border-separator-border text-text-tertiary"}`}>
+                <span className="me-1">{index + 1}.</span>{label}
+              </li>
+            ))}
+          </ol>
+
+          <form ref={createFormRef} onSubmit={create} className="space-y-4">
+            <div hidden={createStep !== 1} className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="account-name" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Full Name <span className="text-blue-600">*</span>
@@ -294,7 +321,7 @@ export default function AccountDirectory() {
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label htmlFor="account-email" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Email Address <span className="text-blue-600">*</span>
                 </label>
@@ -307,7 +334,9 @@ export default function AccountDirectory() {
                   className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-sm text-slate-900 shadow-sm transition outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white"
                 />
               </div>
+            </div>
 
+            <div hidden={createStep !== 2}>
               <div>
                 <label htmlFor="account-role" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Assigned Role <span className="text-blue-600">*</span>
@@ -315,6 +344,7 @@ export default function AccountDirectory() {
                 <select
                   id="account-role"
                   name="role"
+                  required
                   className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-sm text-slate-900 shadow-sm transition outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white"
                 >
                   {roles.map((r) => (
@@ -326,7 +356,7 @@ export default function AccountDirectory() {
               </div>
             </div>
 
-            <details className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-4 transition dark:border-slate-800 dark:bg-slate-900/50">
+            <details hidden={createStep !== 3} className="rounded-2xl border border-separator-border bg-background-secondary-default p-4 transition">
               <summary className="cursor-pointer text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
                 + Staff Details (Optional for Teachers & Faculty)
               </summary>
@@ -378,22 +408,14 @@ export default function AccountDirectory() {
               </div>
             </details>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowCreate(false)}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-6 text-xs font-bold text-white shadow-md shadow-blue-700/20 transition hover:bg-blue-800 disabled:opacity-50"
-              >
-                <UserPlus size={15} />
-                {saving ? "Creating…" : "Save Account"}
-              </button>
+            <div className="flex flex-wrap justify-between gap-3 pt-2">
+              <Button type="button" variant="secondary" size="small" onClick={() => { setShowCreate(false); setCreateStep(1); }} className="min-h-11">Cancel</Button>
+              <div className="ms-auto flex gap-2">
+                {createStep > 1 && <Button type="button" variant="secondary" size="small" onClick={() => setCreateStep(step => Math.max(step - 1, 1))} className="min-h-11">Back</Button>}
+                {createStep < 3
+                  ? <Button type="button" size="small" onClick={advanceCreateStep} className="min-h-11">Continue</Button>
+                  : <Button type="submit" size="small" disabled={saving} className="min-h-11">{saving ? "Creating account…" : "Create account"}</Button>}
+              </div>
             </div>
           </form>
         </section>

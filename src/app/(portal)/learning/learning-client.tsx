@@ -13,6 +13,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { ButtonLink } from "@/components/base/buttons/button";
 
 type Learner = { id: string; name: string; admissionNo: string; grade: string };
 type Assessment = {
@@ -178,12 +179,14 @@ export default function LearningClient({
   submissions,
   attempts,
   attendance,
+  pendingAdmission = false,
 }: {
   learner: Learner;
   assessments: Assessment[];
   submissions: Submission[];
   attempts: Attempt[];
   attendance: { status: string }[];
+  pendingAdmission?: boolean;
 }) {
   const [resources, setResources] = useState<Resource[]>([]);
   const [resourceError, setResourceError] = useState("");
@@ -239,6 +242,42 @@ export default function LearningClient({
         (attendance.filter((row) => row.status === "PRESENT").length / attendance.length) * 100
       )
     : null;
+
+  if (pendingAdmission) {
+    return (
+      <section className="mx-auto w-full max-w-6xl space-y-5 px-4 pt-4 sm:px-6">
+        <PageHeader
+          title={`Welcome, ${learner.name.split(" ")[0]}!`}
+          help="Your admission details can be completed later. For now, you can view materials your teachers share with your class."
+          meta={`Pending admission · ${learner.grade}`}
+          action={<ButtonLink href="/assignments" size="small" leadingIcon={BookOpenCheck} className="min-h-11">Classwork tasks</ButtonLink>}
+        />
+        <section className="rounded-3xl border border-border-button-default bg-background-primary-default p-5 shadow-sm sm:p-6">
+          <div className="mb-4">
+            <h2 className="text-title-3-semibold text-text-primary">Class materials</h2>
+            <p className="mt-1 text-body-2-regular text-text-secondary">Resources shared for {learner.grade}. Grades, attendance and other learner records remain unavailable until admission approval.</p>
+          </div>
+          {resourceError && <p role="alert" className="rounded-xl border border-border-error-default bg-background-primary-default p-3 text-body-2-regular text-text-error-primary">{resourceError}</p>}
+          {resources.length ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {resources.map(resource => (
+                <article key={resource.id} className="rounded-2xl border border-separator-border bg-background-secondary-default p-4">
+                  <p className="text-caption-1-semibold text-text-tertiary">{resource.subject} · {resource.kind.toLowerCase()}</p>
+                  <h3 className="mt-1 text-body-medium text-text-primary">{resource.title}</h3>
+                  <p className="mt-2 text-body-2-regular text-text-secondary">{resource.description}</p>
+                  <a href={resource.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center rounded-lg px-3 text-body-medium text-accent-700 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+                    Open resource <ExternalLink size={15} className="ms-2" aria-hidden="true"/>
+                  </a>
+                </article>
+              ))}
+            </div>
+          ) : !resourceError ? (
+            <p className="rounded-2xl border border-separator-border p-5 text-center text-body-2-regular text-text-secondary">No class materials have been shared yet. Check back after your teacher posts a resource.</p>
+          ) : null}
+        </section>
+      </section>
+    );
+  }
 
   function startGame(key: string) {
     setGame(key);

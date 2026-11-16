@@ -27,7 +27,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const parsed = submitSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Write your answer before submitting." }, { status: 400 });
   const { id } = await params;
-  const links = await db.guardianLink.findMany({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: "APPROVED" } }, select: { learnerId: true, learner: { select: { grade: true } } } });
+  const links = await db.guardianLink.findMany({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: { in: ["PENDING", "APPROVED"] } } }, select: { learnerId: true, learner: { select: { grade: true, admissionStatus: true } } } });
   const assignment = await db.assignment.findUnique({ where: { id } });
   const learner = links.find(link => link.learner.grade === assignment?.grade);
   if (!assignment || !learner) return NextResponse.json({ error: "Assignment not found for your class." }, { status: 404 });
@@ -62,7 +62,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await tx.auditEvent.create({ data: { actorId: user.id, action: assignment.autoMark ? "ASSIGNMENT_AUTO_MARKED" : "ASSIGNMENT_SUBMITTED", entity: "AssignmentSubmission", entityId: row.id } });
       return row;
     });
-    return NextResponse.json({ submission }, { status: 201 });
+    const learnerResponse = learner.learner.admissionStatus === "PENDING"
+      ? { id: submission.id, status: "SUBMITTED", submittedAt: submission.submittedAt }
+      : submission;
+    return NextResponse.json({ submission: learnerResponse }, { status: 201 });
   } catch { return NextResponse.json({ error: "This assignment could not be submitted." }, { status: 409 }); }
 }
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {

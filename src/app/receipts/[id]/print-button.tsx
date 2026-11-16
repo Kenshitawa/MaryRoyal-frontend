@@ -2,7 +2,10 @@
 
 import { Printer, Download } from "lucide-react";
 
-export function PrintButton({ receiptId }: { receiptId?: string }) {
+export function PrintButton({ receiptId, receiptNo }: { receiptId?: string; receiptNo?: string }) {
+  const filename = receiptNo
+    ? `Mary-Royal-Receipt-${receiptNo.replace(/[^a-zA-Z0-9._-]/g, "-")}.pdf`
+    : undefined;
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 print:hidden">
       <button
@@ -17,7 +20,7 @@ export function PrintButton({ receiptId }: { receiptId?: string }) {
       {receiptId && (
         <a
           href={`/api/finance/payments/${receiptId}/pdf`}
-          download={`receipt-${receiptId}.pdf`}
+          download={filename}
           className="btn btn-primary text-xs shadow-sm transition hover:scale-[1.02] active:scale-[0.98]"
         >
           <Download size={15} />

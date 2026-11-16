@@ -19,7 +19,7 @@ function loginHeaders(){return {"x-forwarded-for":`198.51.100.${testLoginIp++}`}
 test.beforeAll(async()=>{await cleanupDb.user.updateMany({where:{email:{in:["director@maryroyal.ac.ke","headteacher@maryroyal.ac.ke","deputy@maryroyal.ac.ke","secretary@maryroyal.ac.ke","accountant@maryroyal.ac.ke","teacher@maryroyal.ac.ke","parent@maryroyal.ac.ke","learner@maryroyal.ac.ke"]}},data:{failedLogins:0,suspended:false,suspensionReason:null}});const assessment=await cleanupDb.assessment.findFirst({select:{id:true}});testOutOfScopeGrade=`E2E Unassigned ${Date.now()}`;const probe=await cleanupDb.learner.create({data:{admissionNo:`E2E-ROLE-${Date.now()}`,name:"Role Probe Learner",grade:testOutOfScopeGrade,gender:"Male",admissionStatus:"APPROVED"},select:{id:true}});testOutOfScopeLearnerId=probe.id;const exportLearner=await cleanupDb.learner.findFirst({where:{grade:"Grade 9",archivedAt:null},select:{id:true}});testExportLearnerId=exportLearner?.id??probe.id;testAssessmentId=assessment?.id??"missing-assessment";const dossierTeacher=await cleanupDb.user.findUnique({where:{email:"teacher@maryroyal.ac.ke"},select:{id:true}});testStaffDossierId=dossierTeacher?.id??"";});
 test.afterAll(async()=>{
  if(testAdmissionDraftIds.length){await cleanupDb.admissionDraft.deleteMany({where:{id:{in:testAdmissionDraftIds}}});await Promise.all(testAdmissionDraftIds.filter(id=>/^c[a-z0-9]+$/i.test(id)).map(id=>rm(path.join(process.cwd(),"private-uploads","admissions",id),{recursive:true,force:true})));}
- const testLearners=await cleanupDb.learner.findMany({where:{OR:[{name:{startsWith:"Demo Learner "}},{name:{startsWith:"E2E Secretary "}},{name:"Scope Test Learner"},{name:"Role Probe Learner"},{admissionNo:{startsWith:"E2E-"}}]},select:{id:true}});
+ const testLearners=await cleanupDb.learner.findMany({where:{OR:[{name:{startsWith:"Demo Learner "}},{name:{startsWith:"E2E Secretary "}},{name:{startsWith:"E2E Basic Account "}},{name:"Scope Test Learner"},{name:"Role Probe Learner"},{admissionNo:{startsWith:"E2E-"}}]},select:{id:true}});
  const learnerIds=testLearners.map(row=>row.id);
  if(learnerIds.length)await cleanupDb.$transaction(async tx=>{
   const invoices=await tx.feeInvoice.findMany({where:{learnerId:{in:learnerIds}},select:{id:true}});const invoiceIds=invoices.map(row=>row.id);
@@ -50,7 +50,7 @@ test("Director signs in, changes temporary password when required, and manages l
  await page.emulateMedia({reducedMotion:"reduce"});
  await page.goto("/");
  await page.getByLabel("Email address").fill("director@maryroyal.ac.ke");
- const login = async (password:string) => { await page.getByLabel("Password",{exact:true}).fill(password); const responsePromise=page.waitForResponse(response=>response.url().endsWith("/api/login")); await page.getByRole("button", { name: "Sign in securely" }).click(); return responsePromise; };
+ const login = async (password:string) => { await page.locator('input[name="password"]').fill(password); const responsePromise=page.waitForResponse(response=>response.url().endsWith("/api/login")); await page.getByRole("button", { name: "Sign in securely" }).click(); return responsePromise; };
  let response=await login("MaryRoyal2026!");
  if(!response.ok()) { await expect(page.getByRole("button", { name: "Sign in securely" })).toBeEnabled(); response=await login("MaryRoyalTest2026!"); }
  expect(response.ok()).toBeTruthy();
@@ -74,11 +74,11 @@ test("Director signs in, changes temporary password when required, and manages l
  await themeControls.getByRole("button",{name:"Switch mode (currently Light)",exact:true}).click();
  await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
  await expect(page.locator("html")).toHaveClass(/dark/);
- await expect(page.locator("html")).toHaveCSS("background-color","rgb(11, 18, 32)");
+ await expect(page.locator("html")).toHaveCSS("background-color","rgb(18, 18, 18)");
  expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("dark");
  await page.reload();
  await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
- await expect(page.locator("html")).toHaveCSS("background-color","rgb(11, 18, 32)");
+ await expect(page.locator("html")).toHaveCSS("background-color","rgb(18, 18, 18)");
  await expect(themeControls.getByRole("button",{name:"Switch mode (currently Dark)",exact:true})).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("dark");
  await themeControls.getByRole("button",{name:"Switch mode (currently Dark)",exact:true}).click();
@@ -114,20 +114,31 @@ test("Director signs in, changes temporary password when required, and manages l
  await page.goto(`/admissions/${draft.id}`);const learnerLoginResponse=page.waitForResponse(response=>response.url().includes(`/api/learners/${admittedLearner.id}/login`));await page.getByRole("button",{name:"Create learner login"}).click();expect((await learnerLoginResponse).status()).toBe(201);
  await expect(page.getByText("Learner credentials · shown once")).toBeVisible({timeout:15000});await expect(page.locator("main")).toContainText("@learners.maryroyal.ac.ke");
  const headAdmissionApi=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});let headAdmissionLogin=await headAdmissionApi.post("/api/login",{data:{email:"headteacher@maryroyal.ac.ke",password:"PortalTest2026!"}});if(!headAdmissionLogin.ok())headAdmissionLogin=await headAdmissionApi.post("/api/login",{data:{email:"headteacher@maryroyal.ac.ke",password:"MaryRoyal2026!"}});expect(headAdmissionLogin.ok()).toBeTruthy();if((await headAdmissionLogin.json()).forcePasswordChange)expect((await headAdmissionApi.post("/api/change-password",{data:{password:"PortalTest2026!"}})).ok()).toBeTruthy();expect((await headAdmissionApi.post(`/api/learners/${admittedLearner.id}/workflow`,{data:{action:"approve"}})).ok()).toBeTruthy();await headAdmissionApi.dispose();
+ async function createAccount(name: string, email: string, role: string) {
+  await page.goto("/accounts");
+  await page.getByRole("button", { name: "Provision account" }).click();
+  const createRequest = page.waitForResponse(response => response.url().endsWith("/api/accounts") && response.request().method() === "POST", { timeout: 20_000 });
+  await page.getByLabel("Full Name").fill(name);
+  await page.getByLabel("Email Address").fill(email);
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await expect(page.getByRole("list", { name: "Account setup steps" }).locator("li").nth(1)).toHaveAttribute("aria-current", "step");
+  await page.getByLabel("Assigned Role").selectOption(role);
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await expect(page.getByRole("list", { name: "Account setup steps" }).locator("li").nth(2)).toHaveAttribute("aria-current", "step");
+  const createButton = page.getByRole("button", { name: "Create account", exact: true });
+  if (await createButton.isVisible({ timeout: 1000 }).catch(() => false)) await createButton.click();
+  const createResponse = await createRequest;
+  expect(createResponse.status(), await createResponse.text()).toBe(201);
+  return page.getByRole("status").innerText();
+ }
  const teacherEmail=`teacher-${Date.now()}@maryroyal.ac.ke`;
- await page.goto("/accounts");
- await page.getByRole("button",{name:"Provision Account"}).click();
- await page.getByLabel("Full Name").fill("Demo Newly Created Teacher");
- await page.getByLabel("Email Address").fill(teacherEmail);
- await page.getByLabel("Assigned Role").selectOption("TEACHER");
- await page.getByRole("button", { name: "Save Account", exact: true }).click();
- const tempText=await page.getByRole("status").innerText();
+ const tempText = await createAccount("Demo Newly Created Teacher", teacherEmail, "TEACHER");
  const temporaryPassword=tempText.split("\n").find(line=>line.includes(teacherEmail))?.split(" · ")[1]?.trim()??"";
  expect(temporaryPassword.length).toBeGreaterThanOrEqual(12);
  await expect(page.locator("article").filter({hasText:teacherEmail})).toBeVisible();
  const parentEmail=`parent-${Date.now()}@maryroyal.ac.ke`;
- await page.getByRole("button",{name:"Provision Account"}).click();await page.getByLabel("Full Name").fill("Demo Linked Parent");await page.getByLabel("Email Address").fill(parentEmail);await page.getByLabel("Assigned Role").selectOption("PARENT");const parentCreateRequest=page.waitForResponse(response=>response.url().endsWith("/api/accounts")&&response.request().method()==="POST",{timeout:20_000});await page.getByRole("button",{name:"Save Account",exact:true}).click();const parentCreateResponse=await parentCreateRequest;expect(parentCreateResponse.status(),await parentCreateResponse.text()).toBe(201);
- const parentText=await page.getByRole("status").innerText();const parentPassword=parentText.split("\n").find(line=>line.includes(parentEmail))?.split(" · ")[1]?.trim()??"";
+ const parentText = await createAccount("Demo Linked Parent", parentEmail, "PARENT");
+ const parentPassword=parentText.split("\n").find(line=>line.includes(parentEmail))?.split(" · ")[1]?.trim()??"";
  const linked=await page.evaluate(async({email,admissionNo})=>{const accounts=await fetch("/api/accounts").then(r=>r.json());const learners=await fetch(`/api/learners?q=${admissionNo}`).then(r=>r.json());const account=accounts.accounts.find((item:{email:string;id:string})=>item.email===email);const learner=learners.learners[0];const response=await fetch("/api/guardians",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:account.id,learnerId:learner.id,relation:"Parent"})});return {status:response.status,name:learner.name,id:learner.id}}, {email:parentEmail,admissionNo:testLearnerAdmission});expect(linked.status).toBe(201);
  const csv=await page.request.get("/api/reports/learners");expect(csv.status()).toBe(200);expect(csv.headers()["content-type"]).toContain("text/csv");expect(await csv.text()).toContain(testLearnerAdmission);const exportAudit=await page.request.get("/api/audit?action=DATA_EXPORTED");expect(exportAudit.ok()).toBeTruthy();expect((await exportAudit.text())).toContain("DATA_EXPORTED");
  testAssessmentId=await page.evaluate(async()=>{const data=await fetch("/api/assessments?term=2026%20Term%201").then(r=>r.json());return data.assessments[0].id});
@@ -201,7 +212,7 @@ test("root page applies saved dark theme before render without browser errors",a
  await page.getByRole("button",{name:"Hide password"}).click();
  await expect(password).toHaveAttribute("type","password");
  // The redesigned canvas is painted on html; body intentionally stays transparent.
- await expect(page.locator("html")).toHaveCSS("background-color","rgb(11, 18, 32)");
+ await expect(page.locator("html")).toHaveCSS("background-color","rgb(18, 18, 18)");
  await expect(page.locator("html")).toHaveCSS("color-scheme","dark");
  const lightContext=await browser.newContext();
  const lightPage=await lightContext.newPage();
@@ -245,7 +256,8 @@ test("non-director roles receive only the account and learner access configured 
   expect(staffApi.status(), `${role} staff API scope`).toBe(["director", "headteacher"].includes(role) ? 200 : 403);
   const addStaff = await api.get("/staff/new", { maxRedirects: 0 });
   if (["director", "headteacher"].includes(role)) {
-    expect(addStaff.ok(), `${role} can open Add Staff`).toBeTruthy();
+    if (addStaff.status() === 200) expect(await addStaff.text()).toContain("NEXT_REDIRECT");
+    else expect([302, 307]).toContain(addStaff.status());
     const profileTarget = await cleanupDb.user.findFirst({
       where: { role: { in: ["TEACHER", "SECRETARY", "ACCOUNTANT", "DEPUTY"] } },
       select: { id: true, name: true, staffProfile: { select: { id: true } } },
@@ -324,18 +336,162 @@ test("Secretary admissions, Parent complaints, Accountant payments and Director 
  test.setTimeout(180_000);
  async function login(email:string){const api=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});let response;for(const password of ["PortalTest2026!","MaryRoyal2026!","MaryRoyalTest2026!"]){response=await api.post("/api/login",{data:{email,password}});if(response.ok())break;}expect(response?.ok(),email).toBeTruthy();if(response?.ok()&&(await response.json()).forcePasswordChange){const changed=await api.post("/api/change-password",{data:{password:"PortalTest2026!"}});expect(changed.ok()).toBeTruthy()}return api}
  const head=await login("headteacher@maryroyal.ac.ke");const secretary=await login("secretary@maryroyal.ac.ke");const accountant=await login("accountant@maryroyal.ac.ke");const director=await login("director@maryroyal.ac.ke");const teacher=await login("teacher@maryroyal.ac.ke");
- const admissionName=`E2E Secretary ${Date.now()}`;const uniqueGuardianPhone=`+2547${String(Date.now()).slice(-8)}`;const secretaryDraftResponse=await secretary.post("/api/admissions",{data:{}});expect(secretaryDraftResponse.status()).toBe(201);const secretaryDraft=((await secretaryDraftResponse.json()).draft as {id:string;admissionNo:string});testAdmissionDraftIds.push(secretaryDraft.id);const secretaryPayload={learner:{fullName:admissionName,dateOfBirth:"2017-02-02",gender:"Female",nationality:"Kenyan",upiNumber:"",grade:"Grade 4",stream:"East",admissionDate:"2026-10-25",previousSchool:"",previousClass:"",reasonForLeaving:"",religion:"",languagesSpoken:["English"]},residence:{county:"Kisumu",subCounty:"Kisumu Central",ward:"Obunga",village:"Obunga",physicalAddress:"Obunga, Kisumu",landmark:"",distanceToSchoolKm:null,transportMeans:"Walk",latitude:null,longitude:null},guardians:[{fullName:"E2E Secretary Guardian",relationship:"Mother",idNumber:"",phone:uniqueGuardianPhone,alternatePhone:"",whatsapp:false,email:"",occupation:"",employer:"",homeAddress:"",workAddress:"",paysFees:true,primaryContact:true}],emergencyContacts:[{fullName:"E2E Emergency One",relationship:"Aunt",phone:"+254722345679"},{fullName:"E2E Emergency Two",relationship:"Uncle",phone:"+254722345680"}],pickupPersons:[],health:{knownConditions:"",allergies:"",currentMedication:"",specialNeeds:"",bloodGroup:"",doctorOrHospital:"",immunizationStatus:"",healthInsurance:""},fee:{term:"2026 Term 3",feePayerGuardian:"E2E Secretary Guardian",requestedOptionalItems:[],handoffNote:""},consent:true};expect((await secretary.patch("/api/admissions",{data:{id:secretaryDraft.id,step:7,data:secretaryPayload}})).ok()).toBeTruthy();expect((await head.get(`/api/admissions/${secretaryDraft.id}`)).status(),"Head Teacher must not open another officer's DRAFT packet").toBe(404);const submittedAdmission=await secretary.post(`/api/admissions/${secretaryDraft.id}/submit`,{data:{}});expect(submittedAdmission.status()).toBe(201);expect((await head.get(`/api/admissions/${secretaryDraft.id}`)).ok(),"Head Teacher opens the submitted packet").toBeTruthy();const applicant=((await submittedAdmission.json()).learner as {id:string;admissionStatus:string;admissionNo:string});expect(applicant.admissionStatus).toBe("PENDING");expect(applicant.admissionNo).toMatch(/^MR-\d+$/);const parentLoginResponse=await secretary.post(`/api/admissions/${secretaryDraft.id}/guardian-login`,{data:{guardianIndex:0}});expect([200,201]).toContain(parentLoginResponse.status());const parentLoginData=await parentLoginResponse.json() as {account:{id:string;email:string};created:boolean;temporaryPassword?:string|null;suspended:boolean};if(parentLoginData.created){testParentUserIds.push(parentLoginData.account.id);expect(parentLoginData.temporaryPassword?.length).toBeGreaterThan(8);expect(parentLoginData.suspended).toBe(true);}else{expect(parentLoginData.temporaryPassword).toBeNull();}const repeatParentLink=await secretary.post(`/api/admissions/${secretaryDraft.id}/guardian-login`,{data:{guardianIndex:0}});expect(repeatParentLink.status()).toBe(200);expect((await repeatParentLink.json()).account.id).toBe(parentLoginData.account.id);expect((await repeatParentLink.json()).created).toBe(false);expect((await secretary.post("/api/learners",{data:{name:admissionName,grade:"Grade 4",gender:"Female"}})).status()).toBe(410);expect((await teacher.post("/api/finance/payments",{data:{invoiceId:"not-an-invoice",amount:100,method:"CASH"}})).status()).toBe(403);expect((await secretary.post("/api/finance/payments",{data:{invoiceId:"not-an-invoice",amount:100,method:"CASH"}})).status()).toBe(403);const loginCreated=await secretary.post(`/api/learners/${applicant.id}/login`,{data:{}});expect(loginCreated.status()).toBe(201);const loginData=(await loginCreated.json()) as {account:{email:string;suspended:boolean};temporaryPassword:string};expect(loginData.account.email).toBe(`${applicant.admissionNo.toLowerCase()}@learners.maryroyal.ac.ke`);expect(loginData.account.suspended).toBe(true);const student=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});expect((await student.post("/api/login",{data:{email:loginData.account.email,password:loginData.temporaryPassword}})).status()).toBe(401);expect((await secretary.post(`/api/learners/${applicant.id}/workflow`,{data:{action:"approve"}})).status()).toBe(403);const approvedAdmission=await head.post(`/api/learners/${applicant.id}/workflow`,{data:{action:"approve"}});expect(approvedAdmission.ok()).toBeTruthy();const family=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});const familyLogin=await family.post("/api/login",{data:{email:parentLoginData.account.email,password:parentLoginData.temporaryPassword}});expect(familyLogin.ok()).toBeTruthy();expect((await family.post("/api/change-password",{data:{password:"ParentAdmissionTest2026!"}})).ok()).toBeTruthy();const familyChildren=(await (await family.get("/api/learners")).json()).learners as Array<{id:string}>;expect(familyChildren.map(child=>child.id)).toEqual([applicant.id]);await family.dispose();expect(await (await director.get(`/api/learners?q=${encodeURIComponent(applicant.admissionNo)}`)).text()).toContain(admissionName);const learnerLogin=await student.post("/api/login",{data:{email:loginData.account.email,password:loginData.temporaryPassword}});expect(learnerLogin.ok()).toBeTruthy();expect((await learnerLogin.json()).forcePasswordChange).toBe(true);expect((await student.post("/api/change-password",{data:{password:"LrnPortalTest2026!"}})).ok()).toBeTruthy();expect((await student.get("/api/complaints")).status()).toBe(403);expect((await student.get("/api/learning/resources")).ok()).toBeTruthy();const matchedVideos=await student.get("/api/learning-videos");expect(matchedVideos.ok()).toBeTruthy();expect((await matchedVideos.json()).videos).toEqual([]);const resourceBody={title:`E2E learning video ${Date.now()}`,description:"A short class video shared for this learning test.",grade:"Grade 4",subject:"Mathematics",kind:"VIDEO",url:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"};expect((await teacher.post("/api/learning/resources",{data:resourceBody})).status()).toBe(201);expect((await teacher.post("/api/learning/resources",{data:{...resourceBody,title:`E2E learning other grade ${Date.now()}`,grade:"Grade 5",subject:"Science"}})).status()).toBe(201);const learnerResources=await student.get("/api/learning/resources");const visibleResources=(await learnerResources.json()).resources as Array<{title:string;grade:string}>;expect(visibleResources.some(row=>row.title===resourceBody.title)).toBe(false);expect(visibleResources.some(row=>row.title.includes("other grade"))).toBe(false);const game=await student.post("/api/learning/activity",{data:{gameKey:"NUMBER_QUEST",score:4,maxScore:5}});expect(game.status()).toBe(201);const savedGame=await cleanupDb.learningGameAttempt.findFirst({where:{learnerId:applicant.id,gameKey:"NUMBER_QUEST"},select:{score:true,maxScore:true}});expect(savedGame).toEqual({score:4,maxScore:5});const learningPage=await student.get("/learning");expect(learningPage.status()).toBe(200);const learningHtml=await learningPage.text();expect(learningHtml).not.toContain("Complaints");expect(learningHtml).toContain("Recent best scores");const classwork=await student.get("/api/assignments");expect(classwork.ok()).toBeTruthy();await student.dispose();
+ const admissionName=`E2E Secretary ${Date.now()}`;const uniqueGuardianPhone=`+2547${String(Date.now()).slice(-8)}`;const secretaryDraftResponse=await secretary.post("/api/admissions",{data:{}});expect(secretaryDraftResponse.status()).toBe(201);const secretaryDraft=((await secretaryDraftResponse.json()).draft as {id:string;admissionNo:string});testAdmissionDraftIds.push(secretaryDraft.id);const secretaryPayload={learner:{fullName:admissionName,dateOfBirth:"2017-02-02",gender:"Female",nationality:"Kenyan",upiNumber:"",grade:"Grade 4",stream:"East",admissionDate:"2026-10-25",previousSchool:"",previousClass:"",reasonForLeaving:"",religion:"",languagesSpoken:["English"]},residence:{county:"Kisumu",subCounty:"Kisumu Central",ward:"Obunga",village:"Obunga",physicalAddress:"Obunga, Kisumu",landmark:"",distanceToSchoolKm:null,transportMeans:"Walk",latitude:null,longitude:null},guardians:[{fullName:"E2E Secretary Guardian",relationship:"Mother",idNumber:"",phone:uniqueGuardianPhone,alternatePhone:"",whatsapp:false,email:"",occupation:"",employer:"",homeAddress:"",workAddress:"",paysFees:true,primaryContact:true}],emergencyContacts:[{fullName:"E2E Emergency One",relationship:"Aunt",phone:"+254722345679"},{fullName:"E2E Emergency Two",relationship:"Uncle",phone:"+254722345680"}],pickupPersons:[],health:{knownConditions:"",allergies:"",currentMedication:"",specialNeeds:"",bloodGroup:"",doctorOrHospital:"",immunizationStatus:"",healthInsurance:""},fee:{term:"2026 Term 3",feePayerGuardian:"E2E Secretary Guardian",requestedOptionalItems:[],handoffNote:""},consent:true};expect((await secretary.patch("/api/admissions",{data:{id:secretaryDraft.id,step:7,data:secretaryPayload}})).ok()).toBeTruthy();expect((await head.get(`/api/admissions/${secretaryDraft.id}`)).status(),"Head Teacher must not open another officer's DRAFT packet").toBe(404);const submittedAdmission=await secretary.post(`/api/admissions/${secretaryDraft.id}/submit`,{data:{}});expect(submittedAdmission.status()).toBe(201);expect((await head.get(`/api/admissions/${secretaryDraft.id}`)).ok(),"Head Teacher opens the submitted packet").toBeTruthy();const applicant=((await submittedAdmission.json()).learner as {id:string;admissionStatus:string;admissionNo:string});expect(applicant.admissionStatus).toBe("PENDING");expect(applicant.admissionNo).toMatch(/^MR-\d+$/);const parentLoginResponse=await director.post(`/api/admissions/${secretaryDraft.id}/guardian-login`,{data:{guardianIndex:0}});expect([200,201]).toContain(parentLoginResponse.status());const parentLoginData=await parentLoginResponse.json() as {account:{id:string;email:string};created:boolean;temporaryPassword?:string|null;suspended:boolean};if(parentLoginData.created){testParentUserIds.push(parentLoginData.account.id);expect(parentLoginData.temporaryPassword?.length).toBeGreaterThan(8);expect(parentLoginData.suspended).toBe(true);}else{expect(parentLoginData.temporaryPassword).toBeNull();}const repeatParentLink=await director.post(`/api/admissions/${secretaryDraft.id}/guardian-login`,{data:{guardianIndex:0}});expect(repeatParentLink.status()).toBe(200);expect((await repeatParentLink.json()).account.id).toBe(parentLoginData.account.id);expect((await repeatParentLink.json()).created).toBe(false);expect((await secretary.post("/api/learners",{data:{name:admissionName,grade:"Grade 4",gender:"Female"}})).status()).toBe(410);expect((await teacher.post("/api/finance/payments",{data:{invoiceId:"not-an-invoice",amount:100,method:"CASH"}})).status()).toBe(403);expect((await secretary.post("/api/finance/payments",{data:{invoiceId:"not-an-invoice",amount:100,method:"CASH"}})).status()).toBe(403);const loginCreated=await director.post(`/api/learners/${applicant.id}/login`,{data:{}});expect(loginCreated.status()).toBe(201);const loginData=(await loginCreated.json()) as {account:{email:string;suspended:boolean};temporaryPassword:string};expect(loginData.account.email).toBe(`${applicant.admissionNo.toLowerCase()}@learners.maryroyal.ac.ke`);expect(loginData.account.suspended).toBe(false);const student=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});const initialStudentLogin=await student.post("/api/login",{data:{email:loginData.account.email,password:loginData.temporaryPassword}});expect(initialStudentLogin.ok()).toBeTruthy();expect((await initialStudentLogin.json()).forcePasswordChange).toBe(true);expect((await secretary.post(`/api/learners/${applicant.id}/workflow`,{data:{action:"approve"}})).status()).toBe(403);const approvedAdmission=await head.post(`/api/learners/${applicant.id}/workflow`,{data:{action:"approve"}});expect(approvedAdmission.ok()).toBeTruthy();const family=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});const familyLogin=await family.post("/api/login",{data:{email:parentLoginData.account.email,password:parentLoginData.temporaryPassword}});expect(familyLogin.ok()).toBeTruthy();expect((await family.post("/api/change-password",{data:{password:"ParentAdmissionTest2026!"}})).ok()).toBeTruthy();const familyChildren=(await (await family.get("/api/learners")).json()).learners as Array<{id:string}>;expect(familyChildren.map(child=>child.id)).toEqual([applicant.id]);await family.dispose();expect(await (await director.get(`/api/learners?q=${encodeURIComponent(applicant.admissionNo)}`)).text()).toContain(admissionName);const learnerLogin=await student.post("/api/login",{data:{email:loginData.account.email,password:loginData.temporaryPassword}});expect(learnerLogin.ok()).toBeTruthy();expect((await learnerLogin.json()).forcePasswordChange).toBe(true);expect((await student.post("/api/change-password",{data:{password:"LrnPortalTest2026!"}})).ok()).toBeTruthy();expect((await student.get("/api/complaints")).status()).toBe(403);expect((await student.get("/api/learning/resources")).ok()).toBeTruthy();const matchedVideos=await student.get("/api/learning-videos");expect(matchedVideos.ok()).toBeTruthy();expect(Array.isArray((await matchedVideos.json()).videos)).toBe(true);const resourceBody={title:`E2E learning video ${Date.now()}`,description:"A short class video shared for this learning test.",grade:"Grade 4",subject:"Mathematics",kind:"VIDEO",url:"https://www.youtube.com/watch?v=dQw4w9WgXcQ"};expect((await teacher.post("/api/learning/resources",{data:resourceBody})).status()).toBe(201);expect((await teacher.post("/api/learning/resources",{data:{...resourceBody,title:`E2E learning other grade ${Date.now()}`,grade:"Grade 5",subject:"Science"}})).status()).toBe(201);const learnerResources=await student.get("/api/learning/resources");const visibleResources=(await learnerResources.json()).resources as Array<{title:string;grade:string}>;expect(visibleResources.some(row=>row.title===resourceBody.title)).toBe(false);expect(visibleResources.some(row=>row.title.includes("other grade"))).toBe(false);const game=await student.post("/api/learning/activity",{data:{gameKey:"NUMBER_QUEST",score:4,maxScore:5}});expect(game.status()).toBe(201);const savedGame=await cleanupDb.learningGameAttempt.findFirst({where:{learnerId:applicant.id,gameKey:"NUMBER_QUEST"},select:{score:true,maxScore:true}});expect(savedGame).toEqual({score:4,maxScore:5});const learningPage=await student.get("/learning");expect(learningPage.status()).toBe(200);const learningHtml=await learningPage.text();expect(learningHtml).not.toContain("Complaints");expect(learningHtml).toContain("Recent best scores");const classwork=await student.get("/api/assignments");expect(classwork.ok()).toBeTruthy();await student.dispose();
   const parent=await login("parent@maryroyal.ac.ke");const parentLearners=(await (await parent.get("/api/learners")).json()).learners as Array<{id:string}>;const subject=`E2E complaint ${Date.now()}`;const complaint=await parent.post("/api/complaints",{data:{subject,message:"Please follow up with our family about this school matter.",category:"OTHER",recipientRole:"DIRECTOR",learnerId:parentLearners[0].id}});expect(complaint.status()).toBe(201);const complaintId=((await complaint.json()).complaint as {id:string}).id;expect((await secretary.get("/api/complaints")).status()).toBe(403);expect(await (await director.get("/api/complaints")).text()).toContain(subject);expect((await director.post(`/api/complaints/${complaintId}/replies`,{data:{message:"Received and assigned for follow-up."}})).status()).toBe(201);expect(await (await parent.get("/api/complaints")).text()).toContain("Received and assigned for follow-up.");
  const structureSaved=await head.post("/api/finance/structures",{data:{grade:"Grade 4",term:"2026 Term 3",effectiveFrom:"2026-10-25",lines:[{category:"TUITION",description:"Tuition fees",amount:10000,optional:false},{category:"TRANSPORT",description:"Optional transport",amount:4000,optional:true}]}});expect(structureSaved.status()).toBe(201);const structureVersion=((await structureSaved.json()).structure as {version:number}).version;const secretaryStructures=(await (await secretary.get("/api/finance/structures")).json()).structures as Array<{grade:string;version:number}>;const accountantStructures=(await (await accountant.get("/api/finance/structures")).json()).structures as Array<{grade:string;version:number}>;expect(secretaryStructures.some(item=>item.grade==="Grade 4"&&item.version===structureVersion)).toBe(true);expect(accountantStructures.some(item=>item.grade==="Grade 4"&&item.version===1)).toBe(true);const accountantInvoice=await accountant.post("/api/finance/invoices",{data:{learnerId:applicant.id,term:"2026 Term 3"}});expect(accountantInvoice.status()).toBe(201);const firstInvoice=(await accountantInvoice.json()).invoice as {id:string;structureVersion:number;lines:Array<{description:string}>};expect(firstInvoice.structureVersion).toBe(structureVersion);expect(firstInvoice.lines.map(line=>line.description)).toEqual(["Tuition fees"]);
  const code=`MP${Date.now().toString().slice(-10)}`;const payment=await accountant.post("/api/finance/payments",{data:{invoiceId:firstInvoice.id,amount:12000,method:"MPESA",mpesaCode:code}});expect(payment.status()).toBe(201);const paymentData=(await payment.json()) as {payment:{id:string;receiptNo:string;status:string};creditAmount:number};expect(paymentData.payment.status).toBe("PENDING");expect(paymentData.creditAmount).toBe(0);
  const duplicate=await accountant.post("/api/finance/payments",{data:{invoiceId:firstInvoice.id,amount:100,method:"MPESA",mpesaCode:code}});expect(duplicate.status()).toBe(409);
- const confirmed=await head.post(`/api/finance/payments/${paymentData.payment.id}/confirm`,{data:{}});expect(confirmed.ok()).toBeTruthy();expect((await confirmed.json()).creditAmount).toBe(2000);expect((await accountant.get(`/receipts/${paymentData.payment.id}`)).ok()).toBeTruthy();const receiptPdf=await accountant.get(`/api/finance/payments/${paymentData.payment.id}/pdf`);expect(receiptPdf.status()).toBe(200);const receiptPdfDocument=await PDFDocument.load(Buffer.from(await receiptPdf.body()));expect(receiptPdfDocument.getTitle()).toContain(paymentData.payment.receiptNo);expect(receiptPdfDocument.getPageCount()).toBe(1);const secretaryReceipt=await secretary.get(`/receipts/${paymentData.payment.id}`);const secretaryReceiptBody=await secretaryReceipt.text();expect(secretaryReceiptBody).not.toContain(paymentData.payment.receiptNo);expect(secretaryReceiptBody).not.toContain(admissionName);
+ const confirmed=await head.post(`/api/finance/payments/${paymentData.payment.id}/confirm`,{data:{}});expect(confirmed.ok()).toBeTruthy();expect((await confirmed.json()).creditAmount).toBe(2000);const receiptPage=await accountant.get(`/receipts/${paymentData.payment.id}`);expect(receiptPage.ok()).toBeTruthy();const receiptHtml=await receiptPage.text();expect(receiptHtml).toContain("Motto: Hard work pays");expect(receiptHtml).not.toMatch(/physical location/i);const receiptPdf=await accountant.get(`/api/finance/payments/${paymentData.payment.id}/pdf`);expect(receiptPdf.status()).toBe(200);expect(receiptPdf.headers()["content-disposition"]).toContain(`filename="Mary-Royal-Receipt-${paymentData.payment.receiptNo}.pdf"`);const receiptPdfDocument=await PDFDocument.load(Buffer.from(await receiptPdf.body()));expect(receiptPdfDocument.getTitle()).toContain(paymentData.payment.receiptNo);expect(receiptPdfDocument.getPageCount()).toBe(1);const secretaryReceipt=await secretary.get(`/receipts/${paymentData.payment.id}`);const secretaryReceiptBody=await secretaryReceipt.text();expect(secretaryReceiptBody).not.toContain(paymentData.payment.receiptNo);expect(secretaryReceiptBody).not.toContain(admissionName);
  const second=await accountant.post("/api/finance/invoices",{data:{learnerId:applicant.id,term:"2026 Term 2",items:[{category:"TUITION",description:"Prior term tuition",amount:10000}]}});expect(second.status()).toBe(201);const secondData=(await second.json()).invoice as {id:string;creditApplied:number;balance:number};expect(secondData.creditApplied).toBe(2000);expect(secondData.balance).toBe(8000);
  const cash=await accountant.post("/api/finance/payments",{data:{invoiceId:secondData.id,amount:1000,method:"CASH"}});expect(cash.status()).toBe(201);const cashData=(await cash.json()).payment as {id:string};const confirmedCash=await head.post(`/api/finance/payments/${cashData.id}/confirm`,{data:{}});expect(confirmedCash.ok()).toBeTruthy();const secretaryVoid=await secretary.post(`/api/finance/payments/${cashData.id}/void`,{data:{reason:"Duplicate entry correction"}});expect(secretaryVoid.status()).toBe(403);const noReason=await accountant.post(`/api/finance/payments/${cashData.id}/void`,{data:{reason:"short"}});expect(noReason.status()).toBe(400);const voided=await accountant.post(`/api/finance/payments/${cashData.id}/void`,{data:{reason:"Duplicate entry correction"}});expect(voided.ok()).toBeTruthy();const voidReceiptPdf=await accountant.get(`/api/finance/payments/${cashData.id}/pdf`);expect(voidReceiptPdf.status()).toBe(200);const voidReceiptPdfBytes=Buffer.from(await voidReceiptPdf.body());expect((await PDFDocument.load(voidReceiptPdfBytes)).getPageCount()).toBe(1);
  const payrollData=await (await head.get("/api/finance/payroll")).json() as {staff:Array<{id:string}>};const payroll=await head.post("/api/finance/payroll",{data:{staffId:payrollData.staff[0].id,period:`${2000+Math.floor(Date.now()/1000)%7999}-01`,grossAmount:50000,deductions:5000}});expect(payroll.status()).toBe(201);const payrollEntry=(await payroll.json()).entry as {id:string;netAmount:number};expect(payrollEntry.netAmount).toBe(45000);const forbiddenRelease=await head.patch("/api/finance/payroll",{data:{action:"mark-paid",id:payrollEntry.id,reference:"PAYROLL-E2E-01"}});expect(forbiddenRelease.status()).toBe(403);const paid=await director.patch("/api/finance/payroll",{data:{action:"mark-paid",id:payrollEntry.id,reference:"PAYROLL-E2E-01"}});expect(paid.ok()).toBeTruthy();expect((await paid.json()).entry.status).toBe("PAID");
  const directorDraftResponse=await director.post("/api/admissions",{data:{}});expect(directorDraftResponse.status()).toBe(201);const directorDraftId=((await directorDraftResponse.json()).draft as {id:string}).id;testAdmissionDraftIds.push(directorDraftId);expect((await secretary.get(`/api/admissions/${directorDraftId}`)).status(),"Secretary must not open another officer's admission packet").toBe(404);expect((await director.get(`/api/admissions/${directorDraftId}`)).ok(),"Director reads the packet they created").toBeTruthy();
  await head.dispose();await secretary.dispose();await accountant.dispose();await parent.dispose();await director.dispose();await teacher.dispose();
 });
+test("basic learner provisioning preserves pending status and scopes class materials", async ({ playwright }) => {
+  test.setTimeout(120_000);
+  async function login(email: string) {
+    const api = await playwright.request.newContext({ baseURL: "http://127.0.0.1:3187", extraHTTPHeaders: loginHeaders() });
+    let response: APIResponse | undefined;
+    for (const password of ["PortalTest2026!", "MaryRoyal2026!", "MaryRoyalTest2026!"]) {
+      response = await api.post("/api/login", { data: { email, password } });
+      if (response.ok()) break;
+    }
+    expect(response?.ok(), email).toBeTruthy();
+    if (response?.ok() && (await response.json()).forcePasswordChange) {
+      expect((await api.post("/api/change-password", { data: { password: "PortalTest2026!" } })).ok()).toBeTruthy();
+    }
+    return api;
+  }
+
+  const director = await login("director@maryroyal.ac.ke");
+  const secretary = await login("secretary@maryroyal.ac.ke");
+  const teacher = await login("teacher@maryroyal.ac.ke");
+  const draftResponse = await director.post("/api/admissions", { data: {} });
+  expect(draftResponse.status()).toBe(201);
+  const draft = (await draftResponse.json()).draft as { id: string; admissionNo: string };
+  testAdmissionDraftIds.push(draft.id);
+
+  const basicLearner = {
+    fullName: `E2E Basic Account ${Date.now()}`,
+    dateOfBirth: "2017-03-04",
+    gender: "Female",
+    grade: "Grade 4",
+  };
+  expect((await director.post(`/api/admissions/${draft.id}/provision-learner`, {
+    data: { learner: basicLearner, consent: false },
+  })).status()).toBe(400);
+  expect((await secretary.post(`/api/admissions/${draft.id}/provision-learner`, {
+    data: { learner: basicLearner, consent: true },
+  })).status()).toBe(403);
+
+  const provisionedResponse = await director.post(`/api/admissions/${draft.id}/provision-learner`, {
+    data: { learner: basicLearner, consent: true },
+  });
+  expect(provisionedResponse.status()).toBe(201);
+  const provisioned = await provisionedResponse.json() as {
+    learner: { id: string; name: string; admissionStatus: string };
+    account: { email: string; suspended: boolean };
+    temporaryPassword: string;
+  };
+  expect(provisioned.learner.admissionStatus).toBe("PENDING");
+  expect(provisioned.learner.name).toBe(basicLearner.fullName);
+  expect(provisioned.account.suspended).toBe(false);
+  expect(provisioned.account.email).toBe(`${draft.admissionNo.toLowerCase()}@learners.maryroyal.ac.ke`);
+  expect((await director.post(`/api/admissions/${draft.id}/provision-learner`, {
+    data: { learner: basicLearner, consent: true },
+  })).status()).toBe(409);
+
+  const student = await playwright.request.newContext({ baseURL: "http://127.0.0.1:3187", extraHTTPHeaders: loginHeaders() });
+  const studentLogin = await student.post("/api/login", {
+    data: { email: provisioned.account.email, password: provisioned.temporaryPassword },
+  });
+  expect(studentLogin.ok()).toBeTruthy();
+  expect((await studentLogin.json()).forcePasswordChange).toBe(true);
+  expect((await student.post("/api/change-password", { data: { password: "PendingLearner2026!" } })).ok()).toBeTruthy();
+
+  const suffix = String(Date.now());
+  const resourceTitle = `E2E learning pending ${suffix}`;
+  const outOfClassTitle = `E2E learning other grade ${suffix}`;
+  expect((await teacher.post("/api/learning/resources", { data: {
+    title: resourceTitle,
+    description: "A teacher-shared resource for the pending learner's class.",
+    grade: "Grade 4",
+    subject: "Mathematics",
+    kind: "READING",
+    url: "https://example.com/e2e-pending-classwork",
+  } })).status()).toBe(201);
+  expect((await director.post("/api/learning/resources", { data: {
+    title: outOfClassTitle,
+    description: "A resource for another class that must remain out of scope.",
+    grade: "Grade 5",
+    subject: "Science",
+    kind: "READING",
+    url: "https://example.com/e2e-other-class",
+  } })).status()).toBe(201);
+
+  const assignmentTitle = `E2E Assignment pending ${suffix}`;
+  const otherAssignmentTitle = `E2E Assignment other grade ${suffix}`;
+  const assignmentResponse = await teacher.post("/api/assignments", { data: {
+    title: assignmentTitle,
+    instructions: "Write one sentence about the lesson.",
+    grade: "Grade 4",
+    subject: "Mathematics",
+    maxScore: 10,
+    autoMark: false,
+  } });
+  expect(assignmentResponse.status()).toBe(201);
+  const assignment = (await assignmentResponse.json()).assignment as { id: string };
+  const otherAssignmentResponse = await director.post("/api/assignments", { data: {
+    title: otherAssignmentTitle,
+    instructions: "This belongs to a different grade.",
+    grade: "Grade 5",
+    subject: "Science",
+    maxScore: 10,
+    autoMark: false,
+  } });
+  expect(otherAssignmentResponse.status()).toBe(201);
+  const otherAssignment = (await otherAssignmentResponse.json()).assignment as { id: string };
+
+  const resources = (await (await student.get("/api/learning/resources")).json()).resources as Array<{ title: string }>;
+  expect(resources.some(resource => resource.title === resourceTitle)).toBe(true);
+  expect(resources.some(resource => resource.title === outOfClassTitle)).toBe(false);
+  const assignments = (await (await student.get("/api/assignments")).json()).assignments as Array<{ id: string; title: string }>;
+  expect(assignments.some(item => item.id === assignment.id && item.title === assignmentTitle)).toBe(true);
+  expect(assignments.some(item => item.id === otherAssignment.id)).toBe(false);
+  expect((await student.post(`/api/assignments/${assignment.id}/submissions`, { data: { response: "I reviewed the shared lesson." } })).status()).toBe(201);
+  expect((await student.post(`/api/assignments/${otherAssignment.id}/submissions`, { data: { response: "Out of scope." } })).status()).toBe(404);
+  expect((await student.post("/api/learning/activity", { data: { gameKey: "NUMBER_QUEST", score: 2, maxScore: 5 } })).status()).toBe(403);
+
+  const learningPage = await student.get("/learning");
+  expect(learningPage.status()).toBe(200);
+  const learningHtml = await learningPage.text();
+  expect(learningHtml).toContain("Class materials");
+  expect(learningHtml).not.toContain("Released marks");
+  expect(learningHtml).not.toContain("Restricted health information");
+
+  const fullPayload = {
+    learner: { ...basicLearner, nationality: "Kenyan", upiNumber: "", stream: "East", admissionDate: "2026-10-25", previousSchool: "", previousClass: "", reasonForLeaving: "", religion: "", languagesSpoken: ["English", "Kiswahili"] },
+    residence: { county: "Kisumu", subCounty: "Kisumu Central", ward: "Obunga", village: "Obunga", physicalAddress: "Obunga, Kisumu", landmark: "", distanceToSchoolKm: null, transportMeans: "Walk", latitude: null, longitude: null },
+    guardians: [{ fullName: "E2E Basic Guardian", relationship: "Mother", idNumber: "", phone: "+254722345681", alternatePhone: "", whatsapp: false, email: "", occupation: "", employer: "", homeAddress: "", workAddress: "", paysFees: true, primaryContact: true }],
+    emergencyContacts: [{ fullName: "E2E Basic Emergency One", relationship: "Aunt", phone: "+254722345682" }, { fullName: "E2E Basic Emergency Two", relationship: "Uncle", phone: "+254722345683" }],
+    pickupPersons: [],
+    health: { knownConditions: "", allergies: "", currentMedication: "", specialNeeds: "", bloodGroup: "", doctorOrHospital: "", immunizationStatus: "", healthInsurance: "" },
+    fee: { term: "2026 Term 3", feePayerGuardian: "E2E Basic Guardian", requestedOptionalItems: [], handoffNote: "" },
+    consent: true,
+  };
+  expect((await director.patch("/api/admissions", { data: { id: draft.id, step: 7, data: fullPayload } })).ok()).toBeTruthy();
+  const submitted = await director.post(`/api/admissions/${draft.id}/submit`, { data: {} });
+  expect(submitted.status()).toBe(201);
+  expect((await submitted.json()).learner.id).toBe(provisioned.learner.id);
+  expect(await cleanupDb.learner.count({ where: { name: basicLearner.fullName } })).toBe(1);
+
+  await student.dispose();
+  await teacher.dispose();
+  await secretary.dispose();
+  await director.dispose();
+});
+
 test("admission slip download returns a valid one-page PDF", async ({ playwright }) => {
  const director = await playwright.request.newContext({ baseURL: "http://127.0.0.1:3187", extraHTTPHeaders: loginHeaders() });
  let login: APIResponse | undefined;

@@ -56,8 +56,8 @@ export async function GET() {
   }
   if (user.role === "LEARNER" && canInScope(user.role, "assignments", "view", "self")) {
     const links = await db.guardianLink.findMany({
-      where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: "APPROVED" } },
-      select: { learnerId: true, learner: { select: { grade: true } } },
+      where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: { in: ["PENDING", "APPROVED"] } } },
+      select: { learnerId: true, learner: { select: { grade: true, admissionStatus: true } } },
     });
     if (!links.length) return NextResponse.json({ assignments: [] });
     const learnerIds = links.map(link => link.learnerId);
@@ -73,6 +73,7 @@ export async function GET() {
       orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
       take: 100,
     });
+    const pendingLearnerIds = new Set(links.filter(link => link.learner.admissionStatus === "PENDING").map(link => link.learnerId));
     return NextResponse.json({
       assignments: assignments.map(assignment => ({
         id: assignment.id,
@@ -86,7 +87,9 @@ export async function GET() {
         createdAt: assignment.createdAt,
         attachmentUrl: assignment.attachmentUrl,
         attachmentType: assignment.attachmentType,
-        submissions: assignment.submissions,
+        submissions: assignment.submissions.map(submission => pendingLearnerIds.has(submission.learnerId)
+          ? { ...submission, score: null, feedback: null, status: submission.status === "MARKED" ? "SUBMITTED" : submission.status }
+          : submission),
       })),
     });
   }

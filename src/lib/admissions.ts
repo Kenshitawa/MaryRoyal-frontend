@@ -4,6 +4,7 @@ const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date.").
 const kenyaPhone = z.string().regex(/^\+254[17]\d{8}$/, "Use a Kenyan number such as +254712345678.");
 const optionalEmail = z.union([z.string().trim().email("Enter a valid email.").max(160), z.literal("")]).optional();
 const text = (max = 160) => z.string().trim().max(max);
+const grade = z.enum(["PP1","PP2","Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6","Grade 7","Grade 8","Grade 9"]);
 
 export const guardianSchema = z.object({
   fullName: z.string().trim().min(2).max(120), relationship: z.string().trim().min(2).max(60), idNumber: text(40).optional(),
@@ -16,10 +17,20 @@ export const pickupPersonSchema = z.object({ fullName: z.string().trim().min(2).
 
 export const learnerAdmissionSchema = z.object({
   fullName: z.string().trim().min(2).max(120), dateOfBirth: dateOnly, gender: z.enum(["Female", "Male"]), nationality: z.string().trim().min(2).max(80),
-  upiNumber: text(80).optional(), grade: z.enum(["PP1","PP2","Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6","Grade 7","Grade 8","Grade 9"]),
+  upiNumber: text(80).optional(), grade,
   stream: text(80).optional(), admissionDate: dateOnly, previousSchool: text(160).optional(), previousClass: text(80).optional(), reasonForLeaving: text(300).optional(),
   religion: text(80).optional(), languagesSpoken: z.array(z.string().trim().min(2).max(40)).min(1).max(8)
 });
+export const provisionalLearnerSchema = z.object({
+  fullName: z.string().trim().min(2).max(120),
+  dateOfBirth: dateOnly,
+  gender: z.enum(["Female", "Male"]),
+  grade,
+  nationality: z.string().trim().min(2).max(80).default("Kenyan"),
+  admissionDate: dateOnly.default(() => new Date().toISOString().slice(0, 10)),
+  upiNumber: text(80).optional(),
+  stream: text(80).optional(),
+}).strict();
 export const residenceSchema = z.object({ county: z.string().trim().min(2).max(80), subCounty: z.string().trim().min(2).max(80), ward: z.string().trim().min(2).max(100), village: z.string().trim().min(2).max(120), physicalAddress: z.string().trim().min(4).max(240), landmark: text(160).optional(), distanceToSchoolKm: z.union([z.number().min(0).max(100), z.null()]).optional(), transportMeans: text(100).optional(), latitude: z.union([z.number().min(-4.8).max(5.2), z.null()]).optional(), longitude: z.union([z.number().min(33.5).max(42.5), z.null()]).optional() });
 export const healthSchema = z.object({ knownConditions: text(800).optional(), allergies: text(500).optional(), currentMedication: text(500).optional(), specialNeeds: text(500).optional(), bloodGroup: z.enum(["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]).optional(), doctorOrHospital: text(160).optional(), immunizationStatus: text(160).optional(), healthInsurance: text(120).optional() });
 export const feeHandoffSchema = z.object({ term: z.string().trim().min(3).max(80), feePayerGuardian: z.string().trim().min(2).max(120), requestedOptionalItems: z.array(z.enum(["TRANSPORT", "LUNCH", "BOARDING", "UNIFORM", "ACTIVITY"])).max(5), handoffNote: text(300).optional() });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { completedAdmissionSchema } from "../src/lib/admissions";
+import { completedAdmissionSchema, provisionalLearnerSchema } from "../src/lib/admissions";
 
 function validAdmission() {
   return {
@@ -15,6 +15,22 @@ function validAdmission() {
 }
 
 describe("admission validation", () => {
+  it("allows a consented provisional learner from only basic identity and class details", () => {
+    const result = provisionalLearnerSchema.safeParse({
+      fullName: "Amina Otieno",
+      dateOfBirth: "2018-04-12",
+      gender: "Female",
+      grade: "Grade 3",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.nationality).toBe("Kenyan");
+  });
+
+  it("rejects incomplete or unsupported provisional learner details", () => {
+    expect(provisionalLearnerSchema.safeParse({ dateOfBirth: "2018-04-12", gender: "Female", grade: "Grade 3" }).success).toBe(false);
+    expect(provisionalLearnerSchema.safeParse({ fullName: "Amina Otieno", dateOfBirth: "2018-04-12", gender: "Female", grade: "Grade 10" }).success).toBe(false);
+  });
+
   it("accepts a complete Kenyan school admission", () => {
     expect(completedAdmissionSchema.safeParse(validAdmission()).success).toBe(true);
   });

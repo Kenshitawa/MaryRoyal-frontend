@@ -494,13 +494,13 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
         {/* Top Sticky Navigation Bar */}
         <nav
           aria-label="Learner profile sections"
-          className="sticky top-16 z-20 -mx-1 flex flex-wrap gap-1.5 rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95"
+          className="sticky top-16 z-20 -mx-1 flex flex-nowrap gap-1.5 overflow-x-auto overscroll-x-contain rounded-2xl border border-border-button-default bg-background-primary-default/95 p-2 shadow-sm backdrop-blur"
         >
           {profileTabs.map(({ id: targetId, label, icon: TabIcon }) => (
             <a
               key={targetId}
               href={`#${targetId}`}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-caption-1-semibold text-text-secondary transition-colors hover:bg-background-secondary-hover hover:text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             >
               <TabIcon size={14} className="text-blue-600 dark:text-blue-400" />
               <span>{label}</span>

@@ -45,7 +45,7 @@ Remaining: fresh role sweep of direct/deep/external entry, app Back and browser 
 
 ### U4 — admissions (partial)
 
-Seven-step draft/resume, normalized learner/residence/guardian/emergency/pick-up/health records, consent, private photo/PDF documents, required-document checklist, branded admission PDF and explicit learner/parent access setup exist.
+Seven-step draft/resume, normalized learner/residence/guardian/emergency/pick-up/health records, consent, private photo/PDF documents, required-document checklist and branded admission PDF exist. Director-only learner account provisioning can start from basic identity/class details and the full admission later updates the same pending learner; non-Director staff can save admission records but cannot create accounts.
 
 Remaining: photo crop/edit; pre-existing parent identity maintenance and sibling-link E2E; fee handoff tied to approved class/term pricing and invoice preview; private document read/download/remove tests and safe abandoned-draft retention. Learner-profile supporting-document links now exist, so this is a verification/policy gap, not an absent route. Admission detail GET currently permits school-scope reads more broadly than the page's Secretary ownership and Head Teacher draft restrictions; align all detail/document/mutation policies before release.
 
@@ -60,7 +60,7 @@ Remaining and blocking:
 - Prove every section and nested endpoint has linked/self/assigned/identity scope, including unreleased assessments, histories, photos, admission documents and private family data. Disable-prefetch changes reduce incidental reads but do not fix authorization.
 - Validate talent/timeline/chart claims against persisted records rather than presentation-only content. Add photo crop/edit, a genuinely secure parent-message destination if approved, and configurable teacher fee/parent health visibility only under approved policy.
 
-Staff directory/profile, employment/TSC/qualifications, assignments, teaching notes, attendance, document/import/edit/history foundations now exist. Director/Head Teacher browse the directory; other staff detail is self-only. Current permissions/API allow Head Teacher staff account creation, and staff-profile payroll visibility is broader than the earlier Director-only claim. Reconcile account/role provisioning with the Director-only account rule and confirm payroll/statutory/history exposure with approved least privilege. Verify all staff documents, bulk imports/exports, editing and self-only history access; employment editing is no longer wholly absent.
+Staff directory/profile, employment/TSC/qualifications, assignments, teaching notes, attendance, document/import/edit/history foundations now exist. Director/Head Teacher browse the directory; other staff detail is self-only. Account and role creation is now Director-only, including staff accounts; Head Teacher profile editing of permitted staff remains distinct from account/role administration. Verify that staff provisioning endpoints, role changes, payroll/statutory/history exposure and staff documents/imports/exports enforce approved least privilege.
 
 ### U6 — attendance/exams/rubrics (partial)
 
@@ -83,6 +83,8 @@ Remaining: secure attachment upload/download (metadata fields alone are not a fi
 ### U8 — learning library (partial)
 
 Assigned-class general HTTPS resources and separate official-channel `VideoLibrary` exist. YouTube oEmbed channel verification, grade/weak-topic matching and watched state are implemented in source; arbitrary teacher VIDEO resources are excluded from learner resource reads. Grade-dependent Number Quest/Science Explorer questions and feedback exist; these are not full course authoring.
+
+Pending learners can now access grade-scoped teacher resources, assignments, assignment submission and verified class videos without academic summaries, attendance, game activity, or assignment scores/feedback. This is a source implementation and the focused E2E scenario must pass before it is treated as accepted.
 
 Remaining: network/official-channel E2E fixture, malicious URL and class/self IDOR tests, accessible playback/watch behavior, video self-check questions, stronger mastery/trend weighting and playlist ordering. Optional YouTube Data API integration is not implemented. Assignment marking remains exact-answer matching plus teacher feedback; optional assignment drafting must remain local-model-only, with no child/user content sent to paid/external AI.
 

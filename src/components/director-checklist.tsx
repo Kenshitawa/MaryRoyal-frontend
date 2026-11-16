@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Circle, ArrowRight, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { ProgressBar } from "@/components/base/progress/progress";
 
 interface ChecklistItem {
   id: string;
@@ -105,18 +106,19 @@ export function DirectorGettingStartedChecklist({
 
   const completedCount = steps.filter(s => s.completed).length;
   const progressPercent = Math.round((completedCount / steps.length) * 100);
+  const remainingSteps = steps.filter(step => !step.completed);
   if (progressPercent >= 100) return null;
 
   return (
-    <section className="card overflow-hidden p-0" aria-label="School setup guide">
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-brand px-4 py-3 text-white">
+    <section className="overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-xs" aria-label="School setup guide">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-separator-border px-4 py-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/15">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-50 text-accent-700">
             <Sparkles size={17} aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <h2 className="text-title font-semibold">School setup guide</h2>
-            <p className="text-caption text-white">
+            <h2 className="text-headline-medium text-text-primary">School setup guide</h2>
+            <p className="text-body-2-regular text-text-secondary">
               {completedCount} of {steps.length} steps complete ({progressPercent}%)
             </p>
           </div>
@@ -125,7 +127,7 @@ export function DirectorGettingStartedChecklist({
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           aria-expanded={!collapsed}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-white/50 px-3 text-label font-semibold text-white hover:bg-white/15"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border-button-default bg-background-primary-default px-3 text-body-2-medium text-text-primary transition-colors hover:bg-background-primary-hover active:bg-background-primary-active outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
         >
           {collapsed ? "Show steps" : "Hide"}
           {collapsed ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}
@@ -133,37 +135,38 @@ export function DirectorGettingStartedChecklist({
       </div>
 
       {!collapsed && (
-        <ol className="divide-y divide-line-soft bg-surface">
-          {steps.map((step) => (
-            <li key={step.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-3 p-4 sm:p-5">
+          <ProgressBar label="Setup progress" value={progressPercent} size="sm" />
+          <ol className="divide-y divide-separator-border">
+          {remainingSteps.map((step) => (
+            <li key={step.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 flex-1 items-start gap-2.5">
                 <span className="mt-0.5 shrink-0">
                   {step.completed ? (
-                    <CheckCircle2 size={18} className="text-success" aria-hidden="true" />
+                    <CheckCircle2 size={18} className="text-state-success-text" aria-hidden="true" />
                   ) : (
-                    <Circle size={18} className="text-ink-3" aria-hidden="true" />
+                    <Circle size={18} className="text-foreground-icon-tertiary" aria-hidden="true" />
                   )}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-body font-semibold text-ink">
-                    <span className="text-ink-3">Step {step.step}.</span> {step.title}
+                  <p className="text-body-medium text-text-primary">
+                    <span className="text-text-tertiary">Step {step.step}.</span> {step.title}
                   </p>
-                  <p className="mt-0.5 text-label text-ink-2">{step.description}</p>
-                  <p className="mt-1 text-caption text-ink-3">{step.role}</p>
+                  <p className="mt-0.5 text-body-2-regular text-text-secondary">{step.description}</p>
+                  <p className="mt-1 text-caption-1-regular text-text-tertiary">{step.role}</p>
                 </div>
               </div>
-              {step.completed ? null : (
               <Link
                 href={step.href}
-                className={`btn btn-sm shrink-0 sm:self-center ${step.completed ? "btn-secondary" : "btn-primary"} w-full sm:w-auto`}
+                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-button-primary px-4 text-body-2-semibold text-text-white outline-none transition-colors hover:brightness-[1.06] active:brightness-95 focus-visible:ring-2 focus-visible:ring-border-focus-ring sm:w-auto"
               >
                 {step.actionText}
                 <ArrowRight size={14} aria-hidden="true" />
               </Link>
-              )}
             </li>
           ))}
-        </ol>
+          </ol>
+        </div>
       )}
     </section>
   );

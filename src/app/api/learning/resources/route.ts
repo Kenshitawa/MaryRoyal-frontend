@@ -45,7 +45,7 @@ export async function GET() {
     return NextResponse.json({ resources });
   }
   if (user.role === "LEARNER" && canInScope(user.role, "learning", "view", "self")) {
-    const links = await db.guardianLink.findMany({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: "APPROVED" } }, select: { learner: { select: { grade: true } } } });
+    const links = await db.guardianLink.findMany({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: { in: ["PENDING", "APPROVED"] } } }, select: { learner: { select: { grade: true } } } });
     const grades = [...new Set(links.map(link => link.learner.grade))];
     const resources = grades.length ? await db.learningResource.findMany({ where: { grade: { in: grades }, kind: { not: "VIDEO" } }, include: { teacher: { select: { name: true } } }, orderBy: { createdAt: "desc" }, take: 100 }) : [];
     return NextResponse.json({ resources });
