@@ -55,6 +55,12 @@ Total output lines: 287
 - Known issues: the dark theme still uses targeted shared CSS overrides; broader visual QA across each workflow screen and real school devices remains. Payroll is a basic monthly sheet, not full statutory payroll/accounting; seed salaries are fictional demo values. The system remains a local prototype; see ROADMAP for remaining modules/security work.
 - Next: continue remaining modules and security work listed in ROADMAP. No cloud deployment was performed.
 
+## BoardUI dashboard refresh — current pass
+- Built: refreshed the shared dashboard with BoardUI announcement and action buttons, improving the first-screen guidance and main navigation affordances while keeping the existing role-aware layout and access limits intact.
+- Tested: `npm run lint`, `npm run typecheck`, and `npm test` passed in the current workspace after the BoardUI dashboard polish.
+- Known issues: route-by-route screen refresh across every portal module remains partial; the remaining UX work is tracked in `docs/ROADMAP.md`.
+- Next: continue the route-by-route BoardUI refresh for admissions, finance receipts, staff profile printouts and mobile tables, while keeping the current role rules unchanged.
+
 ## UI and account-security follow-up
 - Built: users can open **Profile & security** from their avatar, upload a PNG/JPEG/WebP photo (2 MB max, signature checked), and change their password after validating the current password. Sessions expire after 10 minutes idle, with signed HTTP-only idle tokens renewed by active server requests and a client inactivity timer. Director gets an eye-icon shortcut to the existing role-protected audit trail for sign-ins and recorded changes; no password values are logged.
 - Built: saved dark mode now applies from a `beforeInteractive` document-root script before first paint, removing the light-to-dark flash. Demo seeding is idempotent and now includes two terms of invoices, partial sample payments and payroll so Director finance tiles show real demo totals immediately. Family links are anchored to the official seed roster so repeated E2E cleanup cannot remove them.

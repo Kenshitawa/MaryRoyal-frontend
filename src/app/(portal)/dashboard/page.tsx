@@ -16,7 +16,15 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { DirectorGettingStartedChecklist } from "@/components/director-checklist";
+import { Announcement } from "@/components/base/announcement/announcement";
+import { ButtonLink } from "@/components/base/buttons/button";
 import { Card, EmptyState, PageHeader, StatCard } from "@/components/ui/primitives";
+import {
+  RiBarChartBoxLine,
+  RiBook2Line,
+  RiFolderUserLine,
+  RiMoneyDollarCircleLine,
+} from "@remixicon/react";
 
 const roleTitles: Record<string, string> = {
   DIRECTOR: "Director",
@@ -479,6 +487,29 @@ export default async function Dashboard() {
       />
 
       {role === "DIRECTOR" ? <DirectorGettingStartedChecklist stats={directorStats} /> : null}
+
+      <Announcement
+        title={role === "ACCOUNTANT" ? "Finance overview is ready" : "School snapshot is ready"}
+        description={
+          role === "ACCOUNTANT"
+            ? "Track fee collection, balances and payments without leaving the dashboard."
+            : "Attendance, admissions, performance and school activity are refreshed for the day."
+        }
+        dismissible
+        className="max-w-none"
+      />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <ButtonLink href="/reports" variant="secondary" size="small" leadingIcon={RiBarChartBoxLine}>
+          Reports
+        </ButtonLink>
+        <ButtonLink href="/learners" variant="secondary" size="small" leadingIcon={RiFolderUserLine}>
+          Learners
+        </ButtonLink>
+        <ButtonLink href={role === "ACCOUNTANT" ? "/finance" : "/admissions"} variant="secondary" size="small" leadingIcon={role === "ACCOUNTANT" ? RiMoneyDollarCircleLine : RiBook2Line}>
+          {role === "ACCOUNTANT" ? "Finance" : "Admissions"}
+        </ButtonLink>
+      </div>
 
       <section aria-label="Key metrics" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {metrics.map((metric) => (
