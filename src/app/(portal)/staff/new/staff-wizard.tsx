@@ -273,7 +273,10 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
   function printDedicatedSlip() {
     if (!successResult) return;
     const printWindow = window.open("", "_blank", "width=850,height=950");
-    if (!printWindow) return;
+    if (!printWindow) {
+      setError("The staff slip could not open. Allow pop-ups for this site and try again.");
+      return;
+    }
     const doc = printWindow.document;
     doc.title = `Mary Royal School · ${personal.name} Staff Credentials Slip`;
     const esc = (input: unknown) =>
@@ -283,44 +286,66 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
     style.textContent = `
       * { box-sizing: border-box; }
       body { margin: 0; padding: 24px; background: #f1f5f9; font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .action-bar { max-width: 750px; margin: 0 auto 16px; display: flex; justify-content: space-between; align-items: center; }
-      .action-btn { background: #1d4ed8; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer; }
+      .action-bar { max-width: 750px; margin: 0 auto 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+      .action-btn { min-height: 44px; background: #1d4ed8; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer; }
       .action-btn:hover { background: #1e40af; }
-      .close-btn { background: #e2e8f0; color: #334155; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
+      .close-btn { min-height: 44px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
       .close-btn:hover { background: #cbd5e1; }
-      .slip { max-width: 750px; margin: 0 auto; padding: 36px 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); }
+      .slip { width: min(100%, 750px); margin: 0 auto; padding: 36px 40px; background: #fff; border: 1px solid #cbd5e1; border-radius: 16px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); }
       .header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2.5px solid #1d4ed8; padding-bottom: 18px; margin-bottom: 20px; gap: 16px; }
       .brand-box { display: flex; align-items: center; gap: 14px; }
+      .brand-text { min-width: 0; }
       .brand-logo { width: 68px; height: 68px; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; border: 1px solid #dbeafe; }
-      .brand-text h1 { margin: 0; font-size: 22px; font-weight: 900; color: #1e3a8a; }
+      .brand-text h1 { margin: 0; font-size: clamp(18px, 4vw, 22px); font-weight: 900; color: #1e3a8a; overflow-wrap: anywhere; }
       .brand-text p { margin: 3px 0 0; font-size: 11.5px; color: #475569; }
       .badge { display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 9999px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
       .section-card { margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; break-inside: avoid; }
       .section-header { background: #f8fafc; padding: 8px 14px; border-bottom: 1px solid #e2e8f0; }
       .section-title { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1e3a8a; margin: 0; }
-      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; padding: 12px 14px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px 14px; padding: 12px 14px; }
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; padding: 12px 14px; }
       .item { display: flex; flex-direction: column; }
       .item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; }
-      .item-value { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-top: 2px; }
+      .item-value { font-size: 12.5px; font-weight: 700; color: #0f172a; margin-top: 2px; overflow-wrap: anywhere; }
       .pass-box { grid-column: 1 / -1; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 14px; margin: 6px 0; }
-      .pass-val { font: 800 18px monospace; color: #1e40af; }
+      .pass-val { font: 800 18px monospace; color: #1e40af; overflow-wrap: anywhere; word-break: break-word; }
       .alloc-badge { display: inline-block; background: #eff6ff; padding: 4px 9px; border-radius: 6px; font-size: 11.5px; margin: 2px 4px 2px 0; border: 1px solid #bfdbfe; color: #1e3a8a; }
       .footer { margin-top: 28px; padding-top: 16px; border-top: 1.5px solid #cbd5e1; display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: #64748b; }
       .signature-line { width: 200px; border-top: 1px solid #94a3b8; margin-top: 36px; text-align: center; padding-top: 4px; font-weight: 600; color: #1e293b; }
+      @media screen and (max-width: 640px) {
+        body { padding: 12px; }
+        .action-bar { align-items: stretch; }
+        .action-btn, .close-btn { flex: 1; }
+        .slip { padding: 18px 16px; }
+        .header { flex-direction: column; }
+        .brand-box { gap: 10px; }
+        .brand-logo { width: 52px; height: 52px; }
+        .grid, .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .footer { flex-direction: column; align-items: stretch; gap: 12px; }
+        .signature-line { width: min(200px, 100%); align-self: flex-end; }
+      }
+      @media screen and (max-width: 380px) {
+        .grid, .grid-2 { grid-template-columns: minmax(0, 1fr); }
+      }
       @media print {
+        @page { size: A4 portrait; margin: 12mm; }
         body { padding: 0; background: #fff; }
         .action-bar { display: none !important; }
-        .slip { border: none !important; box-shadow: none !important; padding: 12px !important; max-width: 100% !important; }
+        .slip { width: 100%; border: none !important; box-shadow: none !important; padding: 0 !important; max-width: 100% !important; }
+        .header, .section-card, .footer { break-inside: avoid; }
       }
     `;
     doc.head.append(style);
+    const viewport = doc.createElement("meta");
+    viewport.name = "viewport";
+    viewport.content = "width=device-width, initial-scale=1";
+    doc.head.append(viewport);
     const slip = doc.createElement("div");
     slip.className = "slip";
     slip.innerHTML = `
       <div class="action-bar no-print">
-        <button class="action-btn" onclick="window.print()">Print Slip / Save as PDF</button>
-        <button class="close-btn" onclick="window.close()">✕ Close</button>
+        <button type="button" class="action-btn" aria-label="Print staff slip or save it as a PDF" onclick="window.print()">Print Slip / Save as PDF</button>
+        <button type="button" class="close-btn" aria-label="Close staff slip window" onclick="window.close()">✕ Close</button>
       </div>
 
       <div class="header">

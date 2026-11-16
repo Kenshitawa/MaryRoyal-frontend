@@ -1,10 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { RiArrowLeftLine } from "@remixicon/react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/base/buttons/button";
-import { Breadcrumb, BreadcrumbItem } from "@/components/base/breadcrumb/breadcrumb";
 
 const formBaselines = new Map<HTMLFormElement, string>();
 const editedForms = new Set<HTMLFormElement>();
@@ -184,37 +183,15 @@ export default function PageNavigation({ active, homeHref, userId }: { active: s
     return [{ label: homeLabel, href: homeHref }, { label: active, href: pathname }];
   }, [active, hasDetail, homeHref, homeLabel, isHome, pathname, segments]);
 
-  return (
-    <div className="hidden border-b border-line-soft bg-surface px-6 py-2 lg:block print:hidden">
-      <div className="flex min-h-11 items-center gap-3">
-        {!isHome && (
-          <Button
-            type="button"
-            aria-label="Go back"
-            onClick={back}
-            leadingIcon={RiArrowLeftLine}
-            variant="secondary"
-            size="small"
-            className="shrink-0"
-          >
-            Back
-          </Button>
-        )}
-        <Breadcrumb aria-label="Breadcrumb" className="min-w-0 flex-1">
-          {breadcrumb.map((item, index) => {
-            const current = index === breadcrumb.length - 1;
-            return (
-              <BreadcrumbItem
-                key={`${item.href}-${index}`}
-                href={current ? undefined : item.href}
-                current={current}
-              >
-                {item.label}
-              </BreadcrumbItem>
-            );
-          })}
-        </Breadcrumb>
-      </div>
+  return <div className="hidden border-b border-line-soft bg-surface px-6 py-2 lg:block print:hidden">
+    <div className="flex min-h-11 items-center gap-3">
+      {!isHome && <button type="button" aria-label="Go back" onClick={back} className="btn btn-secondary btn-sm shrink-0"><ArrowLeft size={15} aria-hidden="true"/> Back</button>}
+      <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-1.5 text-label text-ink-3">
+        {breadcrumb.map((item, index) => <span key={`${item.href}-${index}`} className="flex min-w-0 items-center gap-1.5">
+          {index > 0 && <ChevronRight size={13} aria-hidden="true"/>}
+          {index === breadcrumb.length - 1 ? <span aria-current="page" className="max-w-48 truncate font-semibold text-ink">{item.label}</span> : <Link href={item.href} className="inline-flex min-h-11 items-center rounded px-2 hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{item.label}</Link>}
+        </span>)}
+      </nav>
     </div>
-  );
+  </div>;
 }

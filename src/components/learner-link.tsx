@@ -42,7 +42,7 @@ export function LearnerLink({
       {name && (
         <a
           href={`/learners/${id}`}
-          className="group inline-flex items-center gap-1 font-bold text-blue-700 transition hover:text-blue-900 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+          className="group inline-flex items-center gap-1 text-sm font-bold text-blue-700 transition hover:text-blue-900 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>{name}</span>
         </a>
@@ -107,7 +107,7 @@ export function LearnerChip({
         </span>
       )}
       <div className="flex flex-col text-left">
-        <span className="text-xs font-bold text-slate-900 dark:text-white">{name}</span>
+        <span className="text-sm font-bold text-slate-900 dark:text-white">{name}</span>
         <span className="text-[10px] text-slate-500 dark:text-slate-400">
           {admissionNo ? `${admissionNo} ` : ""}
           {grade ? `· ${grade}` : ""}

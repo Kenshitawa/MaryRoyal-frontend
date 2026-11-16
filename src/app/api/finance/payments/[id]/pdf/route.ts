@@ -6,7 +6,6 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "@/lib/db";
 import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
-import { generateQrMatrix } from "@/lib/qr";
 
 async function actor() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -347,58 +346,30 @@ export async function GET(
   const balColor = remainingBalance > 0 ? rubyRed : emeraldGreen;
   page.drawText(kes(remainingBalance), { x: width - 45 - fontBold.widthOfTextAtSize(kes(remainingBalance), 9), y: y - 58, size: 9, font: fontBold, color: balColor });
 
-  // Verification QR Code (Left)
-  const qrVerificationText = `MARY-ROYAL-VERIFIED:receipt=${payment.receiptNo};adm=${payment.invoice.learner.admissionNo};amount=${payment.amount};date=${payment.createdAt.toISOString()}`;
-  const qrMatrix = generateQrMatrix(qrVerificationText);
-  const qrSize = 65;
-  const qrX = 45;
-  const qrY = y - 70;
-  const moduleSize = qrSize / qrMatrix.length;
-
+  const referenceX = 45;
+  const referenceY = y - 70;
   page.drawRectangle({
-    x: qrX - 4,
-    y: qrY - 4,
-    width: qrSize + 8,
-    height: qrSize + 8,
-    color: white,
+    x: referenceX,
+    y: referenceY,
+    width: 220,
+    height: 54,
+    color: lightBg,
     borderColor: borderLight,
-    borderWidth: 1
+    borderWidth: 0.8
   });
-
-  for (let r = 0; r < qrMatrix.length; r++) {
-    for (let c = 0; c < qrMatrix[r].length; c++) {
-      if (qrMatrix[r][c]) {
-        page.drawRectangle({
-          x: qrX + c * moduleSize,
-          y: qrY + (qrMatrix.length - 1 - r) * moduleSize,
-          width: moduleSize,
-          height: moduleSize,
-          color: darkNavy
-        });
-      }
-    }
-  }
-
-  page.drawText("Authentic Digital Receipt", {
-    x: qrX + qrSize + 12,
-    y: qrY + 40,
+  page.drawText("RECEIPT REFERENCE", {
+    x: referenceX + 12,
+    y: referenceY + 37,
     size: 7.5,
     font: fontBold,
     color: royalBlue
   });
-  page.drawText(`Token: ${payment.receiptNo.slice(-6).toUpperCase()} · Tamper-proof`, {
-    x: qrX + qrSize + 12,
-    y: qrY + 28,
-    size: 7,
-    font: fontRegular,
-    color: slateGray
-  });
-  page.drawText("Scan with any camera to verify validity", {
-    x: qrX + qrSize + 12,
-    y: qrY + 16,
-    size: 6.8,
-    font: fontRegular,
-    color: slateGray
+  page.drawText(payment.receiptNo, {
+    x: referenceX + 12,
+    y: referenceY + 20,
+    size: 10,
+    font: fontBold,
+    color: darkNavy
   });
 
   y -= 110;
@@ -414,13 +385,18 @@ export async function GET(
     borderWidth: 0.5
   });
 
-  page.drawText("NOTICE: Fees once paid are non-refundable and non-transferable. Retain this receipt as official proof of payment.", {
+  page.drawText(
+    isVoid
+      ? "NOTICE: This receipt has been voided. Retain this copy for reference only."
+      : "NOTICE: Fees once paid are non-refundable and non-transferable. Retain this receipt as proof of payment.",
+    {
     x: 42,
     y: y - 11,
     size: 7.2,
     font: fontBold,
     color: darkNavy
-  });
+    }
+  );
   page.drawText("Payment made through official channels: Mary Royal School Bank Account or Verified School M-Pesa Till / Paybill.", {
     x: 42,
     y: y - 21,

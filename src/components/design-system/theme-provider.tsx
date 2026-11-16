@@ -25,10 +25,10 @@ const ThemeContext = createContext<ThemeContextType>({
   toggleStyle: () => {},
 });
 
-function syncDocumentTheme(dark: boolean) {
+function applyResolvedTheme(isDark: boolean) {
   const root = document.documentElement;
-  root.dataset.theme = dark ? "dark" : "light";
-  root.classList.toggle("dark", dark);
+  root.dataset.theme = isDark ? "dark" : "light";
+  root.classList.toggle("dark", isDark);
 }
 
 export function ThemeProvider({
@@ -47,7 +47,7 @@ export function ThemeProvider({
     // 1. Initialize Light/Dark
     const savedTheme = localStorage.getItem("mary-theme") as UITheme | null;
     const isDark = savedTheme === "dark" || (savedTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    syncDocumentTheme(isDark);
+    applyResolvedTheme(isDark);
     if (isDark) {
       setThemeState(savedTheme === "system" ? "system" : "dark");
     } else {
@@ -63,7 +63,7 @@ export function ThemeProvider({
     setStyleState(initialStyle);
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const updateSystemTheme = () => {
-      if (localStorage.getItem("mary-theme") === "system") syncDocumentTheme(media.matches);
+      if (localStorage.getItem("mary-theme") === "system") applyResolvedTheme(media.matches);
     };
     media.addEventListener("change", updateSystemTheme);
     return () => media.removeEventListener("change", updateSystemTheme);
@@ -71,7 +71,7 @@ export function ThemeProvider({
 
   const setTheme = (newTheme: UITheme) => {
     const dark = newTheme === "dark" || (newTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    syncDocumentTheme(dark);
+    applyResolvedTheme(dark);
     localStorage.setItem("mary-theme", newTheme);
     setThemeState(newTheme);
   };

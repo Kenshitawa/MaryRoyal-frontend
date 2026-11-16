@@ -72,7 +72,7 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-separator-border pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-4 dark:border-slate-800">
         <PillTabList className="max-w-full overflow-x-auto rounded-full border border-separator-border bg-background-secondary-default p-1">
           <PillTab variant="gray" isSelected={activeTab === "all"} onSelect={() => setActiveTab("all")}>
             Executive Overview

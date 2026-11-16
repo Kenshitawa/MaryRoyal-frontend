@@ -157,7 +157,7 @@ const inputStyles = sortCx({
   input: [
     "min-w-0 flex-1 bg-transparent border-0 outline-none p-0 m-0",
     "font-sans text-body-regular text-text-primary",
-    "placeholder:text-text-tertiary",
+    "placeholder:text-text-secondary",
     "focus:placeholder:text-text-primary",
     "disabled:text-input-disabled-text disabled:placeholder:text-input-disabled-text",
     "disabled:cursor-not-allowed",
@@ -249,12 +249,43 @@ InputBase.displayName = "InputBase";
 /* -------------------------------------------------------------------------- */
 
 export interface InputProps
-  extends Omit<TextFieldProps, "children">,
+  extends Omit<
+      TextFieldProps,
+      | "children"
+      | "name"
+      | "type"
+      | "autoComplete"
+      | "autoCapitalize"
+      | "autoFocus"
+      | "enterKeyHint"
+      | "form"
+      | "inputMode"
+      | "maxLength"
+      | "minLength"
+      | "pattern"
+      | "readOnly"
+    >,
+    Pick<
+      InputBaseProps,
+      | "name"
+      | "type"
+      | "autoComplete"
+      | "autoCapitalize"
+      | "autoFocus"
+      | "enterKeyHint"
+      | "form"
+      | "inputMode"
+      | "maxLength"
+      | "minLength"
+      | "pattern"
+      | "readOnly"
+    >,
     Pick<
       InputBaseProps,
       | "leadingIcon"
       | "trailingIcon"
       | "leadingAddon"
+      | "trailingAddon"
       | "fieldClassName"
       | "groupRef"
       | "ref"
@@ -286,6 +317,19 @@ export function Input({
   leadingIcon,
   trailingIcon,
   leadingAddon,
+  trailingAddon,
+  name,
+  type,
+  autoComplete,
+  autoCapitalize,
+  autoFocus,
+  enterKeyHint,
+  form,
+  inputMode,
+  maxLength,
+  minLength,
+  pattern,
+  readOnly,
   fieldClassName,
   ref,
   groupRef,
@@ -315,13 +359,26 @@ export function Input({
             </Label>
           )}
           <InputBase
-            dir={inputDir ?? (["email", "url", "tel"].includes(textFieldProps.type ?? "") ? "ltr" : undefined)}
+            name={name}
+            type={type}
+            autoComplete={autoComplete}
+            autoCapitalize={autoCapitalize}
+            autoFocus={autoFocus}
+            enterKeyHint={enterKeyHint}
+            form={form}
+            inputMode={inputMode}
+            maxLength={maxLength}
+            minLength={minLength}
+            pattern={pattern}
+            readOnly={readOnly}
+            dir={inputDir ?? (["email", "url", "tel"].includes(type ?? "") ? "ltr" : undefined)}
             ref={ref}
             groupRef={groupRef}
             placeholder={placeholder}
             leadingIcon={leadingIcon}
             trailingIcon={trailingIcon}
             leadingAddon={leadingAddon}
+            trailingAddon={trailingAddon}
             fieldClassName={fieldClassName}
           />
           {isInvalid && errorMessage != null ? (

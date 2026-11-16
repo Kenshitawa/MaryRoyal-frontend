@@ -59,7 +59,9 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
           </IconButton>
         ) : (
           <Link href={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} aria-label="Mary Royal home" className="icon-btn">
-            <Image src="/mary-royal-logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
+            <span className="grid size-7 shrink-0 place-items-center rounded-md bg-brand-mark-surface p-0.5">
+              <Image src="/mary-royal-logo.png" alt="" width={28} height={28} className="h-full w-full object-contain" />
+            </span>
           </Link>
         )}
         <p className="min-w-0 flex-1 truncate text-body font-semibold text-ink">{section}</p>

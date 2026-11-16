@@ -421,7 +421,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
                 >
                   ← {actor.role === "PARENT" ? "My children" : actor.role === "LEARNER" ? "My learning" : "Learner Register"}
                 </Link>
-                <p className="text-[10.5px] font-semibold uppercase tracking-wider text-blue-200">{relationTitle}</p>
+                <p className="text-base font-semibold uppercase tracking-wider text-blue-200">{relationTitle}</p>
                 <h1 className="mt-1 text-xl font-bold tracking-tight text-white sm:text-2xl">{learner.name}</h1>
                 <p className="mt-1 text-xs text-blue-100">
                   <span className="font-mono font-semibold text-white">{learner.admissionNo}</span> · {learner.grade}

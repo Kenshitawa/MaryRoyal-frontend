@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { cx } from "@/utils/cx";
 
 /* ------------------------------------------------------------------ */
 /* Card                                                                */
@@ -88,34 +86,31 @@ export function StatCard({
   href?: string;
 }) {
   const tones: Record<string, string> = {
-    brand: "bg-accent-100 text-accent-800",
-    success: "bg-status-lime-background text-status-lime-text",
-    warning: "bg-status-yellow-background text-status-yellow-text",
-    danger: "bg-status-rose-background text-status-rose-text",
-    neutral: "bg-background-secondary-default text-text-secondary",
+    brand: "bg-brand-soft text-brand-ink",
+    success: "bg-success-soft text-success",
+    warning: "bg-warning-soft text-warning",
+    danger: "bg-danger-soft text-danger",
+    neutral: "bg-surface-2 text-ink-2",
   };
   const body = (
     <>
       <div className="flex min-w-0 items-start justify-between gap-2">
-        <p className="min-w-0 text-caption-1-medium text-text-secondary">{label}</p>
+        <p className="min-w-0 text-[11px] font-semibold uppercase tracking-wider text-ink-2">{label}</p>
         {Icon ? (
-          <span className={cx("grid h-9 w-9 shrink-0 place-items-center rounded-xl", tones[tone])} aria-hidden="true">
+          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${tones[tone]}`} aria-hidden="true">
             <Icon size={15} strokeWidth={2} />
           </span>
         ) : null}
       </div>
-      <p className="mt-1.5 text-title-2-semibold text-text-primary tabular-nums break-words">{value}</p>
-      {note ? <p className="mt-0.5 text-caption-1-regular text-text-secondary">{note}</p> : null}
+      <p className="mt-1.5 text-xl font-bold tracking-tight text-ink tabular-nums break-words sm:text-2xl">{value}</p>
+      {note ? <p className="mt-0.5 text-[11px] text-ink-3">{note}</p> : null}
     </>
   );
-  const className = cx(
-    "card stat-card min-w-0 p-3.5 transition-colors sm:p-4",
-    href && "block no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-  );
+  const className = "card stat-card min-w-0 p-3.5 transition-all hover:-translate-y-0.5 sm:p-4";
   return href ? (
-    <Link href={href} className={className}>
+    <a href={href} className={`${className} block no-underline hover:border-brand-line`}>
       {body}
-    </Link>
+    </a>
   ) : (
     <div className={className}>{body}</div>
   );

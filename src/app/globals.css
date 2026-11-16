@@ -1,4 +1,8 @@
+@import "tailwindcss";
+@import "../styles/theme.css";
+@import "../styles/typography.css";
 @source "../";
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                       */
@@ -294,9 +298,11 @@ html[data-theme="dark"] ::selection {
 
 [class~="text-[8.5px]"],
 [class~="text-[9px]"],
-[class~="text-[10px]"] {
-  font-size: 0.6875rem;
-  line-height: 1.35;
+[class~="text-[9.5px]"],
+[class~="text-[10px]"],
+[class~="text-[10.5px]"] {
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .text-sm,
@@ -664,7 +670,7 @@ html[data-style="glass"] .card {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 15px;
   border-radius: 12px;
   border: 1px solid transparent;
@@ -746,19 +752,19 @@ html[data-style="glass"] .card {
 }
 
 .btn-sm {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 12px;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   border-radius: 10px;
 }
 
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 12px;
   border: 1px solid transparent;
   background: transparent;

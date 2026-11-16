@@ -45,9 +45,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `try {
               const t = localStorage.getItem("mary-theme");
-              const dark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-              document.documentElement.dataset.theme = dark ? "dark" : "light";
-              document.documentElement.classList.toggle("dark", dark);
+              const isDark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+              document.documentElement.dataset.theme = isDark ? "dark" : "light";
+              document.documentElement.classList.toggle("dark", isDark);
               const s = localStorage.getItem("mary-style");
               if (s) document.documentElement.dataset.style = s;
             } catch {}`

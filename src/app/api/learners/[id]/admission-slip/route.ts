@@ -8,7 +8,6 @@ import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { admissionDraftDataSchema, type AdmissionDraftData } from "@/lib/admissions";
 import { readStoredFile } from "@/lib/file-storage";
-import { generateQrMatrix } from "@/lib/qr";
 
 // Standard PDF fonts use WinAnsi; normalise typographic characters so exported names never throw.
 function pdfText(input: unknown) {
@@ -652,7 +651,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   page.drawCircle({ x: sealX, y: sealY, size: 15.5, borderColor: gold, borderWidth: 0.4 });
   page.drawCircle({ x: sealX, y: sealY, size: 12, borderColor: darkRoyal, borderWidth: 0.4 });
   page.drawRectangle({ x: sealX - 11, y: sealY - 4.5, width: 22, height: 9, color: darkRoyal });
-  page.drawText("APPROVED", { x: sealX - 10.5, y: sealY - 2.5, size: 5.5, font: bold, color: white });
+  const sealStatus = isEnrolled ? "APPROVED" : "RECORD";
+  page.drawText(sealStatus, {
+    x: sealX - 10.5,
+    y: sealY - 2.5,
+    size: fitSize(sealStatus, bold, 5.5, 3.8, 20),
+    font: bold,
+    color: white
+  });
   page.drawText("MARY ROYAL", { x: sealX - 10, y: sealY + 6, size: 4.2, font: bold, color: deepNavy });
   page.drawText("OFFICIAL SEAL", { x: sealX - 10.5, y: sealY - 10, size: 3.8, font: bold, color: gold });
   page.drawLine({ start: { x: b3X + 6, y: y - SIG_H + 18 }, end: { x: b3X + sigW - 44, y: y - SIG_H + 18 }, thickness: 0.5, color: darkRoyal });
@@ -660,41 +666,18 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   y -= SIG_H + 6;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // QR Verification panel
-  // ═══════════════════════════════════════════════════════════════════════════
-  const QR_PANEL_H = 42;
-  page.drawRectangle({ x: MX, y: y - QR_PANEL_H, width: CW, height: QR_PANEL_H, color: wash, borderColor: cardBorder, borderWidth: 0.6 });
-  page.drawRectangle({ x: MX, y: y - QR_PANEL_H, width: 3, height: QR_PANEL_H, color: royal });
+  const REFERENCE_PANEL_H = 42;
+  page.drawRectangle({ x: MX, y: y - REFERENCE_PANEL_H, width: CW, height: REFERENCE_PANEL_H, color: wash, borderColor: cardBorder, borderWidth: 0.6 });
+  page.drawRectangle({ x: MX, y: y - REFERENCE_PANEL_H, width: 3, height: REFERENCE_PANEL_H, color: royal });
 
-  let qrWidth = 0;
-  try {
-    const qrData = `MARY_ROYAL_ADMISSION_SLIP:${learner.id}:${learner.admissionNo}:${value(learner.name)}:${learner.grade}:${learner.admissionStatus}`;
-    const matrix = generateQrMatrix(qrData);
-    const size   = 32;
-    const pixel  = size / matrix.length;
-    const qrX    = MX + 8;
-    const qrY    = y - QR_PANEL_H + 5;
-    for (let row = 0; row < matrix.length; row += 1) {
-      for (let col = 0; col < matrix[row].length; col += 1) {
-        if (matrix[row][col]) {
-          page.drawRectangle({ x: qrX + col * pixel, y: qrY + (matrix.length - 1 - row) * pixel, width: pixel, height: pixel, color: deepNavy });
-        }
-      }
-    }
-    qrWidth = size + 10;
-  } catch {
-    qrWidth = 0;
-  }
-
-  const qrTextX     = MX + 8 + qrWidth;
-  const qrTextWidth = CW - qrWidth - 16;
-  page.drawText("INSTITUTIONAL DOCUMENT VERIFICATION", { x: qrTextX, y: y - 11, size: 6, font: bold, color: royal });
-  page.drawText("Scan QR or present reference to Mary Royal School registry to verify official enrolment.", { x: qrTextX, y: y - 21, size: 6.3, font, color: deepNavy });
-  const verifyLine = `Ref: ${reference}  -  Status: ${status}  -  Issued: ${generatedAt}  -  By: ${ROLE_LABELS[user.role] ?? value(user.role)}`;
-  page.drawText(verifyLine, {
-    x: qrTextX, y: y - 32,
-    size: fitSize(verifyLine, font, 6.3, 5, qrTextWidth),
+  const referenceTextX = MX + 10;
+  const referenceTextWidth = CW - 20;
+  page.drawText("ADMISSION RECORD REFERENCE", { x: referenceTextX, y: y - 11, size: 6.8, font: bold, color: royal });
+  page.drawText("Contact the school registry to confirm this record.", { x: referenceTextX, y: y - 21, size: 6.5, font, color: deepNavy });
+  const referenceLine = `Ref: ${reference}  -  Status: ${status}  -  Issued: ${generatedAt}  -  By: ${ROLE_LABELS[user.role] ?? value(user.role)}`;
+  page.drawText(referenceLine, {
+    x: referenceTextX, y: y - 32,
+    size: fitSize(referenceLine, font, 6.3, 5, referenceTextWidth),
     font, color: slate
   });
 

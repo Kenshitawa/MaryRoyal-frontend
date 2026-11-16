@@ -176,7 +176,7 @@
 
   /* Text */
   --color-text-primary:         var(--color-neutral-950);
-  --color-text-secondary:       var(--color-neutral-500);
+  --color-text-secondary:       var(--color-neutral-600);
   --color-text-tertiary:        var(--color-neutral-400);
   --color-text-disabled:        var(--color-neutral-300);
   --color-text-disabled-danger: var(--color-red-300);
@@ -188,6 +188,7 @@
 
   /* Background */
   --color-background-full:              var(--color-white);
+  --color-brand-mark-surface:           var(--color-white);
   /* Ticket detail, Figma 4509:12272. The raw #fafafa surface matches neutral/50. */
   --color-ticket-detail-surface: var(--color-white);
   --color-ticket-detail-low-background: var(--color-indigo-200);
@@ -441,6 +442,7 @@
 
   /* Text */
   --color-text-primary:  var(--color-neutral-50);
+  --color-text-secondary: var(--color-neutral-300);
   --color-text-tertiary: var(--color-neutral-600);
   --color-text-disabled: var(--color-neutral-800);
   --color-text-error-primary: var(--color-red-400);
@@ -673,6 +675,7 @@
   --color-text-white:           var(--color-text-white);
 
   --color-background-full:              var(--color-background-full);
+  --color-brand-mark-surface:           var(--color-brand-mark-surface);
   --color-ticket-detail-surface: var(--color-ticket-detail-surface);
   --color-ticket-detail-low-background: var(--color-ticket-detail-low-background);
   --color-ticket-detail-low-hover: var(--color-ticket-detail-low-hover);

@@ -334,7 +334,7 @@ export default function ExamSessionsClient({
             <h3 className="mt-3 text-lg font-bold text-slate-800 dark:text-white">
               No Exam Sessions Scheduled
             </h3>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-body-regular text-text-secondary">
               The Deputy Head Teacher can create Opening, Mid-Term, or End-Term sessions above.
             </p>
           </ThemedCard>
