@@ -110,10 +110,10 @@ export function DirectorGettingStartedChecklist({
   if (progressPercent >= 100) return null;
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-xs" aria-label="School setup guide">
+    <section className="dashboard-panel overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-xs" aria-label="School setup guide">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-separator-border px-4 py-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-50 text-accent-700">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent-50 text-accent-700 dark:bg-blue-500/20 dark:text-blue-300 dark:border dark:border-blue-400/30">
             <Sparkles size={17} aria-hidden="true" />
           </span>
           <div className="min-w-0">
@@ -127,7 +127,7 @@ export function DirectorGettingStartedChecklist({
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           aria-expanded={!collapsed}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border-button-default bg-background-primary-default px-3 text-body-2-medium text-text-primary transition-colors hover:bg-background-primary-hover active:bg-background-primary-active outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border-button-default bg-background-primary-default dark:bg-slate-800/60 px-3 text-body-2-medium text-text-primary transition-colors hover:bg-background-primary-hover active:bg-background-primary-active outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
         >
           {collapsed ? "Show steps" : "Hide"}
           {collapsed ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}

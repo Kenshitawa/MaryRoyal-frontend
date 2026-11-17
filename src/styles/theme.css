@@ -450,8 +450,8 @@
   --color-input-disabled-text: color-mix(in srgb, var(--color-neutral-500) 40%, transparent);
 
   /* Background */
-  --color-background-full:              var(--color-neutral-925);
-  --color-ticket-detail-surface: var(--color-neutral-925);
+  --color-background-full:              #0a101d;
+  --color-ticket-detail-surface:        #0a101d;
   --color-ticket-detail-low-background: color-mix(in srgb, var(--color-indigo-950) 60%, transparent);
   --color-ticket-detail-low-hover: color-mix(in srgb, var(--color-indigo-950) 80%, transparent);
   --color-ticket-detail-medium-hover: color-mix(in srgb, var(--color-yellow-950) 80%, transparent);
@@ -460,23 +460,23 @@
   --color-ticket-detail-low-text: var(--color-indigo-300);
   --color-ticket-detail-resource-background: color-mix(in srgb, var(--color-blue-950) 60%, transparent);
   --color-ticket-detail-resource-text: var(--color-blue-300);
-  --color-project-board-empty-panel: color-mix(in srgb, var(--color-neutral-800) 60%, transparent);
-  --color-project-board-empty-front: color-mix(in srgb, var(--color-neutral-800) 75%, var(--color-neutral-700));
-  --color-project-board-empty-middle: var(--color-neutral-700);
-  --color-project-board-empty-back: color-mix(in srgb, var(--color-neutral-600) 35%, var(--color-neutral-700));
-  --color-project-board-empty-detail: var(--color-neutral-500);
-  --color-background-primary-default:   var(--color-neutral-800);
-  --color-background-inner-default:     color-mix(in srgb, var(--color-neutral-800) 60%, transparent);
-  --color-background-primary-hover:     color-mix(in srgb, var(--color-neutral-700) 60%, transparent);
-  --color-background-primary-active:    var(--color-neutral-800);
-  --color-background-primary-disabled:  var(--color-neutral-800);
-  --color-input-disabled-background:    color-mix(in srgb, var(--color-neutral-800) 30%, transparent);
+  --color-project-board-empty-panel: color-mix(in srgb, #16243a 60%, transparent);
+  --color-project-board-empty-front: color-mix(in srgb, #16243a 75%, #1c2c45);
+  --color-project-board-empty-middle: #1c2c45;
+  --color-project-board-empty-back: color-mix(in srgb, #24344f 35%, #1c2c45);
+  --color-project-board-empty-detail: #3b82f6;
+  --color-background-primary-default:   #111c2e;
+  --color-background-inner-default:     color-mix(in srgb, #16243a 60%, transparent);
+  --color-background-primary-hover:     #16243a;
+  --color-background-primary-active:    #1c2c45;
+  --color-background-primary-disabled:  #111c2e;
+  --color-input-disabled-background:    color-mix(in srgb, #16243a 30%, transparent);
   --color-switch-off-chip-start:        var(--color-background-tertiary-default);
   --color-switch-off-chip-end:          var(--color-background-tertiary-default);
-  --color-background-secondary-default: var(--color-neutral-900);
-  --color-background-secondary-hover:   var(--color-neutral-800);
-  --color-background-tertiary-default:  var(--color-neutral-800);
-  --color-background-tertiary-hover:    var(--color-neutral-700);
+  --color-background-secondary-default: #0c1524;
+  --color-background-secondary-hover:   #111c2e;
+  --color-background-tertiary-default:  #16243a;
+  --color-background-tertiary-hover:    #1c2c45;
   --color-background-tertiary-error:    color-mix(in srgb, var(--color-red-950) 60%, transparent);
   --color-background-quaternary-default: var(--color-neutral-700);
   --color-background-quaternary-hover:   var(--color-neutral-600);
@@ -560,21 +560,21 @@
   --color-notification-center-background:      var(--color-neutral-900);
 
   /* Borders and separators */
-  --color-border-button-default:   var(--color-neutral-700);
-  --color-border-button-hover:     var(--color-neutral-500);
-  --color-border-button-active:    var(--color-neutral-600);
-  --color-border-button-white:     var(--color-zinc-800);
+  --color-border-button-default:   #1e355b;
+  --color-border-button-hover:     #2b4985;
+  --color-border-button-active:    #3b62ad;
+  --color-border-button-white:     #1a2d4f;
   --color-border-error-default:    var(--color-red-400);
-  --color-border-checkbox-default: var(--color-neutral-700);
-  --color-border-checkbox-hover:   var(--color-neutral-500);
-  --color-border-checkbox-active:  var(--color-neutral-500);
-  --color-border-component-detail-container: var(--color-neutral-800);
-  --color-border-ai-profile-card:             var(--color-neutral-800);
-  --color-border-table:            var(--color-neutral-800);
-  --color-border-button-group:     color-mix(in srgb, var(--color-neutral-600) 60%, transparent);
-  --color-border-sidebar-profile-hover: var(--color-neutral-600);
-  --color-separator-border:        var(--color-neutral-800);
-  --color-separator-border-strong: color-mix(in srgb, var(--color-neutral-700) 60%, transparent);
+  --color-border-checkbox-default: #1e355b;
+  --color-border-checkbox-hover:   #2b4985;
+  --color-border-checkbox-active:  #3b62ad;
+  --color-border-component-detail-container: #16243a;
+  --color-border-ai-profile-card:             #16243a;
+  --color-border-table:            #1a2b47;
+  --color-border-button-group:     color-mix(in srgb, #24344f 60%, transparent);
+  --color-border-sidebar-profile-hover: #24344f;
+  --color-separator-border:        #182740;
+  --color-separator-border-strong: color-mix(in srgb, #24344f 60%, transparent);
 
   /* Figma's dark table status pairs. */
   --color-status-lime-background:   color-mix(in srgb, var(--color-lime-950) 60%, transparent);

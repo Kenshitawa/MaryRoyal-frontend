@@ -87,24 +87,24 @@ export function StatCard({
   href?: string;
 }) {
   const tones: Record<string, string> = {
-    brand: "bg-status-blue-background text-status-blue-text",
-    success: "bg-status-lime-background text-status-lime-text",
-    warning: "bg-status-yellow-background text-status-yellow-text",
-    danger: "bg-status-rose-background text-status-rose-text",
-    neutral: "bg-status-purple-background text-status-purple-text",
+    brand: "bg-status-blue-background text-status-blue-text dark:bg-blue-500/20 dark:text-blue-300 dark:border dark:border-blue-400/30",
+    success: "bg-status-lime-background text-status-lime-text dark:bg-emerald-500/20 dark:text-emerald-300 dark:border dark:border-emerald-400/30",
+    warning: "bg-status-yellow-background text-status-yellow-text dark:bg-amber-500/20 dark:text-amber-300 dark:border dark:border-amber-400/30",
+    danger: "bg-status-rose-background text-status-rose-text dark:bg-rose-500/20 dark:text-rose-300 dark:border dark:border-rose-400/30",
+    neutral: "bg-status-purple-background text-status-purple-text dark:bg-purple-500/20 dark:text-purple-300 dark:border dark:border-purple-400/30",
   };
   const body = (
     <>
       <div className="flex min-w-0 items-start justify-between gap-2">
-        <p className="min-w-0 text-caption-1-semibold text-text-secondary">{label}</p>
+        <p className="min-w-0 text-caption-1-semibold text-text-secondary dark:text-slate-300">{label}</p>
         {Icon ? (
           <span className={cx("grid size-8 shrink-0 place-items-center rounded-xl", tones[tone])} aria-hidden="true">
             <Icon size={15} strokeWidth={2} />
           </span>
         ) : null}
       </div>
-      <p className="mt-1.5 break-words text-title-3-semibold tabular-nums text-text-primary">{value}</p>
-      {note ? <p className="mt-0.5 text-body-2-regular text-text-secondary">{note}</p> : null}
+      <p className="mt-1.5 break-words text-title-3-semibold tabular-nums text-text-primary dark:text-white">{value}</p>
+      {note ? <p className="mt-0.5 text-body-2-regular text-text-secondary dark:text-slate-300/90">{note}</p> : null}
     </>
   );
   const className = cx(

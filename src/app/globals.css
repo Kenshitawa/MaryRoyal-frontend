@@ -1525,9 +1525,10 @@ html[data-theme="dark"] .bg-emerald-50 {
   background-color: var(--success-soft);
 }
 
-/* Dashboard surfaces use the same accessible semantic colours in both themes.
-   Dark cards keep a navy base with a visible blue/status tint instead of
-   collapsing into flat near-black boxes. */
+/* Dashboard surfaces use accessible semantic colours in both themes.
+   In light mode, cards have a subtle, clean pastel tint.
+   In dark mode, cards keep a rich royal navy base with luminous status gradients,
+   glowing accent stripes, and crisp borders instead of collapsing into flat black boxes. */
 .dashboard-panel {
   background: linear-gradient(
     145deg,
@@ -1547,17 +1548,18 @@ html[data-theme="dark"] .bg-emerald-50 {
     var(--color-background-primary-default) 78%
   );
   border-color: color-mix(in srgb, var(--dashboard-tone, var(--color-accent-500)) 40%, var(--color-border-button-default));
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .dashboard-stat::before {
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   inset-block: 0;
   inset-inline-start: 0;
-  width: 3px;
+  width: 4px;
   background: var(--dashboard-tone, var(--color-accent-500));
   content: "";
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .dashboard-stat[data-dashboard-tone="brand"] { --dashboard-tone: var(--color-status-blue-text); }
@@ -1565,6 +1567,107 @@ html[data-theme="dark"] .bg-emerald-50 {
 .dashboard-stat[data-dashboard-tone="warning"] { --dashboard-tone: var(--color-status-yellow-text); }
 .dashboard-stat[data-dashboard-tone="danger"] { --dashboard-tone: var(--color-status-rose-text); }
 .dashboard-stat[data-dashboard-tone="neutral"] { --dashboard-tone: var(--color-status-purple-text); }
+
+/* Dark mode dashboard panel: deep royal navy surface with luminous border highlight */
+html[data-theme="dark"] .dashboard-panel,
+html.dark .dashboard-panel,
+[data-theme="dark"] .dashboard-panel {
+  background: linear-gradient(
+    155deg,
+    rgba(26, 42, 74, 0.76) 0%,
+    rgba(16, 27, 49, 0.92) 50%,
+    rgba(10, 18, 34, 0.98) 100%
+  );
+  border-color: rgba(59, 130, 246, 0.28);
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Dark mode stat cards: vibrant luminous status gradients & glowing accent lines */
+html[data-theme="dark"] .dashboard-stat,
+html.dark .dashboard-stat,
+[data-theme="dark"] .dashboard-stat {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .dashboard-stat::before,
+html.dark .dashboard-stat::before,
+[data-theme="dark"] .dashboard-stat::before {
+  opacity: 1;
+  box-shadow: 0 0 12px var(--dashboard-tone, #3b82f6);
+}
+
+html[data-theme="dark"] .dashboard-stat[data-dashboard-tone="brand"],
+html.dark .dashboard-stat[data-dashboard-tone="brand"],
+[data-theme="dark"] .dashboard-stat[data-dashboard-tone="brand"] {
+  --dashboard-tone: #3b82f6;
+  background: linear-gradient(
+    145deg,
+    rgba(30, 64, 175, 0.35) 0%,
+    rgba(16, 32, 60, 0.88) 55%,
+    rgba(10, 19, 36, 0.97) 100%
+  );
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+html[data-theme="dark"] .dashboard-stat[data-dashboard-tone="success"],
+html.dark .dashboard-stat[data-dashboard-tone="success"],
+[data-theme="dark"] .dashboard-stat[data-dashboard-tone="success"] {
+  --dashboard-tone: #10b981;
+  background: linear-gradient(
+    145deg,
+    rgba(5, 150, 105, 0.32) 0%,
+    rgba(12, 42, 34, 0.88) 55%,
+    rgba(8, 25, 20, 0.97) 100%
+  );
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+html[data-theme="dark"] .dashboard-stat[data-dashboard-tone="warning"],
+html.dark .dashboard-stat[data-dashboard-tone="warning"],
+[data-theme="dark"] .dashboard-stat[data-dashboard-tone="warning"] {
+  --dashboard-tone: #f59e0b;
+  background: linear-gradient(
+    145deg,
+    rgba(217, 119, 6, 0.32) 0%,
+    rgba(48, 30, 13, 0.88) 55%,
+    rgba(27, 17, 8, 0.97) 100%
+  );
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+html[data-theme="dark"] .dashboard-stat[data-dashboard-tone="danger"],
+html.dark .dashboard-stat[data-dashboard-tone="danger"],
+[data-theme="dark"] .dashboard-stat[data-dashboard-tone="danger"] {
+  --dashboard-tone: #f43f5e;
+  background: linear-gradient(
+    145deg,
+    rgba(225, 29, 72, 0.32) 0%,
+    rgba(48, 16, 25, 0.88) 55%,
+    rgba(28, 9, 15, 0.97) 100%
+  );
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+html[data-theme="dark"] .dashboard-stat[data-dashboard-tone="neutral"],
+html.dark .dashboard-stat[data-dashboard-tone="neutral"],
+[data-theme="dark"] .dashboard-stat[data-dashboard-tone="neutral"] {
+  --dashboard-tone: #a855f7;
+  background: linear-gradient(
+    145deg,
+    rgba(124, 58, 237, 0.32) 0%,
+    rgba(32, 20, 54, 0.88) 55%,
+    rgba(18, 11, 31, 0.97) 100%
+  );
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+html[data-theme="dark"] a.dashboard-stat:hover,
+html.dark a.dashboard-stat:hover,
+[data-theme="dark"] a.dashboard-stat:hover {
+  transform: translateY(-1px);
+  border-color: var(--dashboard-tone, #3b82f6);
+  box-shadow: 0 6px 24px -2px rgba(0, 0, 0, 0.6), 0 0 16px -4px var(--dashboard-tone, #3b82f6);
+}
 
 html[data-theme="dark"] .text-slate-950,
 html[data-theme="dark"] .text-slate-900,
