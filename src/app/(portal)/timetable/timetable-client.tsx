@@ -137,7 +137,7 @@ export default function TimetableClient({
   const [builderSlots, setBuilderSlots] = useState<TimetableSlot[]>([]);
   const [editingSlot, setEditingSlot] = useState<TimetableSlot | null>(null);
 
-  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY"].includes(role);
+  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER"].includes(role);
   const isHeadOrDirector = ["DIRECTOR", "HEAD_TEACHER"].includes(role);
 
   const activeTimetable = useMemo(() => {

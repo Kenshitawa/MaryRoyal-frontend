@@ -9,6 +9,7 @@ enum Role {
   DIRECTOR
   HEAD_TEACHER
   DEPUTY
+  SENIOR_TEACHER
   SECRETARY
   ACCOUNTANT
   TEACHER
@@ -49,6 +50,7 @@ model User {
   learnerLinks       GuardianLink[]
   classTeacherAssignments ClassTeacherAssignment[]
   teachingLogs       TeachingLog[]
+  dailyTeachingLogs  DailyTeachingLog[]
   assignmentsCreated Assignment[]
   learningResources LearningResource[]
   complaintsOpened  Complaint[] @relation("ComplaintOpener")
@@ -71,6 +73,8 @@ model User {
   textbooksCreated    Textbook[]         @relation("TextbookCreator")
   textbooksIssued     TextbookIssue[]    @relation("TextbookIssuer")
   textbooksReceived   TextbookIssue[]    @relation("TextbookRecipient")
+  textbookRequests    TextbookRequest[]  @relation("TextbookRequestRequester")
+  textbookRequestsReviewed TextbookRequest[] @relation("TextbookRequestReviewer")
   schemesOfWork       SchemeOfWork[]     @relation("SchemeAuthor")
   timetablesCreated   SchoolTimetable[]  @relation("TimetableCreator")
   timetablesVerified  SchoolTimetable[]  @relation("TimetableVerifier")
@@ -287,6 +291,22 @@ model TeachingLog {
   createdAt     DateTime @default(now())
   @@index([teacherId, createdAt])
   @@index([status, createdAt])
+}
+model DailyTeachingLog {
+  id         String   @id @default(cuid())
+  teacherId  String
+  teacher    User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  grade      String
+  subject    String
+  lessonDate String
+  status     String
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([teacherId, grade, subject, lessonDate])
+  @@index([lessonDate, status])
+  @@index([teacherId, lessonDate])
 }
 model Assignment {
   id           String   @id @default(cuid())
@@ -771,6 +791,27 @@ model TextbookIssue {
   @@index([textbookId, status])
 }
 
+model TextbookRequest {
+  id              String   @id @default(cuid())
+  title           String
+  subject         String
+  grade           String
+  quantity        Int      @default(1)
+  notes           String?
+  status          String   @default("PENDING")
+  responseNotes   String?
+  requestedById   String
+  requestedBy     User     @relation("TextbookRequestRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  reviewedById    String?
+  reviewedBy      User?    @relation("TextbookRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([requestedById, status])
+  @@index([status, createdAt])
+}
+
 model SchemeOfWork {
   id                  String    @id @default(cuid())
   teacherId           String
@@ -879,6 +920,9 @@ model WelfareLoan {
   headteacherNotes      String?
   headteacherApprovedAt DateTime?
   directorNotes         String?
+  directorApprovedAt    DateTime?
+  rejectedAt            DateTime?
+  rejectedByRole        String?
   disbursedAt           DateTime?
   paidAt                DateTime?
   createdAt             DateTime       @default(now())

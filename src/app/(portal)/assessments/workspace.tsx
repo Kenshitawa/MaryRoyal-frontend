@@ -7,8 +7,17 @@ import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
 import { LearnerLink } from "@/components/learner-link";
 import { PageHeader } from "@/components/ui/primitives";
+import { DataGrid } from "@/components/application/data-grid/data-grid";
+import type { DataGridColumn } from "@/components/application/data-grid/data-grid";
+import { Select, SelectItem } from "@/components/base/select/select";
+import { Input } from "@/components/base/input/input";
+import { Button } from "@/components/base/buttons/button";
+import { cbcLevel } from "@/lib/grading";
+import { RiSaveLine } from "@remixicon/react";
 
-type Learner = { id: string; name: string; admissionNo: string; grade: string };
+type TeachingAssignment = { grade: string; subject: string };
+type EntryRow = { learnerId: string; name: string; admissionNo: string; grade: string; mark: number | null };
+type ClassResult = { learnerId: string; name: string; admissionNo: string; grade: string; score: number; level: string; status: string };
 type Assessment = {
   id: string; subject: string; score: number; level: string; term: string; strand: string | null;
   competency: string | null; comment: string | null; reviewComment: string | null; status: string; version: number;
@@ -24,34 +33,80 @@ type ExamSession = {
   classes: string[];
 };
 
+const entryColumns: DataGridColumn<EntryRow>[] = [
+  { key: "name", header: "Learner", width: 240, editable: false },
+  { key: "admissionNo", header: "Admission number", width: 180, editable: false },
+  {
+    key: "mark",
+    header: "Mark (0–100)",
+    width: 150,
+    type: "number",
+    min: 0,
+    max: 100,
+    format: (value) => value === null ? "Enter mark" : `${value}%`,
+  },
+];
+
+const reviewColumns: DataGridColumn<ClassResult>[] = [
+  { key: "name", header: "Learner", width: 240, editable: false },
+  { key: "admissionNo", header: "Admission number", width: 180, editable: false },
+  { key: "score", header: "Mark", width: 120, editable: false, format: (value) => `${value}%` },
+  { key: "level", header: "CBE level", width: 120, editable: false },
+  { key: "status", header: "Status", width: 170, editable: false, format: (value) => value === "READY_TO_SAVE" ? "Ready to save" : value },
+];
+
 export default function AssessmentWorkspace({
-  subjects,
+  assignments,
+  canViewLearnerProfiles,
   canCreate,
   canSubmit,
   canReview,
   canRelease
 }: {
-  subjects: string[];
+  assignments: TeachingAssignment[];
+  canViewLearnerProfiles: boolean;
   canCreate: boolean;
   canSubmit: boolean;
   canReview: boolean;
   canRelease: boolean;
 }) {
-  const [learners, setLearners] = useState<Learner[]>([]);
   const [rows, setRows] = useState<Assessment[]>([]);
+  const [entryRows, setEntryRows] = useState<EntryRow[]>([]);
+  const [existingClassResults, setExistingClassResults] = useState<ClassResult[]>([]);
   const [term, setTerm] = useState("2026 Term 1");
+  const [selectedGrade, setSelectedGrade] = useState(assignments[0]?.grade ?? "");
+  const [selectedSubject, setSelectedSubject] = useState(assignments[0]?.subject ?? "");
+  const [strand, setStrand] = useState("");
+  const [competency, setCompetency] = useState("");
   const [activeExams, setActiveExams] = useState<ExamSession[]>([]);
   const [selectedExamId, setSelectedExamId] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [savingBatch, setSavingBatch] = useState(false);
+
+  const gradeOptions = [...new Set(assignments.map((assignment) => assignment.grade))];
+  const subjectOptions = [...new Set(assignments.filter((assignment) => assignment.grade === selectedGrade).map((assignment) => assignment.subject))];
+  const enteredRows = entryRows.filter((row): row is EntryRow & { mark: number } => typeof row.mark === "number");
+  const rowsForEntry = entryRows.filter((row) => row.mark === null);
+  const classResults = [
+    ...existingClassResults,
+    ...enteredRows.map((row) => ({
+      learnerId: row.learnerId,
+      name: row.name,
+      admissionNo: row.admissionNo,
+      grade: row.grade,
+      score: row.mark,
+      level: cbcLevel(row.mark),
+      status: "READY_TO_SAVE",
+    })),
+  ];
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
-    const [assessmentResponse, learnerResponse, examResponse] = await Promise.all([
+    const [assessmentResponse, examResponse] = await Promise.all([
       fetch(`/api/assessments?term=${encodeURIComponent(term)}&take=100`),
-      canCreate ? fetch("/api/learners?take=100") : Promise.resolve(null),
       fetch("/api/exams?status=ACTIVE")
     ]);
 
@@ -64,9 +119,43 @@ export default function AssessmentWorkspace({
     const data = await assessmentResponse.json();
     setRows(data.assessments);
 
-    if (learnerResponse?.ok) {
-      const learnerData = await learnerResponse.json();
-      setLearners(learnerData.learners);
+    if (canCreate && selectedGrade && selectedSubject) {
+      const rosterResponse = await fetch(
+        `/api/assessments?mode=roster&grade=${encodeURIComponent(selectedGrade)}&subject=${encodeURIComponent(selectedSubject)}&term=${encodeURIComponent(term)}`
+      );
+      if (rosterResponse.ok) {
+        const rosterData = await rosterResponse.json();
+        const learners = rosterData.learners as { id: string; name: string; admissionNo: string; grade: string }[];
+        const learnerById = new Map(learners.map((learner) => [
+          learner.id,
+          { learnerId: learner.id, name: learner.name, admissionNo: learner.admissionNo, grade: learner.grade, mark: null },
+        ]));
+        const existing = (rosterData.existingAssessments as {
+          learnerId: string; score: number; status: string;
+        }[]).flatMap((assessment) => {
+          const learner = learnerById.get(assessment.learnerId);
+          return learner ? [{
+            learnerId: learner.learnerId,
+            name: learner.name,
+            admissionNo: learner.admissionNo,
+            grade: learner.grade,
+            score: assessment.score,
+            level: cbcLevel(assessment.score),
+            status: assessment.status,
+          }] : [];
+        });
+        const existingIds = new Set(existing.map((result) => result.learnerId));
+        setExistingClassResults(existing);
+        setEntryRows([...learnerById.values()].filter((learner) => !existingIds.has(learner.learnerId)));
+      } else {
+        const rosterData = await rosterResponse.json();
+        setError(rosterData.error ?? "Could not load this assigned class.");
+        setEntryRows([]);
+        setExistingClassResults([]);
+      }
+    } else {
+      setEntryRows([]);
+      setExistingClassResults([]);
     }
 
     if (examResponse.ok) {
@@ -79,35 +168,45 @@ export default function AssessmentWorkspace({
     }
 
     setLoading(false);
-  }, [term, canCreate, selectedExamId]);
+  }, [term, canCreate, selectedGrade, selectedSubject, selectedExamId]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  async function enter(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
+  async function saveBulkMarks() {
+    if (!selectedGrade || !selectedSubject || enteredRows.length === 0) return;
+    setSavingBatch(true);
     setError("");
     setMessage("");
-    const values = Object.fromEntries(new FormData(form));
-    const response = await fetch("/api/assessments", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        ...values,
-        score: Number(values.score),
-        examSessionId: selectedExamId || undefined
-      })
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      setError(data.error ?? "Mark could not be saved.");
-      return;
+    try {
+      const response = await fetch("/api/assessments", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          mode: "bulk",
+          grade: selectedGrade,
+          subject: selectedSubject,
+          term,
+          strand: strand || undefined,
+          competency: competency || undefined,
+          rows: enteredRows.map((row) => ({ learnerId: row.learnerId, score: row.mark })),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error ?? "Class marks could not be saved.");
+        return;
+      }
+      setMessage(`${data.assessments.length} marks saved as drafts. Review the CBE levels below before submitting.`);
+      setStrand("");
+      setCompetency("");
+      await load();
+    } catch {
+      setError("Could not save class marks. Check the connection and try again.");
+    } finally {
+      setSavingBatch(false);
     }
-    setMessage(`Mark saved successfully as ${data.assessment.level}.`);
-    form.reset();
-    void load();
   }
 
   async function editScore(row: Assessment) {
@@ -260,123 +359,107 @@ export default function AssessmentWorkspace({
         </div>
       )}
 
-      {/* Entry Form */}
       {canCreate && (
-        <ThemedCard className="p-5 sm:p-6">
-          <form onSubmit={enter} className="space-y-4">
-            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
-              Enter Learner Assessment Mark
-            </h2>
+        <ThemedCard className="space-y-5 p-5 sm:p-6">
+          <div>
+            <h2 className="text-title-3-semibold text-text-primary">Enter marks for a class</h2>
+            <p className="mt-1 text-body-regular text-text-secondary">
+              Choose an assigned class and learning area. Enter a mark in the grid; that learner moves into the review list.
+            </p>
+          </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Learner
-                </label>
-                <select
-                  name="learnerId"
-                  required
-                  className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-slate-800 dark:bg-slate-900"
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Select
+              label="Grade / class"
+              selectedKey={selectedGrade}
+              onSelectionChange={(key) => {
+                if (!key) return;
+                const grade = String(key);
+                setSelectedGrade(grade);
+                setSelectedSubject(assignments.find((assignment) => assignment.grade === grade)?.subject ?? "");
+              }}
+            >
+              {gradeOptions.map((grade) => <SelectItem key={grade} id={grade}>{grade}</SelectItem>)}
+            </Select>
+            <Select
+              label="Learning area"
+              selectedKey={selectedSubject}
+              onSelectionChange={(key) => { if (key) setSelectedSubject(String(key)); }}
+              isDisabled={!subjectOptions.length}
+            >
+              {subjectOptions.map((subject) => <SelectItem key={subject} id={subject}>{subject}</SelectItem>)}
+            </Select>
+            <Input label="Assessment term" value={term} isReadOnly />
+            <Input
+              label="Strand (optional)"
+              value={strand}
+              onChange={setStrand}
+              maxLength={100}
+              placeholder="e.g. Numbers and Operations"
+            />
+            <Input
+              label="Sub-strand / competency (optional)"
+              value={competency}
+              onChange={setCompetency}
+              maxLength={160}
+              placeholder="e.g. Multi-digit Addition"
+            />
+          </div>
+
+          {assignments.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border-button-default p-5 text-body-regular text-text-secondary">
+              No classes have been assigned to your account yet. Ask the school office to update your teaching allocation.
+            </p>
+          ) : (
+            <>
+              <DataGrid
+                aria-label={`${selectedGrade} ${selectedSubject} mark entry`}
+                data={rowsForEntry}
+                columns={entryColumns}
+                getRowId={(row) => row.learnerId}
+                onDataChange={(changedRows) => {
+                  const changedById = new Map(changedRows.map((row) => [row.learnerId, row]));
+                  setEntryRows((current) => current.map((row) => changedById.get(row.learnerId) ?? row));
+                }}
+                height={360}
+                className="rounded-2xl border border-border-button-default bg-background-primary-default"
+                emptyState="All learners in this class have a mark entered, or no approved learners are enrolled in this class."
+                exportFileName={`${selectedGrade}-${selectedSubject}-marks.csv`}
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-body-regular text-text-secondary">
+                  {enteredRows.length} mark(s) ready · {rowsForEntry.length} learner(s) still need a mark
+                </p>
+                <Button
+                  leadingIcon={RiSaveLine}
+                  disabled={!enteredRows.length || savingBatch}
+                  onClick={() => void saveBulkMarks()}
                 >
-                  <option value="">Select learner</option>
-                  {learners.map(l => (
-                    <option key={l.id} value={l.id}>
-                      {l.name} · {l.admissionNo} · {l.grade}
-                    </option>
-                  ))}
-                </select>
+                  {savingBatch ? "Saving marks…" : `Save ${enteredRows.length} mark(s) as drafts`}
+                </Button>
               </div>
+            </>
+          )}
 
+          {classResults.length > 0 && (
+            <section aria-labelledby="class-results-title" className="space-y-3 border-t border-separator-border pt-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Subject
-                </label>
-                <select
-                  name="subject"
-                  required
-                  className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-slate-800 dark:bg-slate-900"
-                >
-                  {subjects.map(s => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
+                <h3 id="class-results-title" className="text-title-3-semibold text-text-primary">Class results review</h3>
+                <p className="mt-1 text-body-regular text-text-secondary">
+                  CBE levels are calculated from each mark. New marks remain drafts until submitted through the review workflow.
+                </p>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Score (0–100)
-                </label>
-                <input
-                  name="score"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.5"
-                  required
-                  placeholder="e.g. 78.5"
-                  className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-slate-800 dark:bg-slate-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Term
-                </label>
-                <input
-                  name="term"
-                  aria-label="Assessment term"
-                  value={term}
-                  readOnly
-                  className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-950"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Strand (Learning Area)
-                </label>
-                <input
-                  name="strand"
-                  maxLength={100}
-                  placeholder="e.g. Numbers and Operations"
-                  className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-slate-800 dark:bg-slate-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Sub-Strand / Competency
-                </label>
-                <input
-                  name="competency"
-                  maxLength={160}
-                  placeholder="e.g. Multi-digit Addition"
-                  className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-slate-800 dark:bg-slate-900"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Teacher Observational Comment
-                </label>
-                <input
-                  name="comment"
-                  maxLength={500}
-                  placeholder="e.g. Demonstrates solid problem-solving confidence."
-                  className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-slate-800 dark:bg-slate-900"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-blue-700 active:scale-95"
-              >
-                Save Assessment Mark
-              </button>
-            </div>
-          </form>
+              <DataGrid
+                aria-label={`${selectedGrade} ${selectedSubject} class results review`}
+                data={classResults}
+                columns={reviewColumns}
+                getRowId={(row) => row.learnerId}
+                height={320}
+                className="rounded-2xl border border-border-button-default bg-background-primary-default"
+                exportFileName={`${selectedGrade}-${selectedSubject}-results.csv`}
+              />
+            </section>
+          )}
         </ThemedCard>
       )}
 
@@ -395,6 +478,7 @@ export default function AssessmentWorkspace({
                     id={r.learner.id || r.learnerId || ""}
                     name={r.learner.name}
                     admissionNo={r.learner.admissionNo}
+                    disabled={!canViewLearnerProfiles}
                   />
                   <StatusPill status={r.status} />
                 </div>
@@ -458,6 +542,7 @@ export default function AssessmentWorkspace({
                         id={r.learner.id || r.learnerId || ""}
                         name={r.learner.name}
                         admissionNo={r.learner.admissionNo}
+                        disabled={!canViewLearnerProfiles}
                       />
                     </td>
                     <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300">{r.learner.grade}</td>

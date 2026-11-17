@@ -8,6 +8,7 @@ import { assertCanInScope, canManageStaffTarget, canViewStaffStatutory, canEditS
 import { readSession } from "@/lib/session";
 import { staffCreateWizardSchema } from "@/lib/staff-validation";
 import { stripStaffStatutoryFields } from "@/lib/staff-sanitization";
+import { createStaffWelfareMember } from "@/lib/welfare";
 
 async function actor() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -219,6 +220,7 @@ export async function POST(request: Request) {
           qualifications: data.qualifications?.professionalQualifications || null,
         },
       });
+      await createStaffWelfareMember(tx, newUser.id, newUser.role, user.id);
 
       // Statutory permission check: can actor edit statutory?
       const canEditStat = canEditStaffStatutory(user.role, data.employment.role);

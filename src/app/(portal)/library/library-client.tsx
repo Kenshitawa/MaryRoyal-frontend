@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, BookOpen, Check, RotateCcw, X, AlertCircle, Loader2, Package, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/ui/primitives";
+import { Button } from "@/components/base/buttons/button";
+import { Input } from "@/components/base/input/input";
+import { Select, SelectItem } from "@/components/base/select/select";
+import { RiAddLine } from "@remixicon/react";
+import { CURRICULUM_GRADES, CURRICULUM_SUBJECTS } from "@/lib/curriculum";
 
 type Textbook = {
   id: string;
@@ -30,6 +35,32 @@ type TextbookIssue = {
   remarks: string | null;
   teacher: { id: string; name: string; role: string };
 };
+type TeachingAssignment = { grade: string; subject: string };
+type TextbookRequest = {
+  id: string;
+  title: string;
+  subject: string;
+  grade: string;
+  quantity: number;
+  notes: string | null;
+  status: string;
+  responseNotes: string | null;
+  requestedBy: { id: string; name: string };
+  reviewedBy: { name: string } | null;
+  createdAt: string;
+};
+type LearningResource = {
+  id: string;
+  title: string;
+  description: string;
+  grade: string;
+  subject: string;
+  url: string;
+  kind: string;
+  createdAt: string;
+  teacher: { id?: string; name: string };
+};
+type EbookForm = { title: string; description: string; grade: string; subject: string; url: string };
 
 const STATUS_STYLE: Record<string, string> = {
   ISSUED_PENDING_CONFIRMATION: "bg-amber-100 text-amber-800",
@@ -45,7 +76,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function LibraryClient({ role }: { role: string; userId?: string }) {
-  const isAdmin = ["DEPUTY", "HEAD_TEACHER", "DIRECTOR"].includes(role);
+  const isAdmin = ["DEPUTY", "SENIOR_TEACHER", "HEAD_TEACHER", "DIRECTOR"].includes(role);
   const isTeacher = role === "TEACHER";
 
   const [textbooks, setTextbooks] = useState<Textbook[]>([]);
@@ -55,30 +86,55 @@ export default function LibraryClient({ role }: { role: string; userId?: string 
   const [showCreate, setShowCreate] = useState(false);
   const [showIssue, setShowIssue] = useState<string | null>(null); // textbookId
   const [allStaff, setAllStaff] = useState<{ id: string; name: string }[]>([]);
+  const [requests, setRequests] = useState<TextbookRequest[]>([]);
+  const [teachingAssignments, setTeachingAssignments] = useState<TeachingAssignment[]>([]);
+  const [resources, setResources] = useState<LearningResource[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState("");
+  const [requestForm, setRequestForm] = useState({ title: "", quantity: "1", notes: "" });
+  const [decisionNotes, setDecisionNotes] = useState<Record<string, string>>({});
+  const [ebookForm, setEbookForm] = useState<EbookForm>({ title: "", description: "", grade: CURRICULUM_GRADES[0], subject: CURRICULUM_SUBJECTS[0], url: "" });
   const [createForm, setCreateForm] = useState({ title: "", subject: "", grade: "", publisher: "", curriculumCode: "", totalCopies: "1" });
   const [aiTopic, setAiTopic] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [issueForm, setIssueForm] = useState({ teacherId: "", copyNumber: "", dueDate: "", remarks: "" });
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/textbooks");
-    if (!res.ok) return;
-    const data = await res.json();
-    setTextbooks(data.textbooks ?? []);
-    setMyIssues(data.myIssues ?? []);
+  const notify = useCallback((text: string, ok = true) => {
+    setMsg({ text, ok });
+    setTimeout(() => setMsg(null), 4000);
   }, []);
+  const notifyResponseError = useCallback((text: string) => notify(text, false), [notify]);
 
-  const loadStaff = useCallback(async () => {
-    const res = await fetch("/api/textbooks");
-    if (!res.ok) return;
-    const data = await res.json();
-    setAllStaff(data.staffOptions ?? []);
-  }, []);
+  const load = useCallback(async () => {
+    try {
+      const [textbookResponse, resourceResponse] = await Promise.all([
+        fetch("/api/textbooks"),
+        fetch("/api/learning/resources"),
+      ]);
+      if (!textbookResponse.ok) {
+        notifyResponseError("Could not load the textbook library.");
+        return;
+      }
+      if (!resourceResponse.ok) {
+        notifyResponseError("Could not load learning resources.");
+        return;
+      }
+      const [textbookData, resourceData] = await Promise.all([textbookResponse.json(), resourceResponse.json()]);
+      setTextbooks(textbookData.textbooks ?? []);
+      setMyIssues(textbookData.myIssues ?? []);
+      setRequests(textbookData.requests ?? []);
+      setTeachingAssignments(textbookData.teachingAssignments ?? []);
+      setResources((resourceData.resources ?? []).filter((resource: LearningResource) => resource.kind === "EBOOK"));
+      if (textbookData.teachingAssignments?.length) {
+        const first = textbookData.teachingAssignments[0];
+        setSelectedAssignment((current) => current || `${first.grade}::${first.subject}`);
+      }
+      if (!isTeacher) setAllStaff(textbookData.staffOptions ?? []);
+    } catch {
+      notifyResponseError("Could not reach the library services.");
+    }
+  }, [isTeacher, notifyResponseError]);
 
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => { if (isAdmin) void loadStaff(); }, [isAdmin, loadStaff]);
-
-  function notify(text: string, ok = true) { setMsg({ text, ok }); setTimeout(() => setMsg(null), 4000); }
 
   async function apiPost(body: Record<string, unknown>) {
     setBusy(true);
@@ -119,6 +175,46 @@ export default function LibraryClient({ role }: { role: string; userId?: string 
     if (ok) { notify(action === "confirm" ? "Receipt confirmed!" : "Done."); void load(); }
   }
 
+  async function handleRequest(e: React.FormEvent) {
+    e.preventDefault();
+    const assignment = teachingAssignments.find((item) => `${item.grade}::${item.subject}` === selectedAssignment);
+    if (!assignment) {
+      notify("Select one of your assigned classes and subjects.", false);
+      return;
+    }
+    const ok = await apiPost({
+      _action: "request",
+      ...requestForm,
+      quantity: Number(requestForm.quantity),
+      grade: assignment.grade,
+      subject: assignment.subject,
+    });
+    if (ok) {
+      setRequestForm({ title: "", quantity: "1", notes: "" });
+      notify("Textbook request sent to school leadership.");
+      void load();
+    }
+  }
+
+  async function handleRequestDecision(requestId: string, decision: "APPROVED" | "REJECTED") {
+    const ok = await apiPost({ _action: "request-decision", requestId, decision, responseNotes: decisionNotes[requestId] || undefined });
+    if (ok) {
+      setDecisionNotes((current) => ({ ...current, [requestId]: "" }));
+      notify(`Textbook request ${decision.toLowerCase()}.`);
+      void load();
+    }
+  }
+
+  async function handleEbookPublish(e: React.FormEvent) {
+    e.preventDefault();
+    const ok = await apiPost({ ...ebookForm, kind: "EBOOK" });
+    if (ok) {
+      setEbookForm({ title: "", description: "", grade: CURRICULUM_GRADES[0], subject: CURRICULUM_SUBJECTS[0], url: "" });
+      notify("eBook published for its selected class and learning area.");
+      void load();
+    }
+  }
+
   const pendingConfirm = myIssues.filter((i) => i.status === "ISSUED_PENDING_CONFIRMATION" || i.status === "RETURN_REQUESTED");
 
   return (
@@ -140,6 +236,126 @@ export default function LibraryClient({ role }: { role: string; userId?: string 
           {msg.text}
         </div>
       )}
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        {isTeacher && (
+          <form onSubmit={handleRequest} className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
+            <h2 className="text-title-3-semibold text-text-primary">Request a textbook</h2>
+            <p className="mt-1 text-body-2-regular text-text-secondary">Requests go to the Deputy, Senior Teacher and school leadership for review.</p>
+            {teachingAssignments.length === 0 ? (
+              <p className="mt-4 rounded-xl bg-background-secondary-default p-3 text-body-2-regular text-text-secondary">No teaching assignments are linked to your account yet.</p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                <Select
+                  label="Assigned class and learning area"
+                  selectedKey={selectedAssignment}
+                  onSelectionChange={(key) => setSelectedAssignment(String(key))}
+                >
+                  {teachingAssignments.map((assignment) => {
+                    const key = `${assignment.grade}::${assignment.subject}`;
+                    return <SelectItem key={key} id={key}>{assignment.grade} · {assignment.subject}</SelectItem>;
+                  })}
+                </Select>
+                <Input label="Textbook title or topic" value={requestForm.title} onChange={(title) => setRequestForm((current) => ({ ...current, title }))} isRequired maxLength={120} />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Input label="Number of copies (1–100)" type="number" value={requestForm.quantity} onChange={(quantity) => setRequestForm((current) => ({ ...current, quantity }))} isRequired />
+                  <Input label="Reason or learner need (optional)" value={requestForm.notes} onChange={(notes) => setRequestForm((current) => ({ ...current, notes }))} maxLength={500} />
+                </div>
+                <Button type="submit" disabled={busy || teachingAssignments.length === 0} leadingIcon={RiAddLine}>Send request</Button>
+              </div>
+            )}
+          </form>
+        )}
+
+        {isAdmin && (
+          <form onSubmit={handleEbookPublish} className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
+            <h2 className="text-title-3-semibold text-text-primary">Publish an eBook</h2>
+            <p className="mt-1 text-body-2-regular text-text-secondary">Add a secure link for a class and learning area. Prefer official KICD and Kenya Education Cloud sources.</p>
+            <div className="mt-4 space-y-3">
+              <Input label="eBook title" value={ebookForm.title} onChange={(title) => setEbookForm((current) => ({ ...current, title }))} isRequired maxLength={120} />
+              <Input label="Short description" value={ebookForm.description} onChange={(description) => setEbookForm((current) => ({ ...current, description }))} isRequired maxLength={500} />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Select
+                  label="Grade"
+                  selectedKey={ebookForm.grade}
+                  onSelectionChange={(key) => key && setEbookForm((current) => ({ ...current, grade: String(key) }))}
+                >
+                  {CURRICULUM_GRADES.map((grade) => <SelectItem key={grade} id={grade}>{grade}</SelectItem>)}
+                </Select>
+                <Select
+                  label="Learning area"
+                  selectedKey={ebookForm.subject}
+                  onSelectionChange={(key) => key && setEbookForm((current) => ({ ...current, subject: String(key) }))}
+                >
+                  {CURRICULUM_SUBJECTS.map((subject) => <SelectItem key={subject} id={subject}>{subject}</SelectItem>)}
+                </Select>
+              </div>
+              <Input label="HTTPS eBook link" type="url" inputDir="ltr" value={ebookForm.url} onChange={(url) => setEbookForm((current) => ({ ...current, url }))} isRequired maxLength={1000} />
+              <Button type="submit" disabled={busy} leadingIcon={RiAddLine}>Publish eBook</Button>
+            </div>
+          </form>
+        )}
+      </section>
+
+      <section className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-title-3-semibold text-text-primary">{isTeacher ? "My textbook requests" : "Textbook requests"}</h2>
+            <p className="mt-1 text-body-2-regular text-text-secondary">{requests.length} request{requests.length === 1 ? "" : "s"} in your view</p>
+          </div>
+        </div>
+        {requests.length === 0 ? (
+          <p className="mt-4 rounded-xl bg-background-secondary-default p-4 text-body-2-regular text-text-secondary">No textbook requests yet.</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-separator-border">
+            {requests.map((item) => (
+              <li key={item.id} className="grid gap-3 py-4 sm:grid-cols-[1fr_auto] sm:items-start">
+                <div>
+                  <p className="text-body-medium text-text-primary">{item.title} · {item.quantity} {item.quantity === 1 ? "copy" : "copies"}</p>
+                  <p className="text-body-2-regular text-text-secondary">{item.grade} · {item.subject}{!isTeacher ? ` · Requested by ${item.requestedBy.name}` : ""}</p>
+                  {item.notes && <p className="mt-1 text-body-2-regular text-text-secondary">{item.notes}</p>}
+                  {item.responseNotes && <p className="mt-2 rounded-xl bg-background-secondary-default p-3 text-body-2-regular text-text-secondary">Leadership: {item.responseNotes}</p>}
+                </div>
+                <div className="flex flex-col items-start gap-2 sm:items-end">
+                  <span className="rounded-full bg-background-secondary-default px-3 py-1 text-caption-1-semibold text-text-secondary">{item.status}</span>
+                  {isAdmin && item.status === "PENDING" && (
+                    <div className="flex flex-wrap gap-2">
+                      <Input
+                        aria-label={`Reply to ${item.requestedBy.name}`}
+                        placeholder="Optional reply"
+                        value={decisionNotes[item.id] ?? ""}
+                        onChange={(value) => setDecisionNotes((current) => ({ ...current, [item.id]: value }))}
+                        maxLength={500}
+                      />
+                      <Button type="button" size="small" variant="primary" disabled={busy} onClick={() => void handleRequestDecision(item.id, "APPROVED")}>Approve</Button>
+                      <Button type="button" size="small" variant="secondary" disabled={busy} onClick={() => void handleRequestDecision(item.id, "REJECTED")}>Decline</Button>
+                    </div>
+                  )}
+                  {item.reviewedBy && <span className="text-caption-1-regular text-text-tertiary">Reviewed by {item.reviewedBy.name}</span>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
+        <h2 className="text-title-3-semibold text-text-primary">eBooks for learning</h2>
+        {resources.length === 0 ? (
+          <p className="mt-3 text-body-2-regular text-text-secondary">No eBooks have been published for the classes and subjects available to you.</p>
+        ) : (
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+            {resources.map((resource) => (
+              <li key={resource.id} className="rounded-2xl border border-separator-border p-4">
+                <p className="text-body-medium text-text-primary">{resource.title}</p>
+                <p className="mt-1 text-body-2-regular text-text-secondary">{resource.grade} · {resource.subject}</p>
+                <p className="mt-2 text-body-2-regular text-text-secondary">{resource.description}</p>
+                <a className="mt-3 inline-flex text-body-2-medium text-accent-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring" href={resource.url} target="_blank" rel="noreferrer">Open eBook</a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* Teacher — pending actions */}
       {isTeacher && pendingConfirm.length > 0 && (

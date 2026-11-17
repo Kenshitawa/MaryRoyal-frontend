@@ -1,5 +1,6 @@
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { createStaffWelfareMember } from "../src/lib/welfare";
 
 const db = new PrismaClient();
 const cbcDefaults = [
@@ -16,6 +17,14 @@ async function main() {
     create: { name: "Mary Royal Director", email: "director@maryroyal.ac.ke", passwordHash, role: Role.DIRECTOR, forcePasswordChange: true },
     update: {}
   });
+  const director = await db.user.findUniqueOrThrow({ where: { email: "director@maryroyal.ac.ke" }, select: { id: true } });
+  const existingStaff = await db.user.findMany({
+    where: { role: { notIn: [Role.PARENT, Role.LEARNER] } },
+    select: { id: true, role: true },
+  });
+  for (const staff of existingStaff) {
+    await db.$transaction((tx) => createStaffWelfareMember(tx, staff.id, staff.role, director.id));
+  }
   await db.schoolSetting.upsert({
     where: { key: "school.profile" },
     create: { key: "school.profile", value: JSON.stringify({ name: "Mary Royal Junior School", motto: "Hard work pays", slogan: "Nurturing Excellence Through CBE", county: "Kisumu", area: "Obunga", currency: "KES", timezone: "Africa/Nairobi" }) },

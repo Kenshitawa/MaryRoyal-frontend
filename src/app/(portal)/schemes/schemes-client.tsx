@@ -56,7 +56,7 @@ export default function SchemesClient({
   teaching: Teaching[];
   catalog?: CurriculumCatalog;
 }) {
-  const isAdmin = ["DEPUTY", "HEAD_TEACHER", "DIRECTOR"].includes(role);
+  const isAdmin = ["DEPUTY", "SENIOR_TEACHER", "HEAD_TEACHER", "DIRECTOR"].includes(role);
   const isTeacher = role === "TEACHER";
 
   const [schemes, setSchemes] = useState<Scheme[]>([]);
@@ -142,7 +142,7 @@ export default function SchemesClient({
   });
 
   const pendingReview = schemes.filter((s) => {
-    if (role === "DEPUTY") return s.status === "SUBMITTED";
+    if (role === "DEPUTY" || role === "SENIOR_TEACHER") return s.status === "SUBMITTED";
     if (role === "HEAD_TEACHER") return s.status === "CONFIRMED_BY_DEPUTY" || s.status === "SUBMITTED";
     return false;
   });
@@ -235,7 +235,7 @@ export default function SchemesClient({
                   {/* Admin review actions */}
                   {isAdmin && (
                     <div className="flex flex-wrap gap-2 pt-2">
-                      {(scheme.status === "SUBMITTED") && (role === "DEPUTY" || role === "HEAD_TEACHER" || role === "DIRECTOR") && (
+                      {(scheme.status === "SUBMITTED") && (role === "DEPUTY" || role === "SENIOR_TEACHER" || role === "HEAD_TEACHER" || role === "DIRECTOR") && (
                         <>
                           <button disabled={busy} onClick={() => handleReview(scheme.id, "confirm-deputy")} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700">
                             <CheckCircle2 size={12}/> Confirm (Deputy)

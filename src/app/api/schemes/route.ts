@@ -19,7 +19,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   if (!can(user.role as never, "schemesOfWork", "view")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY"].includes(user.role);
+  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER"].includes(user.role);
   const schemes = await db.schemeOfWork.findMany({
     where: isAdmin ? {} : { teacherId: user.id },
     include: { teacher: { select: { id: true, name: true, role: true } } },
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   const scheme = await db.schemeOfWork.create({ data: { ...parsed.data, year: parsed.data.year ?? new Date().getFullYear(), teacherId: user.id, status: "SUBMITTED" } });
 
   // Notify deputy + head teacher
-  const deputies = await db.user.findMany({ where: { role: { in: ["DEPUTY", "HEAD_TEACHER"] } }, select: { id: true } });
+  const deputies = await db.user.findMany({ where: { role: { in: ["DEPUTY", "SENIOR_TEACHER", "HEAD_TEACHER"] } }, select: { id: true } });
   for (const d of deputies) {
     await createNotification({ userId: d.id, title: "New Scheme of Work Submitted", message: `${user.name} submitted a scheme for ${parsed.data.grade} ${parsed.data.subject} — Term ${parsed.data.term} Week ${parsed.data.week}.`, type: "ACTION", link: "/schemes", actionRequired: true });
   }
@@ -82,7 +82,7 @@ export async function PATCH(request: Request) {
   if (!scheme) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (parsed.data.action === "confirm-deputy") {
-    if (!["DEPUTY", "HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!["DEPUTY", "SENIOR_TEACHER", "HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await db.schemeOfWork.update({ where: { id: scheme.id }, data: { status: "CONFIRMED_BY_DEPUTY", deputyFeedback: parsed.data.feedback ?? null, deputyConfirmedAt: new Date() } });
     await createNotification({ userId: scheme.teacherId, title: "Scheme Confirmed by Deputy", message: `Your scheme for ${scheme.grade} ${scheme.subject} Week ${scheme.week} has been confirmed by the Deputy.`, type: "SUCCESS", link: "/schemes" });
     // Notify head teachers for final verification
@@ -101,8 +101,8 @@ export async function PATCH(request: Request) {
   }
 
   if (parsed.data.action === "reject") {
-    if (!["DEPUTY", "HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    await db.schemeOfWork.update({ where: { id: scheme.id }, data: { status: "REJECTED", deputyFeedback: user.role === "DEPUTY" ? parsed.data.feedback ?? null : scheme.deputyFeedback, headteacherFeedback: ["HEAD_TEACHER", "DIRECTOR"].includes(user.role) ? parsed.data.feedback ?? null : scheme.headteacherFeedback } });
+    if (!["DEPUTY", "SENIOR_TEACHER", "HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    await db.schemeOfWork.update({ where: { id: scheme.id }, data: { status: "REJECTED", deputyFeedback: ["DEPUTY", "SENIOR_TEACHER"].includes(user.role) ? parsed.data.feedback ?? null : scheme.deputyFeedback, headteacherFeedback: ["HEAD_TEACHER", "DIRECTOR"].includes(user.role) ? parsed.data.feedback ?? null : scheme.headteacherFeedback } });
     await createNotification({ userId: scheme.teacherId, title: "Scheme Needs Revision", message: `Your scheme for ${scheme.grade} ${scheme.subject} Week ${scheme.week} needs revisions. ${parsed.data.feedback ?? ""}`, type: "WARNING", link: "/schemes" });
     return NextResponse.json({ ok: true });
   }

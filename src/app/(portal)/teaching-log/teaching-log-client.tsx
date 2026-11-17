@@ -13,6 +13,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { activeSubject, gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
+import { Button } from "@/components/base/buttons/button";
+import { Select, SelectItem } from "@/components/base/select/select";
 
 type Assignment = { grade: string; subject: string };
 type Log = {
@@ -25,6 +27,15 @@ type Log = {
   createdAt: string;
   teacher: { name: string };
 };
+type DailyEntry = {
+  id: string;
+  grade: string;
+  subject: string;
+  lessonDate: string;
+  status: "DONE" | "MISSED";
+  notes: string | null;
+  teacher: { id: string; name: string };
+};
 
 export default function TeachingLogClient({
   role,
@@ -36,6 +47,10 @@ export default function TeachingLogClient({
   catalog?: CurriculumCatalog;
 }) {
   const [logs, setLogs] = useState<Log[]>([]);
+  const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
+  const [dailyStatuses, setDailyStatuses] = useState<Record<string, string>>({});
+  const [dailyDate, setDailyDate] = useState("");
+  const [dailyBusy, setDailyBusy] = useState(false);
 
   const availableGrades = useMemo(() => gradeOptions(assignments, catalog), [assignments, catalog]);
 
@@ -77,9 +92,31 @@ export default function TeachingLogClient({
     }
   }, []);
 
+  const refreshDaily = useCallback(async () => {
+    const response = await fetch("/api/teaching-logs/daily");
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error ?? "Daily lesson records could not be loaded.");
+    setDailyDate(data.today);
+    setDailyEntries(data.entries);
+    if (role === "TEACHER") {
+      const current = new Map<string, string>();
+      for (const entry of data.entries as DailyEntry[]) {
+        if (entry.lessonDate === data.today) current.set(`${entry.grade}::${entry.subject}`, entry.status);
+      }
+      setDailyStatuses(Object.fromEntries(assignments.map((item) => {
+        const key = `${item.grade}::${item.subject}`;
+        return [key, current.get(key) ?? ""];
+      })));
+    }
+  }, [assignments, role]);
+
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    void refreshDaily().catch((error: unknown) => setMessage(error instanceof Error ? error.message : "Daily lesson records could not be loaded."));
+  }, [refreshDaily]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -103,6 +140,50 @@ export default function TeachingLogClient({
     } finally {
       setBusy(false);
     }
+  }
+
+  async function saveDailyLessons(event: React.FormEvent) {
+    event.preventDefault();
+    if (assignments.some((item) => !dailyStatuses[`${item.grade}::${item.subject}`])) {
+      setMessage("Choose Done or Missed for each assigned class and learning area.");
+      return;
+    }
+    setDailyBusy(true);
+    try {
+      const response = await fetch("/api/teaching-logs/daily", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessons: assignments.map((item) => ({
+            ...item,
+            status: dailyStatuses[`${item.grade}::${item.subject}`],
+          })),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Daily lesson records could not be saved.");
+      setMessage("Today's lesson statuses are recorded and included in the weekly log outline.");
+      await refreshDaily();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Daily lesson records could not be saved.");
+    } finally {
+      setDailyBusy(false);
+    }
+  }
+
+  function addDailyLessonsToWeeklyLog() {
+    const weekStart = dailyDate ? new Date(`${dailyDate}T00:00:00.000Z`) : new Date();
+    weekStart.setUTCDate(weekStart.getUTCDate() - ((weekStart.getUTCDay() + 6) % 7));
+    const weekStartDate = weekStart.toISOString().slice(0, 10);
+    const completed = dailyEntries
+      .filter((entry) => entry.status === "DONE" && entry.lessonDate >= weekStartDate)
+      .map((entry) => `${entry.lessonDate}: ${entry.grade} · ${entry.subject} — lesson completed`);
+    if (!completed.length) {
+      setMessage("There are no completed lessons in the recent daily logs yet.");
+      return;
+    }
+    setTopics((current) => [current.trim(), ...completed].filter(Boolean).join("\n"));
+    setMessage("Completed lessons added to the weekly summary. Review and add the topics you covered.");
   }
 
   async function draftWeekly() {
@@ -163,7 +244,7 @@ export default function TeachingLogClient({
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-200 backdrop-blur-sm">
               <ClipboardList size={13} />
-              CBC Classroom Reflective Practice
+              CBE Classroom Reflective Practice
             </div>
             <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
               Weekly Teaching Log
@@ -282,6 +363,76 @@ export default function TeachingLogClient({
         </div>
       )}
 
+      {role === "TEACHER" && (
+        <form onSubmit={saveDailyLessons} className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-title-3-semibold text-text-primary">Today&apos;s lesson check-in</h2>
+              <p className="mt-1 text-body-2-regular text-text-secondary">
+                {dailyDate ? new Intl.DateTimeFormat("en-KE", { dateStyle: "full", timeZone: "Africa/Nairobi" }).format(new Date(`${dailyDate}T12:00:00+03:00`)) : "Loading today’s date…"}
+                {" · "}Mark each assigned class as Done or Missed.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="small"
+              disabled={!assignments.length}
+              onClick={() => setDailyStatuses(Object.fromEntries(assignments.map((item) => [`${item.grade}::${item.subject}`, "DONE"])))}
+            >
+              Mark all done
+            </Button>
+          </div>
+          {assignments.length === 0 ? (
+            <p className="mt-4 rounded-xl bg-background-secondary-default p-4 text-body-2-regular text-text-secondary">No classes are assigned to your account yet.</p>
+          ) : (
+            <>
+              <ul className="mt-4 divide-y divide-separator-border">
+                {assignments.map((item) => {
+                  const key = `${item.grade}::${item.subject}`;
+                  return (
+                    <li key={key} className="grid gap-3 py-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                      <p className="text-body-medium text-text-primary">{item.grade} · {item.subject}</p>
+                      <Select
+                        aria-label={`Lesson status for ${item.grade} ${item.subject}`}
+                        placeholder="Choose status"
+                        selectedKey={dailyStatuses[key] || null}
+                        onSelectionChange={(selection) => setDailyStatuses((current) => ({ ...current, [key]: String(selection ?? "") }))}
+                        className="w-full sm:w-48"
+                      >
+                        <SelectItem id="DONE">Done</SelectItem>
+                        <SelectItem id="MISSED">Missed</SelectItem>
+                      </Select>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-4 flex justify-end border-t border-separator-border pt-4">
+                <Button type="submit" disabled={dailyBusy || !assignments.every((item) => dailyStatuses[`${item.grade}::${item.subject}`])}>
+                  {dailyBusy ? "Saving…" : "Save today’s lessons"}
+                </Button>
+              </div>
+            </>
+          )}
+        </form>
+      )}
+
+      {role !== "TEACHER" && dailyEntries.length > 0 && (
+        <section className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
+          <h2 className="text-title-3-semibold text-text-primary">Daily lesson check-ins</h2>
+          <ul className="mt-3 divide-y divide-separator-border">
+            {dailyEntries.slice(0, 20).map((entry) => (
+              <li key={entry.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
+                <span className="text-body-regular text-text-primary">{entry.teacher.name} · {entry.grade} · {entry.subject}</span>
+                <span className={`rounded-full px-3 py-1 text-caption-1-semibold ${entry.status === "DONE" ? "bg-background-secondary-default text-text-secondary" : "bg-background-secondary-default text-text-error-primary"}`}>
+                  {entry.status === "DONE" ? "Done" : "Missed"} · {entry.lessonDate}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Log Form (Bento Expandable for Teachers) */}
       {role === "TEACHER" && showAdd && (
         <form
@@ -343,6 +494,9 @@ export default function TeachingLogClient({
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Topics &amp; Competencies Covered <span className="text-blue-600">*</span>
               </label>
+              <Button type="button" variant="secondary" size="small" className="mb-2 mt-1" onClick={addDailyLessonsToWeeklyLog}>
+                Add completed lessons from this week
+              </Button>
               <textarea
                 required
                 minLength={5}
@@ -384,7 +538,7 @@ export default function TeachingLogClient({
               className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-700 px-6 text-xs font-bold text-white shadow-md shadow-blue-700/20 transition hover:bg-blue-800 disabled:opacity-50"
             >
               <CheckCircle2 size={15} />
-              {busy ? "Submitting…" : "Submit Daily Log"}
+              {busy ? "Submitting…" : "              Submit Weekly Summary"}
             </button>
           </div>
         </form>

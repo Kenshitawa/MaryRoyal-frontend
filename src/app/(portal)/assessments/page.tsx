@@ -25,19 +25,16 @@ export default async function AssessmentsPage() {
   const assignments = assignedView
     ? await db.teacherAssignment.findMany({
         where: { teacherId: user.id },
-        select: { subject: true },
+        select: { grade: true, subject: true },
       })
     : [];
-
-  const subjects = assignedView
-    ? [...new Set(assignments.map((a) => a.subject))]
-    : ["English", "Mathematics", "Science"];
 
   return (
     <>
       <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
         <AssessmentWorkspace
-          subjects={subjects}
+          assignments={assignments}
+          canViewLearnerProfiles={schoolView}
           canCreate={
             canInScope(user.role, "assessments", "create", "school") ||
             canInScope(user.role, "assessments", "create", "assigned")

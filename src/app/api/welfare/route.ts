@@ -14,7 +14,7 @@ async function actor() {
   return user && !user.suspended && !user.forcePasswordChange ? user : null;
 }
 
-const VIEWER_ROLES = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SECRETARY", "ACCOUNTANT", "TEACHER", "WELFARE_CHAIR", "NON_TEACHING_STAFF"];
+const VIEWER_ROLES = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER", "SECRETARY", "ACCOUNTANT", "TEACHER", "WELFARE_CHAIR", "NON_TEACHING_STAFF"];
 
 // GET /api/welfare — returns member info, contributions, loans (self or all for admin/welfare chair)
 export async function GET(request: Request) {
@@ -226,16 +226,22 @@ export async function POST(request: Request) {
 
     const repaymentMonths = parsed.data.type === "SALARY_ADVANCE" ? 1 : 3; // 3 months strictly locked
     const monthlyDeduction = Math.ceil(parsed.data.principalAmount / repaymentMonths);
-    const loan = await db.welfareLoan.create({
-      data: {
-        memberId: member.id,
-        type: parsed.data.isTopUp ? "LOAN_TOPUP" : parsed.data.type,
-        principalAmount: parsed.data.principalAmount,
-        repaymentTermMonths: repaymentMonths,
-        monthlyDeduction,
-        purpose: parsed.data.purpose ?? (parsed.data.isTopUp ? "Loan Top-Up" : null),
-        status: "PENDING_HEADTEACHER",
-      },
+    const loan = await db.$transaction(async (tx) => {
+      const created = await tx.welfareLoan.create({
+        data: {
+          memberId: member.id,
+          type: parsed.data.isTopUp ? "LOAN_TOPUP" : parsed.data.type,
+          principalAmount: parsed.data.principalAmount,
+          repaymentTermMonths: repaymentMonths,
+          monthlyDeduction,
+          purpose: parsed.data.purpose ?? (parsed.data.isTopUp ? "Loan Top-Up" : null),
+          status: "PENDING_HEADTEACHER",
+        },
+      });
+      await tx.auditEvent.create({
+        data: { actorId: user.id, action: "WELFARE_LOAN_APPLIED", entity: "WelfareLoan", entityId: created.id },
+      });
+      return created;
     });
 
     // Notify head teacher
@@ -273,7 +279,15 @@ export async function PATCH(request: Request) {
   // Head teacher approves/rejects PENDING_HEADTEACHER
   if (parsed.data.action === "approve" && loan.status === "PENDING_HEADTEACHER") {
     if (!["HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    await db.welfareLoan.update({ where: { id: loan.id }, data: { status: "PENDING_DIRECTOR", headteacherNotes: parsed.data.notes ?? null, headteacherApprovedAt: new Date() } });
+    await db.$transaction(async (tx) => {
+      await tx.welfareLoan.update({
+        where: { id: loan.id },
+        data: { status: "PENDING_DIRECTOR", headteacherNotes: parsed.data.notes ?? null, headteacherApprovedAt: new Date() },
+      });
+      await tx.auditEvent.create({
+        data: { actorId: user.id, action: "WELFARE_LOAN_HEADTEACHER_APPROVED", entity: "WelfareLoan", entityId: loan.id },
+      });
+    });
     // Notify director
     const directors = await db.user.findMany({ where: { role: "DIRECTOR" }, select: { id: true } });
     for (const d of directors) {
@@ -285,21 +299,47 @@ export async function PATCH(request: Request) {
   // Director approves PENDING_DIRECTOR → disburse
   if (parsed.data.action === "approve" && loan.status === "PENDING_DIRECTOR") {
     if (user.role !== "DIRECTOR") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    await db.welfareLoan.update({ where: { id: loan.id }, data: { status: "APPROVED", directorNotes: parsed.data.notes ?? null } });
+    await db.$transaction(async (tx) => {
+      await tx.welfareLoan.update({
+        where: { id: loan.id },
+        data: { status: "APPROVED", directorNotes: parsed.data.notes ?? null, directorApprovedAt: new Date() },
+      });
+      await tx.auditEvent.create({
+        data: { actorId: user.id, action: "WELFARE_LOAN_DIRECTOR_APPROVED", entity: "WelfareLoan", entityId: loan.id },
+      });
+    });
     await createNotification({ userId: loan.member.userId, title: "Loan Approved", message: `Your ${loan.type.toLowerCase().replace("_", " ")} of KES ${loan.principalAmount.toLocaleString()} has been approved. It will be disbursed shortly.`, type: "SUCCESS", link: "/welfare" });
     return NextResponse.json({ ok: true });
   }
 
   if (parsed.data.action === "reject") {
     if (!["HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    await db.welfareLoan.update({ where: { id: loan.id }, data: { status: "REJECTED", ...(user.role === "HEAD_TEACHER" ? { headteacherNotes: parsed.data.notes ?? null } : { directorNotes: parsed.data.notes ?? null }) } });
+    await db.$transaction(async (tx) => {
+      await tx.welfareLoan.update({
+        where: { id: loan.id },
+        data: {
+          status: "REJECTED",
+          rejectedAt: new Date(),
+          rejectedByRole: user.role,
+          ...(user.role === "HEAD_TEACHER" ? { headteacherNotes: parsed.data.notes ?? null } : { directorNotes: parsed.data.notes ?? null }),
+        },
+      });
+      await tx.auditEvent.create({
+        data: { actorId: user.id, action: `WELFARE_LOAN_REJECTED_${user.role}`, entity: "WelfareLoan", entityId: loan.id },
+      });
+    });
     await createNotification({ userId: loan.member.userId, title: "Loan Application Rejected", message: `Your ${loan.type.toLowerCase().replace("_", " ")} of KES ${loan.principalAmount.toLocaleString()} was not approved. ${parsed.data.notes ?? ""}`, type: "WARNING", link: "/welfare" });
     return NextResponse.json({ ok: true });
   }
 
   if (parsed.data.action === "disburse" && loan.status === "APPROVED") {
     if (!["WELFARE_CHAIR", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    await db.welfareLoan.update({ where: { id: loan.id }, data: { status: "DISBURSED", disbursedAt: new Date() } });
+    await db.$transaction(async (tx) => {
+      await tx.welfareLoan.update({ where: { id: loan.id }, data: { status: "DISBURSED", disbursedAt: new Date() } });
+      await tx.auditEvent.create({
+        data: { actorId: user.id, action: "WELFARE_LOAN_DISBURSED", entity: "WelfareLoan", entityId: loan.id },
+      });
+    });
     await createNotification({ userId: loan.member.userId, title: "Loan Disbursed", message: `KES ${loan.principalAmount.toLocaleString()} has been disbursed to you. Monthly deduction: KES ${loan.monthlyDeduction.toLocaleString()}.`, type: "SUCCESS", link: "/welfare" });
     return NextResponse.json({ ok: true });
   }

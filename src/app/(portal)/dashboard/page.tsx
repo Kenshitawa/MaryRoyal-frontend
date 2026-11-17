@@ -22,6 +22,7 @@ const roleTitles: Record<string, string> = {
   DIRECTOR: "Director",
   HEAD_TEACHER: "Head Teacher",
   DEPUTY: "Deputy Head Teacher",
+  SENIOR_TEACHER: "Senior Teacher",
   SECRETARY: "Secretary",
   ACCOUNTANT: "Accountant",
   TEACHER: "Teacher",
@@ -33,6 +34,7 @@ const roleCopy: Record<string, string> = {
   DIRECTOR: "A clear view of learning, people and school operations.",
   HEAD_TEACHER: "Lead learning, review admissions and support your team.",
   DEPUTY: "Stay on top of attendance, library and the daily rhythm of school.",
+  SENIOR_TEACHER: "Support learning, attendance, library and the daily rhythm of school.",
   SECRETARY: "Manage learner admissions and school records.",
   ACCOUNTANT: "Manage invoices, payments and school collections.",
   TEACHER: "Your classes, learners and classroom tasks in one place.",
@@ -236,7 +238,7 @@ export default async function Dashboard() {
       { label: "Fees Collected", value: kesShort(collected), note: `${billed ? Math.round((collected / billed) * 100) : 0}% of invoices`, iconName: "wallet", tone: "emerald" },
       { label: "Fee Balance", value: kesShort(balances), note: "Confirmed payments only", iconName: "clock", tone: "amber" },
     ];
-  } else if (role === "DEPUTY") {
+  } else if (role === "DEPUTY" || role === "SENIOR_TEACHER") {
     const [learners, records, absent, grades] = await Promise.all([
       db.learner.count({ where: { archivedAt: null } }),
       db.attendance.count({ where: { date: today } }),
@@ -414,7 +416,7 @@ export default async function Dashboard() {
             { label: "Learners", href: "/learners", note: "School register and profiles" },
             { label: "Reports", href: "/reports", note: "Progress and performance" },
           ]
-        : role === "DEPUTY"
+        : role === "DEPUTY" || role === "SENIOR_TEACHER"
           ? [
               { label: "Attendance", href: "/attendance", note: "Mark and review today" },
               { label: "Assessments", href: "/assessments", note: "Exams and rubrics" },

@@ -153,7 +153,7 @@ export default function LearningContentClient({
               Classroom Learning Resources
             </h1>
             <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-blue-100">
-              Share curated videos, CBC revision links, and digital readings with your classes.
+              Share curated videos, CBE revision links, and digital readings with your classes.
               Learners only see content approved for their specific grade level.
             </p>
           </div>
@@ -218,7 +218,7 @@ export default function LearningContentClient({
               {readingCount}
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">CBC study notes</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">          CBE study notes</p>
         </div>
 
         <div className="glass dark:glass-dark rounded-3xl border border-slate-200/80 p-5 shadow-sm dark:border-slate-800/80">
@@ -332,7 +332,7 @@ export default function LearningContentClient({
               maxLength={120}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. CBC Science: Water Cycle & Rain Formation"
+              placeholder="e.g. CBE Science: Water Cycle & Rain Formation"
               className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
             />
           </div>
@@ -434,6 +434,7 @@ export default function LearningContentClient({
               <option value="VIDEO">Videos</option>
               <option value="READING">Readings</option>
               <option value="LINK">Links</option>
+              <option value="EBOOK">eBooks</option>
             </select>
           </div>
         </div>
@@ -463,6 +464,8 @@ export default function LearningContentClient({
                           <Video size={18} />
                         ) : resource.kind === "READING" ? (
                           <FileText size={18} />
+                        ) : resource.kind === "EBOOK" ? (
+                          <BookOpenCheck size={18} />
                         ) : (
                           <LinkIcon size={18} />
                         )}

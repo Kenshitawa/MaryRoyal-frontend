@@ -19,7 +19,7 @@ export default async function TimetablePage() {
   if (user.forcePasswordChange) redirect("/change-password");
   if (!can(user.role as never, "timetable", "view")) redirect("/dashboard");
 
-  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY"].includes(user.role);
+  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER"].includes(user.role);
 
   const [timetables, teachers, assignments] = await Promise.all([
     db.schoolTimetable.findMany({
@@ -32,7 +32,7 @@ export default async function TimetablePage() {
       take: 20,
     }),
     db.user.findMany({
-      where: { role: { in: ["TEACHER", "DEPUTY"] }, suspended: false },
+      where: { role: { in: ["TEACHER", "DEPUTY", "SENIOR_TEACHER"] }, suspended: false },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),

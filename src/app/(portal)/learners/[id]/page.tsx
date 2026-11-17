@@ -98,6 +98,12 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
   });
   if (!actor || actor.suspended) redirect("/");
   if (actor.forcePasswordChange) redirect("/change-password");
+  if (actor.role === "TEACHER") {
+    await db.auditEvent.create({
+      data: { actorId: actor.id, action: "LEARNER_PROFILE_ACCESS_DENIED", entity: "LearnerProfile" }
+    });
+    redirect("/learners");
+  }
 
   const learner = await db.learner.findUnique({
     where: { id },
@@ -107,20 +113,6 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
   if (!learner || learner.archivedAt) notFound();
 
   let allowed = canInScope(actor.role, "learners", "view", "school");
-  let assignedSubjects: string[] = [];
-  if (!allowed && canInScope(actor.role, "learners", "view", "assigned")) {
-    const assignments = await db.teacherAssignment.findMany({
-      where: { teacherId: actor.id, grade: learner.grade },
-      select: { subject: true }
-    });
-    const classTeacher = await db.classTeacherAssignment.findFirst({
-      where: { teacherId: actor.id, grade: learner.grade },
-      select: { id: true }
-    });
-    allowed = assignments.length > 0 || !!classTeacher;
-    assignedSubjects = assignments.map((assignment) => assignment.subject);
-  }
-
   if (!allowed && (canInScope(actor.role, "learners", "view", "linked") || canInScope(actor.role, "learners", "view", "self"))) {
     allowed = !!(await db.guardianLink.findFirst({
       where: {
@@ -144,9 +136,7 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
   const canEditLearner = can(actor.role, "learners", "update");
 
   const healthAllowed =
-    canInScope(actor.role, "learners", "view", "school") ||
-    (actor.role === "TEACHER" &&
-      !!(await db.classTeacherAssignment.findFirst({ where: { teacherId: actor.id, grade: learner.grade }, select: { id: true } })));
+    canInScope(actor.role, "learners", "view", "school");
 
   if (healthAllowed) {
     await db.auditEvent.create({
@@ -158,13 +148,11 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
 
   const disciplineAllowed =
     canInScope(actor.role, "discipline", "view", "school") ||
-    (actor.role === "TEACHER" && allowed) ||
     (actor.role === "PARENT" && canInScope(actor.role, "discipline", "view", "linked"));
 
   const academicAllowed =
     !identityOnly &&
     (canInScope(actor.role, "assessments", "view", "school") ||
-      canInScope(actor.role, "assessments", "view", "assigned") ||
       canInScope(actor.role, "assessments", "view", "linked") ||
       canInScope(actor.role, "assessments", "view", "self"));
 
@@ -227,7 +215,6 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
           where: {
             learnerId: learner.id,
             status: { in: ["RELEASED", ...(canInScope(actor.role, "assessments", "view", "school") ? ["DRAFT", "SUBMITTED", "APPROVED"] : [])] },
-            ...(actor.role === "TEACHER" ? { subject: { in: assignedSubjects } } : {})
           },
           orderBy: [{ term: "desc" }, { subject: "asc" }],
           select: { id: true, subject: true, score: true, term: true, strand: true, competency: true, comment: true, status: true, createdAt: true }
@@ -732,14 +719,14 @@ export default async function LearnerProfilePage({ params }: { params: Promise<{
           </Card>
         )}
 
-        {/* Section 2: CBC Exam Results & Academic Progress */}
+        {/* Section 2: CBE assessment results and progress */}
         {academicAllowed && (
-          <Card id="academics" title="CBC Exam Results & Academic Progress" icon={GraduationCap} badge={`${assessments.length} Recorded Marks`}>
+          <Card id="academics" title="CBE Assessment Results & Academic Progress" icon={GraduationCap} badge={`${assessments.length} Recorded Marks`}>
             {/* Report Card Download Action Banner */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/60 p-4 dark:border-blue-900/60 dark:bg-blue-950/40">
               <div>
-                <h3 className="text-xs font-bold text-blue-950 dark:text-blue-100">Official Term Report Card &amp; Academic Dossier</h3>
-                <p className="mt-0.5 text-xs text-blue-700/80 dark:text-blue-300">Generate a branded, certified CBC report card with institutional seals, competency rubrics, and QR verification.</p>
+                <h3 className="text-xs font-bold text-blue-950 dark:text-blue-100">Term Report Card</h3>
+                <p className="mt-0.5 text-xs text-blue-700/80 dark:text-blue-300">View released learning-area marks and recorded teacher comments with the CBE assessment scale.</p>
               </div>
               <a
                 href={`/api/learners/${learner.id}/report-card`}

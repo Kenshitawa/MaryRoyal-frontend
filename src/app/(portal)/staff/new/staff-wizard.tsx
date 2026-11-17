@@ -121,6 +121,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
       ? [
           { label: "Head Teacher", value: "HEAD_TEACHER" },
           { label: "Deputy Head Teacher", value: "DEPUTY" },
+          { label: "Senior Teacher", value: "SENIOR_TEACHER" },
           { label: "Secretary", value: "SECRETARY" },
           { label: "Accountant", value: "ACCOUNTANT" },
           { label: "Teacher", value: "TEACHER" },

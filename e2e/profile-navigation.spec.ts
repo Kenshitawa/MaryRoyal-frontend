@@ -33,6 +33,45 @@ for (const width of [390, 1280]) {
   }
 }
 
+test.describe("teacher academic-only learner access", () => {
+  test.use({ storageState: path.resolve(__dirname, ".auth/teacher.json"), viewport: { width: 390, height: 844 } });
+
+  test("shows assigned academic records without learner profiles or photos", async ({ page }) => {
+    const sample = JSON.parse(fs.readFileSync(path.resolve(__dirname, ".auth/sample-records.json"), "utf8")) as Record<string, string>;
+    await page.goto("/learners");
+    await expect(page.getByRole("heading", { name: "Class learning records" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "View profile", exact: true })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Assigned class and learning area" }).click();
+    await page.getByRole("option", { name: "Grade 4 · Mathematics" }).click();
+    await expect(page.getByRole("heading", { name: "Achieng Otieno" })).toBeVisible();
+    await expect(page.getByText("CBE assessment history")).toBeVisible();
+    await expect(page.getByText("Learning strengths & support areas")).toBeVisible();
+
+    const academicResponse = await page.evaluate(async () => {
+      const response = await fetch("/api/learners/academics?grade=Grade%204&subject=Mathematics");
+      return { status: response.status, payload: await response.json() };
+    });
+    expect(academicResponse.status).toBe(200);
+    expect(Object.keys(academicResponse.payload.learners[0]).sort()).toEqual(["assessments", "assignments", "id", "name"]);
+    expect(academicResponse.payload.learners[0].assessments[0]).not.toHaveProperty("learnerId");
+    const deniedStatuses = await page.evaluate(async () => {
+      const [directory, otherClass] = await Promise.all([
+        fetch("/api/learners?take=1"),
+        fetch("/api/learners/academics?grade=Grade%209&subject=Mathematics"),
+      ]);
+      return [directory.status, otherClass.status];
+    });
+    expect(deniedStatuses).toEqual([403, 403]);
+
+    const photoStatus = await page.evaluate(async (id) => (await fetch(`/api/learners/${id}/photo`)).status, sample.teacherLearnerId);
+    expect(photoStatus).toBe(403);
+    await page.goto(`/learners/${sample.teacherLearnerId}`);
+    await expect(page).toHaveURL(/\/learners$/);
+    await expect(page.getByRole("heading", { name: "Class learning records" })).toBeVisible();
+  });
+});
+
 for (const width of [390, 1280]) {
   for (const role of ["parent", "learner"]) {
     test.describe(`${role} direct learner profile at ${width}px`, () => {

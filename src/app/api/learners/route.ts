@@ -9,6 +9,10 @@ async function currentRole() { const token = (await cookies()).get("mary_session
 export async function GET(request: Request) {
  const user = await currentRole(); if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
  try { assertCan(user.role, "learners", "view"); } catch { await db.auditEvent.create({ data: { actorId: user.id, action: "ACCESS_DENIED", entity: "Learner" } }); return NextResponse.json({ error: "Forbidden" }, { status: 403 }); }
+ if (user.role === "TEACHER") {
+  await db.auditEvent.create({ data: { actorId: user.id, action: "LEARNER_DIRECTORY_ACCESS_DENIED", entity: "Learner" } });
+  return NextResponse.json({ error: "Use the assigned class academic records view." }, { status: 403 });
+ }
  const { searchParams } = new URL(request.url); const parsed = z.object({ q: z.string().max(80).optional(), take: z.coerce.number().int().min(1).max(100).default(25), cursor: z.string().optional() }).safeParse(Object.fromEntries(searchParams)); if (!parsed.success) return NextResponse.json({ error: "Invalid filters." }, { status: 400 });
  const q = parsed.data.q?.trim(); let gradeScope: string[] | undefined; let linkedIds: string[] | undefined;
  if (canInScope(user.role, "learners", "view", "learner-identity")) {

@@ -77,6 +77,7 @@ export function StaffDirectoryClient({
     { label: "All Roles", value: "ALL" },
     { label: "Head Teacher", value: "HEAD_TEACHER" },
     { label: "Deputy", value: "DEPUTY" },
+    { label: "Senior Teacher", value: "SENIOR_TEACHER" },
     { label: "Secretary", value: "SECRETARY" },
     { label: "Accountant", value: "ACCOUNTANT" },
     { label: "Teacher", value: "TEACHER" },

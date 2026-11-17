@@ -20,7 +20,7 @@ export async function GET() {
   if (!can(user.role as never, "timetable", "view")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   // Return the published timetable (or draft for admins)
-  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY"].includes(user.role);
+  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER"].includes(user.role);
   const timetables = await db.schoolTimetable.findMany({
     where: isAdmin ? {} : { status: "PUBLISHED" },
     include: {
@@ -95,7 +95,7 @@ export async function PATCH(request: Request) {
     if (!["HEAD_TEACHER", "DIRECTOR"].includes(user.role)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await db.schoolTimetable.update({ where: { id: tt.id }, data: { status: "PUBLISHED", verifiedById: user.id, verifiedAt: new Date() } });
     // Notify all teachers
-    const teachers = await db.user.findMany({ where: { role: { in: ["TEACHER", "DEPUTY"] } }, select: { id: true } });
+    const teachers = await db.user.findMany({ where: { role: { in: ["TEACHER", "DEPUTY", "SENIOR_TEACHER"] } }, select: { id: true } });
     for (const t of teachers) {
       await createNotification({ userId: t.id, title: "New Timetable Published", message: `"${tt.title}" for ${tt.term} is now published. Check your lessons schedule.`, type: "SUCCESS", link: "/timetable" });
     }
@@ -120,7 +120,7 @@ export async function PATCH(request: Request) {
     });
 
     if (publishDirectly) {
-      const teachers = await db.user.findMany({ where: { role: { in: ["TEACHER", "DEPUTY"] } }, select: { id: true } });
+      const teachers = await db.user.findMany({ where: { role: { in: ["TEACHER", "DEPUTY", "SENIOR_TEACHER"] } }, select: { id: true } });
       for (const t of teachers) {
         await createNotification({ userId: t.id, title: "Timetable Updated", message: `Updates made to "${tt.title}" are now live. Please review your lesson schedule.`, type: "INFO", link: "/timetable" });
       }

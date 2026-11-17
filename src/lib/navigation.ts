@@ -90,6 +90,17 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Welfare", href: "/welfare", icon: HeartHandshake },
     { label: "KICD videos", href: "/learning-videos", icon: BookOpenCheck },
   ],
+  SENIOR_TEACHER: [
+    { label: "Overview", href: "/dashboard", icon: GraduationCap },
+    { label: "Learners", href: "/learners", icon: Users },
+    { label: "Attendance", href: "/attendance", icon: CalendarCheck },
+    { label: "Assessments", href: "/assessments", icon: BookOpen },
+    { label: "Library", href: "/library", icon: Library },
+    { label: "Schemes of work", href: "/schemes", icon: LayoutList },
+    { label: "Timetable", href: "/timetable", icon: CalendarDays },
+    { label: "Welfare", href: "/welfare", icon: HeartHandshake },
+    { label: "KICD videos", href: "/learning-videos", icon: BookOpenCheck },
+  ],
   SECRETARY: [
     { label: "Overview", href: "/dashboard", icon: GraduationCap },
     { label: "Learners", href: "/learners", icon: Users },
@@ -270,6 +281,39 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       },
     ],
   },
+  SENIOR_TEACHER: {
+    primary: [
+      { label: "Home", href: "/dashboard", icon: GraduationCap },
+      { label: "Attendance", href: "/attendance", icon: CalendarCheck },
+      { label: "Exams", href: "/assessments", icon: BookOpen },
+      { label: "Timetable", href: "/timetable", icon: CalendarDays },
+    ],
+    moreCategories: [
+      {
+        category: "Academics",
+        items: [
+          { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
+          { label: "Textbooks & Library", href: "/library", icon: Library },
+          { label: "KICD Videos", href: "/learning-videos", icon: BookOpenCheck },
+        ],
+      },
+      {
+        category: "People",
+        items: [
+          { label: "Learners", href: "/learners", icon: Users },
+          { label: "Admissions", href: "/admissions", icon: ClipboardList },
+          { label: "Staff Welfare", href: "/welfare", icon: HeartHandshake },
+        ],
+      },
+      {
+        category: "Settings",
+        items: [
+          { label: "Profile & Security", href: "/profile", icon: User },
+          { label: "Privacy Notice", href: "/privacy", icon: ShieldCheck },
+        ],
+      },
+    ],
+  },
   SECRETARY: {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
@@ -282,7 +326,6 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
         category: "Finance",
         items: [
           { label: "Fee Structures", href: "/finance/structures", icon: Layers },
-          { label: "Official Receipts", href: "/receipts", icon: Receipt },
         ],
       },
       {
@@ -495,7 +538,7 @@ const detailSections: { prefix: string; roles?: string[]; label: string }[] = [
   { prefix: "/staff/", label: "Staff" },
   { prefix: "/admissions/new", label: "Admissions" },
   { prefix: "/admissions/", label: "Admissions" },
-  { prefix: "/assessments/exams", label: "Exams", roles: ["DEPUTY"] },
+  { prefix: "/assessments/exams", label: "Exams", roles: ["DEPUTY", "SENIOR_TEACHER"] },
   { prefix: "/assessments", label: "Academics" },
   { prefix: "/finance/structures", label: "Finance" },
   { prefix: "/finance", label: "Finance" },

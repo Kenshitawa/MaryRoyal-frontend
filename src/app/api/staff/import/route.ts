@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { canInScope, canManageStaffTarget } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { kenyanPhoneRegex } from "@/lib/staff-validation";
+import { createStaffWelfareMember } from "@/lib/welfare";
 
 async function actor() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -195,6 +196,7 @@ export async function POST(request: Request) {
           forcePasswordChange: true,
         },
       });
+      await createStaffWelfareMember(tx, newUser.id, newUser.role, user.id);
 
       await tx.staffProfile.create({
         data: {

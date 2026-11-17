@@ -1,5 +1,6 @@
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { createStaffWelfareMember } from "../src/lib/welfare";
 const db = new PrismaClient();
 async function main() {
   const accounts = [
@@ -17,6 +18,12 @@ async function main() {
   const passwordHash = await bcrypt.hash("MaryRoyal2026!", 12);
   for (const [email, name, role] of accounts) {
     await db.user.upsert({ where: { email }, create: { name, email, passwordHash, role, forcePasswordChange: true }, update: { name, passwordHash, role, forcePasswordChange: true, suspended: false, failedLogins: 0 } });
+  }
+  const director = await db.user.findUniqueOrThrow({ where: { email: "director@maryroyal.ac.ke" }, select: { id: true } });
+  for (const [email, , role] of accounts) {
+    if (role === Role.PARENT || role === Role.LEARNER) continue;
+    const staff = await db.user.findUniqueOrThrow({ where: { email }, select: { id: true } });
+    await db.$transaction((tx) => createStaffWelfareMember(tx, staff.id, role, director.id));
   }
   const roster = [
     ["Achieng Otieno","Female"],["Brian Ouma","Male"],["Faith Akoth","Female"],["Kevin Onyango","Male"],["Lilian Atieno","Female"],

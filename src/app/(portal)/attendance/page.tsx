@@ -83,6 +83,7 @@ export default async function AttendancePage() {
               "DIRECTOR",
               "HEAD_TEACHER",
               "DEPUTY",
+              "SENIOR_TEACHER",
               "SECRETARY",
               "ACCOUNTANT",
               "TEACHER",

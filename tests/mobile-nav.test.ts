@@ -6,6 +6,7 @@ describe("Mobile Navigation (4 Tabs + More per role)", () => {
     "DIRECTOR",
     "HEAD_TEACHER",
     "DEPUTY",
+    "SENIOR_TEACHER",
     "SECRETARY",
     "ACCOUNTANT",
     "TEACHER",
@@ -43,6 +44,12 @@ describe("Mobile Navigation (4 Tabs + More per role)", () => {
     expect(labels).toEqual(["Home", "Attendance", "Exams", "Timetable"]);
   });
 
+  it("configures exact required primary tabs for Senior Teacher", () => {
+    const nav = getMobileNavigation("SENIOR_TEACHER");
+    const labels = nav.primary.map((t) => t.label);
+    expect(labels).toEqual(["Home", "Attendance", "Exams", "Timetable"]);
+  });
+
   it("configures exact required primary tabs for Secretary", () => {
     const nav = getMobileNavigation("SECRETARY");
     const labels = nav.primary.map((t) => t.label);
@@ -53,6 +60,17 @@ describe("Mobile Navigation (4 Tabs + More per role)", () => {
     const nav = getMobileNavigation("ACCOUNTANT");
     const labels = nav.primary.map((t) => t.label);
     expect(labels).toEqual(["Home", "Invoices", "Payments", "Arrears"]);
+  });
+
+  it("shows Official Receipts to finance administrators", () => {
+    for (const role of ["DIRECTOR", "HEAD_TEACHER", "ACCOUNTANT"]) {
+      const nav = getMobileNavigation(role);
+      const allHrefs = [
+        ...nav.primary.map((item) => item.href),
+        ...nav.moreCategories.flatMap((category) => category.items.map((item) => item.href)),
+      ];
+      expect(allHrefs).toContain("/receipts");
+    }
   });
 
   it("names the app bar after the page rather than one of its tab siblings", () => {
@@ -106,6 +124,7 @@ describe("Mobile Navigation (4 Tabs + More per role)", () => {
     expect(allHrefs).not.toContain("/accounts");
     expect(allHrefs).not.toContain("/audit");
     expect(allHrefs).not.toContain("/complaints");
+    expect(allHrefs).not.toContain("/receipts");
   });
 
   it("enforces that forbidden pages never appear in Parent and Learner navigation", () => {

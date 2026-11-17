@@ -36,6 +36,7 @@ const roles = [
   "DIRECTOR",
   "HEAD_TEACHER",
   "DEPUTY",
+  "SENIOR_TEACHER",
   "SECRETARY",
   "ACCOUNTANT",
   "TEACHER",
@@ -188,7 +189,7 @@ export default function AccountDirectory() {
       const matchesRole =
         roleFilter === "ALL" ||
         (roleFilter === "STAFF"
-          ? ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SECRETARY", "ACCOUNTANT", "TEACHER"].includes(
+          ? ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER", "SECRETARY", "ACCOUNTANT", "TEACHER"].includes(
               acc.role
             )
           : acc.role === roleFilter);
@@ -209,7 +210,7 @@ export default function AccountDirectory() {
   const totalCount = accounts.length;
   const activeCount = accounts.filter((a) => !a.suspended && a.failedLogins < 8).length;
   const staffCount = accounts.filter((a) =>
-    ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SECRETARY", "ACCOUNTANT", "TEACHER"].includes(a.role)
+    ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER", "SECRETARY", "ACCOUNTANT", "TEACHER"].includes(a.role)
   ).length;
   const alertCount = accounts.filter((a) => a.suspended || a.failedLogins >= 8).length;
 
@@ -532,6 +533,7 @@ export default function AccountDirectory() {
                   "DIRECTOR",
                   "HEAD_TEACHER",
                   "DEPUTY",
+                  "SENIOR_TEACHER",
                   "SECRETARY",
                   "ACCOUNTANT",
                   "TEACHER",

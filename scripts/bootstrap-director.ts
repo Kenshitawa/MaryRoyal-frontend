@@ -1,5 +1,6 @@
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { createStaffWelfareMember } from "../src/lib/welfare";
 
 const database = new PrismaClient();
 const cbcLevels = [
@@ -29,7 +30,8 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(password, 12);
   await database.$transaction(async tx => {
-    await tx.user.create({ data: { name, email, passwordHash, role: Role.DIRECTOR, forcePasswordChange: true } });
+    const director = await tx.user.create({ data: { name, email, passwordHash, role: Role.DIRECTOR, forcePasswordChange: true } });
+    await createStaffWelfareMember(tx, director.id, director.role, director.id);
     await tx.schoolSetting.createMany({ data: [
       { key: "school.profile", value: JSON.stringify({ name: "Mary Royal Junior School", motto: "Hard work pays", slogan: "Nurturing Excellence Through CBE", county: "Kisumu", area: "Obunga", currency: "KES", timezone: "Africa/Nairobi" }) },
       { key: "school.academicSetup", value: JSON.stringify({ years: [], terms: [], classes: [], streams: [], subjects: [], feeStructures: [] }) },

@@ -28,7 +28,7 @@ const grants: Record<Role, string[]> = {
     "teachingLogs:approve", "learningVideos:view", "learningVideos:create", "learningVideos:update", "complaints:view",
     "complaints:update", "examSessions:view", "examSessions:create", "examSessions:update", "examSessions:approve",
     "rubrics:view", "rubrics:create", "rubrics:update", "feeWaivers:view", "feeWaivers:approve",
-    "textbooks:view", "schemesOfWork:view", "timetable:view", "welfare:view", "welfare:create", "welfare:update",
+    "textbooks:view", "textbooks:create", "textbooks:update", "textbooks:approve", "schemesOfWork:view", "timetable:view", "welfare:view", "welfare:create", "welfare:update",
     "welfare:approve", "welfare:apply", "notifications:view", "notifications:update",
     "assignments:view", "assignments:create", "assignments:update", "learning:view", "learning:create"
   ],
@@ -43,7 +43,7 @@ const grants: Record<Role, string[]> = {
     "teachingLogs:view", "teachingLogs:approve", "learningVideos:view", "learningVideos:create", "learningVideos:update",
     "complaints:view", "complaints:update", "examSessions:view", "examSessions:create", "examSessions:update",
     "examSessions:approve", "rubrics:view", "rubrics:create", "rubrics:update", "feeWaivers:view",
-    "textbooks:view", "textbooks:create", "textbooks:update", "schemesOfWork:view", "schemesOfWork:verify",
+    "textbooks:view", "textbooks:create", "textbooks:update", "textbooks:approve", "schemesOfWork:view", "schemesOfWork:verify",
     "timetable:view", "timetable:create", "timetable:update", "timetable:verify", "welfare:view", "welfare:approve",
     "welfare:apply", "notifications:view", "notifications:update",
     "assignments:view", "assignments:create", "assignments:update", "learning:view", "learning:create"
@@ -53,9 +53,19 @@ const grants: Record<Role, string[]> = {
     "learners:view", "admissions:view", "attendance:view", "assessments:view", "discipline:view", "discipline:create",
     "discipline:update", "operations:view", "operations:create", "operations:update", "learningVideos:view",
     "learningVideos:create", "learningVideos:update", "examSessions:view", "examSessions:create", "examSessions:update",
-    "rubrics:view", "rubrics:create", "rubrics:update",
-    "textbooks:view", "textbooks:create", "textbooks:update", "schemesOfWork:view", "schemesOfWork:confirm",
+    "rubrics:view", "rubrics:create", "rubrics:update", "learning:view", "learning:create",
+    "teachingLogs:view", "teachingLogs:approve", "textbooks:view", "textbooks:create", "textbooks:update", "textbooks:approve", "schemesOfWork:view", "schemesOfWork:confirm",
     "timetable:view", "timetable:create", "timetable:update", "welfare:view", "welfare:apply", "notifications:view", "notifications:update"
+  ],
+  [Role.SENIOR_TEACHER]: [
+    "dashboard:view", "staffAttendance:view", "staffAttendance:create", "staffAttendance:update",
+    "learners:view", "admissions:view", "attendance:view", "assessments:view", "discipline:view",
+    "discipline:create", "discipline:update", "operations:view", "operations:create", "operations:update",
+    "teachingLogs:view", "teachingLogs:approve", "learning:view", "learning:create", "learningVideos:view",
+    "learningVideos:create", "learningVideos:update", "examSessions:view", "examSessions:create", "examSessions:update",
+    "rubrics:view", "rubrics:create", "rubrics:update", "textbooks:view", "textbooks:create", "textbooks:update",
+    "textbooks:approve", "schemesOfWork:view", "schemesOfWork:confirm", "timetable:view", "timetable:create",
+    "timetable:update", "welfare:view", "welfare:apply", "notifications:view", "notifications:update"
   ],
   [Role.SECRETARY]: [
     "dashboard:view", "staff:view", "staffAttendance:view", "learners:view", "learners:update", "admissions:view",
@@ -74,7 +84,7 @@ const grants: Record<Role, string[]> = {
     "operations:view", "operations:create", "operations:update", "teachingLogs:view", "teachingLogs:create",
     "assignments:view", "assignments:create", "assignments:update", "learning:view", "learning:create",
     "learningVideos:view", "learningVideos:create", "examSessions:view", "rubrics:view",
-    "textbooks:view", "textbooks:confirm", "schemesOfWork:view", "schemesOfWork:create", "schemesOfWork:update",
+    "textbooks:view", "textbooks:confirm", "textbooks:apply", "schemesOfWork:view", "schemesOfWork:create", "schemesOfWork:update",
     "timetable:view", "welfare:view", "welfare:apply", "notifications:view", "notifications:update"
   ],
   [Role.WELFARE_CHAIR]: [
@@ -261,6 +271,15 @@ describe("permission matrix", () => {
     expect(can(Role.LEARNER, "admissions", "delete")).toBe(false);
   });
 
+  it("scopes Senior Teacher library and academic access without account or staff-directory access", () => {
+    expect(canInScope(Role.SENIOR_TEACHER, "textbooks", "view", "school")).toBe(true);
+    expect(canInScope(Role.SENIOR_TEACHER, "textbooks", "approve", "school")).toBe(true);
+    expect(canInScope(Role.SENIOR_TEACHER, "learning", "create", "school")).toBe(true);
+    expect(canInScope(Role.SENIOR_TEACHER, "staff", "view", "school")).toBe(false);
+    expect(canInScope(Role.SENIOR_TEACHER, "accounts", "view", "school")).toBe(false);
+    expect(canInScope(Role.ACCOUNTANT, "textbooks", "view", "school")).toBe(false);
+  });
+
   it("enforces staff target management and statutory rules", () => {
     // Director can manage all roles
     expect(canManageStaffTarget(Role.DIRECTOR, Role.HEAD_TEACHER)).toBe(true);
@@ -268,6 +287,7 @@ describe("permission matrix", () => {
     expect(canManageStaffTarget(Role.DIRECTOR, Role.SECRETARY)).toBe(true);
     expect(canManageStaffTarget(Role.DIRECTOR, Role.ACCOUNTANT)).toBe(true);
     expect(canManageStaffTarget(Role.DIRECTOR, Role.TEACHER)).toBe(true);
+    expect(canManageStaffTarget(Role.DIRECTOR, Role.SENIOR_TEACHER)).toBe(true);
 
     // Head Teacher can manage Deputy, Secretary, Accountant, Teacher
     expect(canManageStaffTarget(Role.HEAD_TEACHER, Role.DEPUTY)).toBe(true);
@@ -278,6 +298,7 @@ describe("permission matrix", () => {
     // Head Teacher CANNOT manage Director or another Head Teacher
     expect(canManageStaffTarget(Role.HEAD_TEACHER, Role.DIRECTOR)).toBe(false);
     expect(canManageStaffTarget(Role.HEAD_TEACHER, Role.HEAD_TEACHER)).toBe(false);
+    expect(canManageStaffTarget(Role.HEAD_TEACHER, Role.SENIOR_TEACHER)).toBe(false);
 
     // Other roles cannot manage any staff
     expect(canManageStaffTarget(Role.DEPUTY, Role.TEACHER)).toBe(false);

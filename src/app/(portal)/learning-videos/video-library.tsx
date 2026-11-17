@@ -13,6 +13,11 @@ import {
   Video,
 } from "lucide-react";
 import { CURRICULUM_GRADES, CURRICULUM_SUBJECTS } from "@/lib/curriculum";
+import { youtubeVideoId } from "@/lib/learning-videos";
+import { Input } from "@/components/base/input/input";
+import { Select, SelectItem } from "@/components/base/select/select";
+import { Button } from "@/components/base/buttons/button";
+import { RiSearchLine, RiYoutubeLine } from "@remixicon/react";
 
 type VideoRow = {
   id: string;
@@ -39,6 +44,11 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
   const [showAdd, setShowAdd] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("ALL");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoSearch, setVideoSearch] = useState("");
+  const [selectedGrade, setSelectedGrade] = useState<string>(CURRICULUM_GRADES[0]);
+  const [selectedLearningArea, setSelectedLearningArea] = useState<string>(CURRICULUM_SUBJECTS[0]);
+  const previewVideoId = youtubeVideoId(videoUrl);
 
   const refresh = useCallback(async () => {
     const response = await fetch("/api/learning-videos");
@@ -70,6 +80,7 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Could not add this video.");
       form.reset();
+      setVideoUrl("");
       setShowAdd(false);
       setMessage(`Verified and added to curriculum: ${data.video.title}`);
       await refresh();
@@ -113,6 +124,10 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
     });
   }, [videos, search, selectedSubject]);
 
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+    `${videoSearch.trim() || `${selectedGrade} ${selectedLearningArea}`} Kenya curriculum Edu TV`,
+  )}`;
+
   return (
     <section className="space-y-6">
       {/* Header Banner */}
@@ -131,8 +146,8 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
               </h1>
             )}
             <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-blue-100">
-              Curated, verified educational video lessons from the official Edu TV Kenya channel.
-              Videos are aligned with CBC competency strands.
+              Curated, verified educational video lessons from the official Edu TV Kenya channel,
+              aligned to Kenya&apos;s CBE learning areas.
             </p>
           </div>
 
@@ -180,6 +195,23 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
         </div>
       )}
 
+      <section aria-labelledby="kicd-resources-title" className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 id="kicd-resources-title" className="text-title-3-semibold text-text-primary">Official KICD learning resources</h2>
+            <p className="mt-1 max-w-2xl text-body-regular text-text-secondary">
+              Open curriculum materials from Kenya Education Cloud and KICD. Resources stay on their
+              official sites; copyrighted course content is not copied into this system.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a className="rounded-xl border border-border-button-default px-3 py-2 text-body-medium text-text-primary hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring" href="https://oer.kec.ac.ke/" target="_blank" rel="noreferrer">KICD OER portal</a>
+            <a className="rounded-xl border border-border-button-default px-3 py-2 text-body-medium text-text-primary hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring" href="https://kec.ac.ke/" target="_blank" rel="noreferrer">Kenya Education Cloud</a>
+            <a className="rounded-xl border border-border-button-default px-3 py-2 text-body-medium text-text-primary hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring" href="https://kicd.ac.ke/" target="_blank" rel="noreferrer">KICD website</a>
+          </div>
+        </div>
+      </section>
+
       {/* Recommended Topics Strip for Learners */}
       {!canManage && (
         <div className="glass dark:glass-dark rounded-3xl border border-blue-200/80 p-5 shadow-sm dark:border-blue-900/60">
@@ -205,7 +237,7 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
             </div>
           ) : (
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-              Your latest CBC released assessments indicate strong mastery. Continue exploring your
+              Your latest CBE released assessments indicate strong mastery. Continue exploring your
               class video resources below.
             </p>
           )}
@@ -233,77 +265,90 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                YouTube Video URL <span className="text-blue-600">*</span>
-              </label>
-              <input
-                name="url"
-                required
-                type="url"
-                placeholder="https://www.youtube.com/watch?v=…"
-                className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            <div className="sm:col-span-2">
+              <Input
+                label="Search YouTube for a lesson"
+                value={videoSearch}
+                onChange={setVideoSearch}
+                placeholder="e.g. Grade 4 fractions"
+                leadingIcon={RiYoutubeLine}
+                hint="Searches YouTube in a new tab. Copy a result's link and paste it below; its preview appears automatically."
               />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Grade / Class <span className="text-blue-600">*</span>
-              </label>
-              <select
-                name="grade"
-                required
-                className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              <Button
+                type="button"
+                variant="secondary"
+                size="small"
+                leadingIcon={RiSearchLine}
+                className="mt-2"
+                onClick={() => window.open(youtubeSearchUrl, "_blank", "noopener,noreferrer")}
               >
-                {CURRICULUM_GRADES.map(
-                  (grade) => (
-                    <option key={grade}>{grade}</option>
-                  )
-                )}
-              </select>
+                Search YouTube
+              </Button>
             </div>
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Learning Area (Subject) <span className="text-blue-600">*</span>
-              </label>
-              <select
-                name="subject"
-                required
-                className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-3 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-              >
-                {CURRICULUM_SUBJECTS.map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </select>
-            </div>
+            <Input
+              name="url"
+              label="YouTube video URL"
+              type="url"
+              isRequired
+              value={videoUrl}
+              onChange={setVideoUrl}
+              placeholder="https://www.youtube.com/watch?v=…"
+              inputDir="ltr"
+              hint="Only official Edu TV Kenya videos can be added to the shared library."
+            />
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Curriculum Strand <span className="text-blue-600">*</span>
-              </label>
-              <input
-                name="strand"
-                required
-                minLength={2}
-                maxLength={120}
-                placeholder="e.g. Numbers &amp; Operations"
-                className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-              />
-            </div>
+            <Select
+              name="grade"
+              label="Grade / class"
+              isRequired
+              selectedKey={selectedGrade}
+              onSelectionChange={(key) => { if (key) setSelectedGrade(String(key)); }}
+            >
+              {CURRICULUM_GRADES.map((grade) => <SelectItem key={grade} id={grade}>{grade}</SelectItem>)}
+            </Select>
+
+            <Select
+              name="subject"
+              label="Learning area"
+              isRequired
+              selectedKey={selectedLearningArea}
+              onSelectionChange={(key) => { if (key) setSelectedLearningArea(String(key)); }}
+            >
+              {CURRICULUM_SUBJECTS.map((item) => <SelectItem key={item} id={item}>{item}</SelectItem>)}
+            </Select>
+
+            <Input
+              name="strand"
+              label="Curriculum strand"
+              isRequired
+              minLength={2}
+              maxLength={120}
+              placeholder="e.g. Numbers and Operations"
+            />
 
             <div className="sm:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Sub-Strand (Optional)
-              </label>
-              <input
+              <Input
                 name="subStrand"
+                label="Sub-strand (optional)"
                 maxLength={120}
                 placeholder="e.g. Fractions and Decimals"
-                className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-xs font-medium text-slate-900 outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
               />
             </div>
           </div>
+
+          {previewVideoId && (
+            <div className="mt-5 max-w-2xl overflow-hidden rounded-2xl border border-border-button-default">
+              <p className="bg-background-secondary-default px-4 py-2 text-body-medium text-text-secondary">Video preview</p>
+              <iframe
+                className="aspect-video w-full"
+                src={`https://www.youtube-nocookie.com/embed/${previewVideoId}?rel=0`}
+                title="YouTube lesson preview"
+                allow="encrypted-media; picture-in-picture"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          )}
 
           <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
             <button

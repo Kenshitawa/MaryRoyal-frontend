@@ -71,6 +71,7 @@ const ROLE_LABELS: Record<string, string> = {
   DIRECTOR: "Director",
   HEAD_TEACHER: "Head Teacher",
   DEPUTY: "Deputy Head Teacher",
+  SENIOR_TEACHER: "Senior Teacher",
   SECRETARY: "Admissions Secretary",
   ACCOUNTANT: "Accountant",
   TEACHER: "Teacher",

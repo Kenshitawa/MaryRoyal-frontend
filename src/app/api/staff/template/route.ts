@@ -19,7 +19,7 @@ export async function GET() {
 
   const headers = [
     "Full Name",
-    "Role (TEACHER, SECRETARY, ACCOUNTANT, DEPUTY)",
+    "Role (TEACHER, SECRETARY, ACCOUNTANT, DEPUTY, SENIOR_TEACHER)",
     "Email",
     "Phone (+254...)",
     "Staff Number",

@@ -14,6 +14,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });
   if (!user || user.suspended || user.forcePasswordChange) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  if (user.role === "TEACHER") {
+    await db.auditEvent.create({ data: { actorId: user.id, action: "LEARNER_PHOTO_ACCESS_DENIED", entity: "LearnerPhoto" } });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const learner = await db.learner.findUnique({ where: { id }, select: { id: true, grade: true, admissionStatus: true, archivedAt: true, admissionDraft: { select: { id: true, createdById: true, status: true, documents: { where: { category: "PASSPORT_PHOTO" }, take: 1, select: { id: true, storageKey: true, contentType: true } } } } } });
   if (!learner || learner.archivedAt || !learner.admissionDraft?.documents[0]) return NextResponse.json({ error: "Photo not found." }, { status: 404 });

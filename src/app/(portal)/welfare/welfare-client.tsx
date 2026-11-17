@@ -41,9 +41,15 @@ type WelfareLoan = {
   repaidAmount: number;
   purpose: string | null;
   headteacherNotes: string | null;
+  headteacherApprovedAt: string | null;
   directorNotes: string | null;
+  directorApprovedAt: string | null;
+  rejectedAt: string | null;
+  rejectedByRole: string | null;
   disbursedAt: string | null;
+  paidAt: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 type WelfareProduct = {
@@ -57,6 +63,7 @@ type WelfareProduct = {
 type WelfareRank = { rank: number; name: string; role: string };
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const EMPTY_LOAN_FORM = { memberId: "", type: "LOAN", principalAmount: "", repaymentTermMonths: "3", purpose: "" };
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING_HEADTEACHER: "bg-amber-100 text-amber-800",
@@ -98,7 +105,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
   const [showProduct, setShowProduct] = useState(false);
   const [showEnroll, setShowEnroll] = useState(false);
   const [contribForm, setContribForm] = useState({ memberId: "", month: new Date().getMonth() + 1, year: new Date().getFullYear(), amount: "", category: "MONTHLY_SAVINGS", productTitle: "", receiptRef: "", notes: "" });
-  const [loanForm, setLoanForm] = useState({ memberId: "", type: "LOAN", principalAmount: "", repaymentTermMonths: "3", purpose: "" });
+  const [loanForm, setLoanForm] = useState(EMPTY_LOAN_FORM);
   const [productForm, setProductForm] = useState({ title: "", description: "", targetAmount: "", monthlyAmount: "" });
   const [enrollUserId, setEnrollUserId] = useState("");
   const [allStaff, setAllStaff] = useState<{ id: string; name: string; role: string }[]>([]);
@@ -182,7 +189,24 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
       repaymentTermMonths: 3,
       isTopUp,
     });
-    if (ok) { notify(isTopUp ? "Loan top-up requested!" : "Application submitted!"); setShowLoan(false); void load(); }
+    if (ok) {
+      notify(isTopUp ? "Loan top-up requested!" : "Application submitted!");
+      setShowLoan(false);
+      setLoanForm(EMPTY_LOAN_FORM);
+      setIsTopUp(false);
+      void load();
+    }
+  }
+
+  function openLoan(type: string, topUp = false) {
+    setIsTopUp(topUp);
+    setLoanForm({
+      ...EMPTY_LOAN_FORM,
+      memberId: myMember?.id ?? "",
+      type,
+      repaymentTermMonths: type === "SALARY_ADVANCE" ? "1" : "3",
+    });
+    setShowLoan(true);
   }
 
   async function handleProduct(e: React.FormEvent) {
@@ -302,17 +326,17 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
                   {selfActiveLoans.length === 0 ? (
-                    <button onClick={() => { setIsTopUp(false); setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "LOAN", repaymentTermMonths: "3" })); setShowLoan(true); }}
+                    <button onClick={() => openLoan("LOAN")}
                       className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-100">
                       <Banknote size={15} /> Apply for Loan (3 Months)
                     </button>
                   ) : (
-                    <button onClick={() => { setIsTopUp(true); setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "LOAN_TOPUP", repaymentTermMonths: "3" })); setShowLoan(true); }}
+                    <button onClick={() => openLoan("LOAN_TOPUP", true)}
                       className="flex items-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm font-semibold text-purple-800 hover:bg-purple-100">
                       <Banknote size={15} /> Request Loan Top-Up
                     </button>
                   )}
-                  <button onClick={() => { setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "SALARY_ADVANCE", repaymentTermMonths: "1" })); setShowLoan(true); }}
+                  <button onClick={() => openLoan("SALARY_ADVANCE")}
                     className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100">
                     <CreditCard size={15} /> Salary Advance
                   </button>
@@ -371,6 +395,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
                         </div>
                         {l.purpose && <p className="mt-2 text-xs text-slate-500">Purpose: {l.purpose}</p>}
                         <p className="mt-1 text-xs text-slate-400">Monthly deduction: {fmt(l.monthlyDeduction)} over {l.repaymentTermMonths} month(s)</p>
+                        <LoanHistory loan={l} />
                       </div>
                     ))}
                   </div>
@@ -517,7 +542,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
                     <p className="text-xs font-bold text-blue-700 mb-1">Available Loan Limit</p>
                     <p className="text-xl font-extrabold text-blue-900 dark:text-blue-200">{fmt(selfLoanLimit)}</p>
                     <p className="text-xs text-blue-600 mt-1">60% of your {fmt(selfTotalSavings)} savings</p>
-                    <button onClick={() => { setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "LOAN" })); setShowLoan(true); }}
+                    <button onClick={() => openLoan("LOAN")}
                       className="mt-3 w-full rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800">
                       Apply for Loan
                     </button>
@@ -526,7 +551,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
                     <p className="text-xs font-bold text-emerald-700 mb-1">Salary Advance</p>
                     <p className="text-xl font-extrabold text-emerald-900 dark:text-emerald-200">Up to KES 3,000</p>
                     <p className="text-xs text-emerald-600 mt-1">Available from 15th of month</p>
-                    <button onClick={() => { setLoanForm((f) => ({ ...f, memberId: myMember.id, type: "SALARY_ADVANCE" })); setShowLoan(true); }}
+                    <button onClick={() => openLoan("SALARY_ADVANCE")}
                       className="mt-3 w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800">
                       Request Advance
                     </button>
@@ -679,6 +704,46 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
           </form>
         </Modal>
       )}
+    </div>
+  );
+}
+
+function LoanHistory({ loan }: { loan: WelfareLoan }) {
+  const events: { label: string; at: string | null }[] = [
+    { label: "Application submitted", at: loan.createdAt },
+  ];
+  if (loan.headteacherApprovedAt) {
+    events.push({ label: "Head Teacher approved", at: loan.headteacherApprovedAt });
+  }
+  if (loan.directorApprovedAt) {
+    events.push({ label: "Director approved", at: loan.directorApprovedAt });
+  }
+  if (loan.disbursedAt) events.push({ label: "Funds disbursed", at: loan.disbursedAt });
+  if (loan.paidAt) events.push({ label: "Loan paid", at: loan.paidAt });
+  if (loan.rejectedAt) {
+    events.push({ label: `Rejected by ${loan.rejectedByRole?.replaceAll("_", " ") ?? "school leadership"}`, at: loan.rejectedAt });
+  }
+  if (loan.status === "PENDING_HEADTEACHER") {
+    events.push({ label: "Awaiting Head Teacher approval", at: null });
+  } else if (loan.status === "PENDING_DIRECTOR") {
+    events.push({ label: "Awaiting Director approval", at: null });
+  }
+
+  return (
+    <div className="mt-3 border-t border-separator-border pt-3">
+      <h3 className="text-caption-1-semibold text-text-secondary">Approval history</h3>
+      <ol className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+        {events.map((event) => (
+          <li key={`${event.label}-${event.at ?? "pending"}`} className="text-body-2-regular text-text-secondary">
+            <span className="text-text-primary">{event.label}</span>
+            {event.at && (
+              <time className="ms-2 text-text-tertiary" dateTime={event.at}>
+                {new Date(event.at).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" })}
+              </time>
+            )}
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

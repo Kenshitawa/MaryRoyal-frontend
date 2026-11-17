@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   let body: unknown; try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
   const parsed = recordsSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Check the date and each staff member's attendance status." }, { status: 400 });
-  const rows = await db.user.findMany({ where: { id: { in: parsed.data.records.map(row => row.staffId) }, role: { in: ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SECRETARY", "ACCOUNTANT", "TEACHER"] }, suspended: false }, select: { id: true } });
+  const rows = await db.user.findMany({ where: { id: { in: parsed.data.records.map(row => row.staffId) }, role: { in: ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER", "SECRETARY", "ACCOUNTANT", "TEACHER"] }, suspended: false }, select: { id: true } });
   if (rows.length !== parsed.data.records.length) return NextResponse.json({ error: "One or more active staff accounts were not found." }, { status: 404 });
   const date = day(parsed.data.date);
   const saved = await db.$transaction(async tx => {

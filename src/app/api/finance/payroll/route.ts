@@ -19,7 +19,7 @@ export async function GET() {
   if (!canInScope(user.role, "payroll", "view", "school")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const [entries, staff] = await Promise.all([
     db.payrollEntry.findMany({ include: { staff: { select: { id: true, name: true, email: true } } }, orderBy: [{ period: "desc" }, { staff: { name: "asc" } }], take: 200 }),
-    db.user.findMany({ where: { suspended: false, role: { in: ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SECRETARY", "TEACHER"] } }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 200 })
+    db.user.findMany({ where: { suspended: false, role: { in: ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER", "SECRETARY", "TEACHER"] } }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 200 })
   ]);
   return NextResponse.json({ entries, staff });
 }
