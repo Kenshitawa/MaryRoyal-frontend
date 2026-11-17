@@ -1,6 +1,7 @@
 node_modules/
 .next/
 .next-local-preview/
+.next-perf-baseline/
 .env*
 !.env.example
 *.zip
