@@ -14,7 +14,7 @@ This roadmap separates source implementation, verified acceptance, and productio
 
 ## Current UI acceptance evidence — 2026-11-16
 
-- The 2026-10-28 full mobile pass is historical and predates the recent BoardUI/theme changes. A rebuilt latest-source run completed 7/20 collections at 360px (Director, Head Teacher, Deputy, Secretary, Accountant, Teacher and Parent), with zero findings; it was interrupted before the remaining roles and 390px viewport. Separate focused latest-source audits passed Deputy and Parent at both 360px and 390px. The generated `docs/MOBILE_FAILURES.md` reports the partial 7/20 run.
+- The 2026-10-28 full mobile pass is historical and predates the recent BoardUI/theme changes. The latest generated report (`docs/MOBILE_FAILURES.md`, 2026-11-17) is incomplete at 3/20 collections and records 17 findings (16 horizontal-overflow cases and one authorized route unavailable). Earlier focused Deputy and Parent checks passed at both 360px and 390px, but they do not clear the current report. Complete all roles and widths after fixing the findings.
 - The Deputy follow-up exposed low contrast in the shared dark-mode secondary-text token. It now resolves to neutral-300, and the focused Deputy rerun passed. The earlier parent payment-guide size finding and exam empty-state finding are also absent from these focused latest-source results.
 - Welfare Chair and Non-teaching Staff at both widths, the remaining three 390px role collections, refreshed visual contact sheets, sign-in visual review, desktop/keyboard/screen-reader review, and browser/physical print QA remain unverified. U10 and U11 are not complete; no production-readiness claim follows from these partial checks.
 

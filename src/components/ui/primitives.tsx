@@ -87,11 +87,11 @@ export function StatCard({
   href?: string;
 }) {
   const tones: Record<string, string> = {
-    brand: "bg-accent-50 text-accent-700",
-    success: "bg-background-secondary-default text-state-success-text",
-    warning: "bg-background-secondary-default text-text-secondary",
-    danger: "bg-background-secondary-default text-text-error-primary",
-    neutral: "bg-background-secondary-default text-foreground-icon-secondary",
+    brand: "bg-status-blue-background text-status-blue-text",
+    success: "bg-status-lime-background text-status-lime-text",
+    warning: "bg-status-yellow-background text-status-yellow-text",
+    danger: "bg-status-rose-background text-status-rose-text",
+    neutral: "bg-status-purple-background text-status-purple-text",
   };
   const body = (
     <>
@@ -108,16 +108,16 @@ export function StatCard({
     </>
   );
   const className = cx(
-    "min-w-0 rounded-3xl border border-border-button-default bg-background-primary-default p-3.5 shadow-xs transition-colors duration-150 sm:p-4",
+    "dashboard-stat min-w-0 rounded-3xl border border-border-button-default bg-background-primary-default p-3.5 shadow-xs transition-colors duration-150 sm:p-4",
     href && "hover:border-accent-300 active:bg-background-primary-active",
     href && "outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
   );
   return href ? (
-    <a href={href} className={`${className} block no-underline hover:border-brand-line`}>
+    <a href={href} data-dashboard-tone={tone} className={`${className} block no-underline hover:border-brand-line`}>
       {body}
     </a>
   ) : (
-    <div className={className}>{body}</div>
+    <div data-dashboard-tone={tone} className={className}>{body}</div>
   );
 }
 

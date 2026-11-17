@@ -1525,6 +1525,47 @@ html[data-theme="dark"] .bg-emerald-50 {
   background-color: var(--success-soft);
 }
 
+/* Dashboard surfaces use the same accessible semantic colours in both themes.
+   Dark cards keep a navy base with a visible blue/status tint instead of
+   collapsing into flat near-black boxes. */
+.dashboard-panel {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-accent-500) 10%, var(--color-background-primary-default)),
+    var(--color-background-primary-default) 66%
+  );
+  border-color: color-mix(in srgb, var(--color-accent-500) 24%, var(--color-border-button-default));
+}
+
+.dashboard-stat {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--dashboard-tone, var(--color-accent-500)) 30%, var(--color-background-primary-default)),
+    var(--color-background-primary-default) 78%
+  );
+  border-color: color-mix(in srgb, var(--dashboard-tone, var(--color-accent-500)) 40%, var(--color-border-button-default));
+}
+
+.dashboard-stat::before {
+  position: absolute;
+  z-index: 0;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 3px;
+  background: var(--dashboard-tone, var(--color-accent-500));
+  content: "";
+  opacity: 0.8;
+}
+
+.dashboard-stat[data-dashboard-tone="brand"] { --dashboard-tone: var(--color-status-blue-text); }
+.dashboard-stat[data-dashboard-tone="success"] { --dashboard-tone: var(--color-status-lime-text); }
+.dashboard-stat[data-dashboard-tone="warning"] { --dashboard-tone: var(--color-status-yellow-text); }
+.dashboard-stat[data-dashboard-tone="danger"] { --dashboard-tone: var(--color-status-rose-text); }
+.dashboard-stat[data-dashboard-tone="neutral"] { --dashboard-tone: var(--color-status-purple-text); }
+
 html[data-theme="dark"] .text-slate-950,
 html[data-theme="dark"] .text-slate-900,
 html[data-theme="dark"] .text-slate-800,

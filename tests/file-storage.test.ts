@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { deleteStoredFile, readStoredFile, writeStoredFile } from "../src/lib/file-storage";
 
 const original = {
@@ -25,6 +25,23 @@ afterEach(() => {
 });
 
 describe("file storage", () => {
+  it("keeps document binaries in object storage and only metadata in both database schemas", async () => {
+    for (const schemaPath of ["prisma/schema.prisma", "prisma/postgresql/schema.prisma"]) {
+      const schema = await readFile(resolve(process.cwd(), schemaPath), "utf8");
+      for (const modelName of ["AdmissionDocument", "StaffDocument"]) {
+        const model = schema.match(new RegExp(`model ${modelName}\\s*\\{([\\s\\S]*?)\\n\\}`));
+        expect(model, `${schemaPath} must define ${modelName}`).not.toBeNull();
+        expect(model?.[1]).toMatch(/storageKey\s+String/);
+        expect(model?.[1]).toMatch(/sizeBytes\s+Int/);
+        expect(model?.[1]).not.toMatch(/\bBytes\b|(?:image|pdf|file|document)(?:Data|Bytes|Blob)\s+/i);
+      }
+
+      const user = schema.match(/model User\s*\{([\s\S]*?)\n\}/);
+      expect(user?.[1]).toMatch(/avatarUrl\s+String\?/);
+      expect(user?.[1]).not.toMatch(/(?:image|photo)(?:Data|Bytes|Blob)\s+/i);
+    }
+  });
+
   it("stores local private files outside the public tree and removes them", async () => {
     const root = await mkdtemp(join(tmpdir(), "mary-royal-storage-"));
     process.env.OBJECT_STORAGE_DRIVER = "local";

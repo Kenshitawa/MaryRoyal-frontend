@@ -498,6 +498,7 @@ export default async function Dashboard() {
       {role === "DIRECTOR" ? (
         <div className="grid gap-3 xl:grid-cols-[1.35fr_.85fr]">
           <Card
+            className="dashboard-panel"
             title="Fee collection by class"
             description={`Collected ${kes(feeRows.reduce((sum, row) => sum + row.collected, 0))} · Outstanding ${kes(feeRows.reduce((sum, row) => sum + row.balance, 0))}`}
             action={<Link href="/finance" className="btn btn-secondary btn-sm">Finance</Link>}
@@ -524,7 +525,7 @@ export default async function Dashboard() {
             )}
           </Card>
 
-          <Card title="Staff payroll" description={`${payrollSummary.period || "Current month"} · ${payrollSummary.staffCount} staff on this pay run`}>
+          <Card className="dashboard-panel" title="Staff payroll" description={`${payrollSummary.period || "Current month"} · ${payrollSummary.staffCount} staff on this pay run`}>
             <p className="text-caption text-ink-3">Net payroll this month</p>
             <p className="mt-1 text-kpi tabular-nums text-ink">{kes(payrollSummary.total)}</p>
             <dl className="mt-3 grid grid-cols-2 gap-3 border-t border-line-soft pt-3">
@@ -544,7 +545,7 @@ export default async function Dashboard() {
 
       {role === "TEACHER" ? (
         <div className="grid gap-3 xl:grid-cols-2">
-          <Card title="Today's lessons" description={dateLabel}>
+          <Card className="dashboard-panel" title="Today's lessons" description={dateLabel}>
             {teacherTodayLessons.length ? (
               <ol className="divide-y divide-line-soft">
                 {teacherTodayLessons.map((lesson) => (
@@ -562,7 +563,7 @@ export default async function Dashboard() {
               <EmptyState title="No lessons scheduled today" description="Your timetable lessons will appear here." action={<Link href="/timetable" className="btn btn-secondary">Open timetable</Link>} />
             )}
           </Card>
-          <Card title="My subjects" description={`${assignments.length} grade and subject pairs`}>
+          <Card className="dashboard-panel" title="My subjects" description={`${assignments.length} grade and subject pairs`}>
             {assignments.length ? (
               <ul className="flex flex-wrap gap-1.5">
                 {assignments.map((item) => (
@@ -577,7 +578,7 @@ export default async function Dashboard() {
       ) : null}
 
       {role !== "TEACHER" && hasGradeCounts ? (
-        <Card title="Learners by grade" description="Active learners on the school register">
+        <Card className="dashboard-panel" title="Learners by grade" description="Active learners on the school register">
           <ul className="space-y-3">
             {gradeRows.map((row) => {
               const percent = Math.round((row._count.id / maxGrade) * 100);
@@ -597,7 +598,7 @@ export default async function Dashboard() {
         </Card>
       ) : null}
 
-      <Card title="Quick actions">
+      <Card className="dashboard-panel" title="Quick actions">
         <div className="grid gap-1 sm:grid-cols-2">
           {quickActions.map((action) => (
             <Link key={action.href} href={action.href} className="list-row -mx-1 rounded-lg px-1">
@@ -613,6 +614,7 @@ export default async function Dashboard() {
 
       {showActivity ? (
         <Card
+          className="dashboard-panel"
           title="Recent school activity"
           action={<Link href="/audit" className="btn btn-quiet btn-sm">View all</Link>}
         >

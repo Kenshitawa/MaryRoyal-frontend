@@ -1,11 +1,13 @@
 node_modules/
 .next/
+.next-local-preview/
 .env*
 !.env.example
 *.zip
 *.log
 tmp-*.prisma
 tmp-*.sql
+tmp-*.ts
 prisma/*.test.db
 prisma/*.test.db-journal
 prisma/*-test.db
