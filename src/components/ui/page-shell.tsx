@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { Search, ShieldCheck, UserRound } from "lucide-react";
+import { HelpCircle, Search, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import NotificationBell from "@/components/notification-bell";
+import { LearnerGuide } from "@/components/learner-guide";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 import { CommandPalette } from "@/components/design-system/command-palette";
 import ConfirmLogoutForm from "@/components/confirm-logout-form";
@@ -90,6 +91,14 @@ export function PageShell({
             })}
           </nav>
           <div className="mt-5 border-t border-line-soft pt-3">
+            <Link href="/assistant" className="side-link">
+              <Sparkles size={17} aria-hidden="true" />
+              <span>Ask assistant</span>
+            </Link>
+            <Link href="/help" className="side-link">
+              <HelpCircle size={17} aria-hidden="true" />
+              <span>Help & guides</span>
+            </Link>
             <Link href="/profile" className="side-link">
               <UserRound size={17} aria-hidden="true" />
               <span>Profile & password</span>
@@ -117,6 +126,10 @@ export function PageShell({
                 <span>Search</span>
                 <kbd className="ml-1 hidden rounded border border-line px-1.5 text-caption text-ink-3 xl:inline">Ctrl K</kbd>
               </button>
+              <Link href="/assistant" aria-label="Ask AI" title="Ask AI" className="btn btn-secondary btn-sm">
+                <Sparkles size={16} aria-hidden="true" />
+                <span className="hidden xl:inline">Ask AI</span>
+              </Link>
               <ThemeStyleControls compact />
               <NotificationBell />
               <span className="ml-1 hidden text-right xl:block">
@@ -144,6 +157,8 @@ export function PageShell({
                     <p className="truncate text-label font-semibold">{user.name}</p>
                     {user.email ? <p className="truncate text-caption text-ink-3">{user.email}</p> : null}
                   </div>
+                  <Link href="/assistant" className="side-link">Ask assistant</Link>
+                  <Link href="/help" className="side-link">Help & guides</Link>
                   <Link href="/profile" className="side-link">Profile & password</Link>
                   <Link href="/privacy" className="side-link">Privacy notice</Link>
                   <ConfirmLogoutForm className="mt-1 border-t border-line-soft pt-1" buttonClassName="side-link w-full text-danger" />
@@ -161,6 +176,7 @@ export function PageShell({
         </div>
 
         <PortalNav role={user.role} />
+        {user.role === "LEARNER" ? <LearnerGuide name={user.name} /> : null}
       </div>
       <CommandPalette isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </ToastProvider>

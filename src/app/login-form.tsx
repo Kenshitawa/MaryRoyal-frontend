@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   RiAlertLine,
+  RiCheckboxCircleLine,
   RiEyeLine,
   RiEyeOffLine,
   RiLock2Line,
@@ -22,14 +23,27 @@ function LoadingIcon({ className }: IconProps) {
   return <Spinner size="sm" aria-hidden className={cx(className, "text-current")} />;
 }
 
+function SuccessIcon({ className }: IconProps) {
+  return <RiCheckboxCircleLine aria-hidden className={cx(className, "size-4 shrink-0")} />;
+}
+
 export default function LoginForm() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const redirectTimer = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (redirectTimer.current) window.clearTimeout(redirectTimer.current);
+    },
+    [],
+  );
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || success) return;
     setBusy(true);
     setError("");
     const form = new FormData(event.currentTarget);
@@ -42,11 +56,18 @@ export default function LoginForm() {
         }),
         headers: { "content-type": "application/json" },
       });
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
       if (response.ok) {
-        location.href = result.forcePasswordChange
-          ? "/change-password"
-          : "/dashboard";
+        // Confirm the session first, then show a brief success state before
+        // navigating so the user sees the sign-in actually succeeded.
+        setBusy(false);
+        setSuccess(true);
+        redirectTimer.current = window.setTimeout(() => {
+          location.href = result.forcePasswordChange
+            ? "/change-password"
+            : "/dashboard";
+        }, 900);
+        return;
       } else {
         setError(
           result.error ?? "Unable to sign in. Check your details and try again.",
@@ -114,12 +135,14 @@ export default function LoginForm() {
 
       <Button
         type="submit"
+        disabled={success}
         aria-busy={busy}
-        leadingIcon={busy ? LoadingIcon : undefined}
-        className="mt-1 min-h-11 w-full"
+        leadingIcon={busy ? LoadingIcon : success ? SuccessIcon : undefined}
+        className={cx("mt-1 min-h-11 w-full", success && "animate-boardui-in")}
       >
-        {busy ? "Signing you in…" : "Sign in securely"}
+        {success ? "Signed in successfully" : busy ? "Signing you in…" : "Sign in securely"}
       </Button>
+      {success ? <p role="status" className="sr-only">Signed in successfully. Opening your portal.</p> : null}
     </form>
   );
 }

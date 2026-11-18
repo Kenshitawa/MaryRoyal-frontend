@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronRight, Search, Eye, LogOut } from "lucide-react";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 import { CommandPalette } from "@/components/design-system/command-palette";
+import ConfirmLogoutForm from "@/components/confirm-logout-form";
 
 interface DashboardHeaderProps {
   user: {
@@ -86,15 +87,13 @@ export function DashboardHeader({ user, roleTitle }: DashboardHeaderProps) {
             )}
           </Link>
 
-          <form action="/api/logout" method="post">
-            <button
-              aria-label="Sign out"
-              title="Sign out"
-              className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-blue-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-            >
-              <LogOut size={17} />
-            </button>
-          </form>
+          <ConfirmLogoutForm
+            buttonClassName="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-blue-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            ariaLabel="Sign out"
+            title="Sign out"
+          >
+            <LogOut size={17} />
+          </ConfirmLogoutForm>
         </div>
       </header>
 

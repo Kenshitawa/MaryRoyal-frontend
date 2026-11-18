@@ -15,6 +15,7 @@ import {
   MessageCircle,
   Receipt,
   ShieldCheck,
+  Sparkles,
   Trophy,
   User,
   Users,
@@ -35,7 +36,7 @@ export type MobileNavItem = {
 };
 
 export type MobileCategory = {
-  category: "Academics" | "Finance" | "People" | "Communication" | "Settings";
+  category: "Academics" | "Finance" | "People" | "Communication" | "Settings" | "AI & Tools";
   items: MobileNavItem[];
 };
 
@@ -512,11 +513,20 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
 };
 
 export function getRoleNavigation(role: string): NavigationItem[] {
-  return navigationByRole[role] ?? navigationByRole.LEARNER;
+  const items = navigationByRole[role] ?? navigationByRole.LEARNER;
+  return [...items, { label: "Assistant", href: "/assistant", icon: Sparkles }];
 }
 
 export function getMobileNavigation(role: string): RoleMobileNav {
-  return mobileNavByRole[role] ?? mobileNavByRole.LEARNER;
+  const base = mobileNavByRole[role] ?? mobileNavByRole.LEARNER;
+  // Return a copy: the shared definition must not gain a category per call.
+  return {
+    primary: base.primary,
+    moreCategories: [
+      ...base.moreCategories,
+      { category: "AI & Tools" as const, items: [{ label: "AI Assistant", href: "/assistant", icon: Sparkles }] },
+    ],
+  };
 }
 
 export function getNavigationHref(label: string, role: string): string | undefined {
@@ -554,6 +564,8 @@ const detailSections: { prefix: string; roles?: string[]; label: string }[] = [
 export function getSectionForPath(pathname: string, role: string): string {
   const path = pathname.split("?")[0];
   if (path === "/dashboard") return "Overview";
+  if (path === "/assistant") return "Assistant";
+  if (path === "/help") return "Help & guides";
   const destinations = getMobileDestinations(role);
   // Tab siblings share one pathname, so an exact href must win before a pathname-only match.
   const exact = destinations.find((item) => item.href === pathname) ?? destinations.find((item) => item.href.split("?")[0] === path);

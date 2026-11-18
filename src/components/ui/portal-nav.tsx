@@ -6,6 +6,22 @@ import { useEffect, useMemo, useState } from "react";
 import { MoreHorizontal, Search } from "lucide-react";
 import { getMobileNavigation } from "@/lib/navigation";
 import { Sheet } from "@/components/ui/sheet";
+import { cx } from "@/utils/cx";
+
+/** Semantic-token tones for the nav chips and page categories. */
+const navTones = [
+  "bg-brand-soft text-brand-ink",
+  "bg-status-purple-background text-status-purple-text",
+  "bg-success-soft text-success",
+  "bg-warning-soft text-warning",
+  "bg-danger-soft text-danger",
+];
+const categoryTones = [
+  "bg-brand-soft text-brand-ink",
+  "bg-status-purple-background text-status-purple-text",
+  "bg-success-soft text-success",
+  "bg-warning-soft text-warning",
+];
 
 type Badges = {
   unreadNotifications: number;
@@ -104,15 +120,15 @@ export function PortalNav({ role }: { role: string }) {
   return (
     <>
       <nav aria-label="Main navigation" className="mobile-nav">
-        {nav.primary.map(({ label, href, icon: Icon, badgeKey }) => {
+        {nav.primary.map(({ label, href, icon: Icon, badgeKey }, index) => {
           const active = isActive(href);
           const count = badgeFor(badgeKey) || (href === "/welfare" ? badges.welfare : 0);
           return (
             <Link key={label} href={href} aria-current={active ? "page" : undefined} className="mobile-nav-item" prefetch>
-              <span className="relative grid place-items-center">
-                <Icon size={21} strokeWidth={active ? 2.4 : 1.9} aria-hidden="true" />
+              <span className={cx("mobile-nav-icon", active ? "bg-brand text-white shadow-sm" : navTones[index % navTones.length])}>
+                <Icon size={19} strokeWidth={active ? 2.4 : 2} aria-hidden="true" />
                 {count > 0 ? (
-                  <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-white">
+                  <span className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-white">
                     {count > 9 ? "9+" : count}
                   </span>
                 ) : null}
@@ -129,10 +145,10 @@ export function PortalNav({ role }: { role: string }) {
           data-active={inMore && !nav.primary.some((item) => isActive(item.href))}
           className="mobile-nav-item"
         >
-          <span className="relative grid place-items-center">
-            <MoreHorizontal size={21} aria-hidden="true" />
+          <span className={cx("mobile-nav-icon", inMore && !nav.primary.some((item) => isActive(item.href)) ? "bg-brand text-white shadow-sm" : navTones[4])}>
+            <MoreHorizontal size={19} aria-hidden="true" />
             {moreBadge > 0 ? (
-              <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-semibold leading-none text-white">
+              <span className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-white">
                 {moreBadge > 9 ? "9+" : moreBadge}
               </span>
             ) : null}
@@ -150,13 +166,15 @@ export function PortalNav({ role }: { role: string }) {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Find a page"
             aria-label="Find a page"
-            className="input pl-9"
+            className="input input-icon"
           />
         </div>
         <div className="space-y-4">
-          {filtered.map((category) => (
+          {filtered.map((category, categoryIndex) => (
             <div key={category.category}>
-              <p className="field-label">{category.category}</p>
+              <p className={cx("mb-2 inline-flex rounded-full px-2.5 py-1 text-caption-1-semibold uppercase tracking-wider", categoryTones[categoryIndex % categoryTones.length])}>
+                {category.category}
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 {category.items.map((item) => {
                   const Icon = item.icon;
@@ -168,11 +186,16 @@ export function PortalNav({ role }: { role: string }) {
                       href={item.href}
                       onClick={() => setMoreOpen(false)}
                       aria-current={active ? "page" : undefined}
-                      className={`flex min-h-11 min-w-0 items-center gap-2 rounded-xl border px-2.5 py-2 text-label font-semibold ${
-                        active ? "border-brand-line bg-brand-soft text-brand-ink" : "border-line bg-surface text-ink hover:border-brand-line"
-                      }`}
+                      className={cx(
+                        "flex min-h-11 min-w-0 items-center gap-2 rounded-xl border px-2 py-1.5 text-body-2-medium transition",
+                        active
+                          ? "border-brand-line bg-brand-soft text-brand-ink shadow-sm"
+                          : "border-border-button-default bg-background-primary-default text-text-primary hover:-translate-y-0.5 hover:border-brand-line hover:shadow-sm",
+                      )}
                     >
-                      <Icon size={16} className="shrink-0" aria-hidden="true" />
+                      <span className={cx("grid size-7 shrink-0 place-items-center rounded-lg", active ? "bg-brand text-white" : "bg-background-secondary-default text-text-secondary")}>
+                        <Icon size={14} aria-hidden="true" />
+                      </span>
                       <span className="min-w-0 flex-1 truncate">{item.label}</span>
                       {count > 0 ? (
                         <span className="grid h-4 min-w-4 shrink-0 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-white">

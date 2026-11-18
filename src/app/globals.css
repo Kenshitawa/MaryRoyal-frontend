@@ -1311,6 +1311,24 @@ a.list-row:hover {
   }
 }
 
+.mobile-nav-icon {
+  position: relative;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 12px;
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+.mobile-nav-item:active .mobile-nav-icon {
+  transform: scale(0.94);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav-icon { transition: none; }
+  .mobile-nav-item:active .mobile-nav-icon { transform: none; }
+}
+
 .mobile-nav-item {
   display: flex;
   flex: 1 1 0;
@@ -1346,6 +1364,57 @@ html[data-theme="dark"] .mobile-nav-item[aria-current="page"],
 html[data-theme="dark"] .mobile-nav-item[data-active="true"] {
   background: #1e3a8a;
   color: #dbeafe;
+}
+
+/* ------------------------------------------------------------------ */
+/* Royal identity panel used in the mobile profile sheet --------------- */
+.royal-panel {
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  background:
+    radial-gradient(420px 200px at 100% -10%, rgb(125 211 252 / 0.24), transparent 70%),
+    radial-gradient(360px 180px at 0% 110%, rgb(129 140 248 / 0.18), transparent 70%),
+    linear-gradient(135deg, var(--chrome-from) 0%, var(--chrome-to) 55%, #0a1730 100%);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 18px 36px -22px rgb(15 23 42 / 0.45);
+}
+.royal-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.08) 0%, transparent 35%);
+}
+
+/* Learner guide robot ---------------------------------------------- */
+.royal-guide-head { animation: royalGuideBob 2.8s ease-in-out infinite; transform-origin: center; }
+.guide-eye { animation: royalGuideBlink 4.2s infinite; transform-origin: center; }
+.guide-mouth { animation: royalGuideSmile 3s ease-in-out infinite; }
+.guide-mouth--talk { animation: royalGuideTalk 0.34s ease-in-out infinite; }
+.guide-antenna { animation: guideAntenna 1.8s ease-in-out infinite; }
+.royal-guide-head--pulse { animation: royalGuideWiggle 0.7s ease; }
+.royal-guide-pop { animation: guidePopIn 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.royal-guide-tail {
+  position: absolute;
+  right: -6px;
+  bottom: 22px;
+  width: 13px;
+  height: 13px;
+  transform: rotate(45deg);
+  background: var(--chrome-from);
+  border-radius: 3px;
+  box-shadow: 2px 2px 6px rgb(15 23 42 / 0.25);
+}
+@keyframes royalGuideBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes royalGuideBlink { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(0.12); } }
+@keyframes royalGuideSmile { 0%,100% { d: path("M38 62 Q48 68 58 62"); } 50% { d: path("M38 62 Q48 70 58 62"); } }
+@keyframes royalGuideTalk { 0%,100% { d: path("M38 62 Q48 66 58 62"); } 50% { d: path("M36 62 Q48 73 60 62"); } }
+@keyframes guideAntenna { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes royalGuideWiggle { 0%,100% { transform: rotate(0deg); } 30% { transform: rotate(-9deg) scale(1.07); } 65% { transform: rotate(7deg) scale(1.03); } }
+@keyframes guidePopIn { from { transform: scale(0.55) translateY(16px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .royal-guide-head, .guide-eye, .guide-mouth, .guide-mouth--talk, .guide-antenna,
+  .royal-guide-head--pulse, .royal-guide-pop { animation: none !important; }
 }
 
 /* ------------------------------------------------------------------ */

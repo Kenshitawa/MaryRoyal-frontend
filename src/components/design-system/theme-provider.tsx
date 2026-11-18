@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Sparkles, LayoutGrid, Sun, Moon } from "lucide-react";
+import { Sparkles, LayoutGrid, Sun, Moon, Monitor } from "lucide-react";
 import { IconButton } from "@/components/ui/actions";
 
 export type UITheme = "light" | "dark" | "system";
@@ -82,8 +82,10 @@ export function ThemeProvider({
     setStyleState(newStyle);
   };
 
+  // Light → Dark → System → Light. System follows the device preference and
+  // is a real third state, not an alias for dark.
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(theme === "light" ? "dark" : theme === "dark" ? "system" : "light");
   };
 
   const toggleStyle = () => {
@@ -105,6 +107,8 @@ export function useTheme() {
 
 export function ThemeStyleControls({ compact = false }: { compact?: boolean }) {
   const { theme, style, toggleTheme, toggleStyle } = useTheme();
+  const themeLabel = theme === "dark" ? "Dark" : theme === "system" ? "System" : "Light";
+  const ThemeIcon = theme === "dark" ? Moon : theme === "system" ? Monitor : Sun;
 
   return (
     <div className="flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white/90 p-1 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
@@ -130,12 +134,12 @@ export function ThemeStyleControls({ compact = false }: { compact?: boolean }) {
       <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" aria-hidden="true" />
 
       <IconButton
-        ariaLabel={`Switch mode (currently ${theme === "dark" ? "Dark" : "Light"})`}
+        ariaLabel={`Switch mode (currently ${themeLabel})`}
         onClick={toggleTheme}
-        title={`Switch mode (currently ${theme === "dark" ? "Dark" : "Light"})`}
+        title={`Switch mode (currently ${themeLabel})`}
         className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
       >
-        {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+        <ThemeIcon size={15} />
       </IconButton>
     </div>
   );

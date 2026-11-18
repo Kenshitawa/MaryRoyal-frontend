@@ -4,12 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, LogOut, Moon, Search, Settings2, ShieldCheck, Sun, X } from "lucide-react";
+import { ArrowLeft, Check, HelpCircle, LogOut, Monitor, Moon, Search, Settings2, ShieldCheck, Sparkles, Sun, X } from "lucide-react";
 import NotificationBell from "@/components/notification-bell";
-import { useTheme, type UITheme, type UIStyle } from "@/components/design-system/theme-provider";
+import { useTheme, type UIStyle } from "@/components/design-system/theme-provider";
 import { getMobileNavigation, getSectionForPath } from "@/lib/navigation";
 import { IconButton } from "@/components/ui/actions";
 import { Sheet } from "@/components/ui/sheet";
+import ConfirmLogoutForm from "@/components/confirm-logout-form";
 
 type HeaderUser = { id: string; name: string; email?: string | null; role: string; roleLabel: string; avatarUrl?: string | null };
 type PersonResult = { id: string; title: string; subtitle: string; href: string };
@@ -37,7 +38,6 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
   const section = getSectionForPath(pathname, user.role);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const nav = useMemo(() => getMobileNavigation(user.role), [user.role]);
   const isPrimaryTab = useMemo(
     () => nav.primary.some((item) => item.href.split("?")[0] === pathname.split("?")[0]),
@@ -86,12 +86,7 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
       </header>
 
       <Sheet open={profileOpen} onClose={() => setProfileOpen(false)} title={user.name} description={`${user.roleLabel}${user.email ? ` · ${user.email}` : ""}`}>
-        <ProfileSheetBody
-          onNavigate={() => setProfileOpen(false)}
-          confirmSignOut={confirmSignOut}
-          onAskSignOut={() => setConfirmSignOut(true)}
-          onCancelSignOut={() => setConfirmSignOut(false)}
-        />
+        <ProfileSheetBody user={user} onNavigate={() => setProfileOpen(false)} />
       </Sheet>
 
       {searchOpen ? <SearchOverlay role={user.role} onClose={() => setSearchOpen(false)} /> : null}
@@ -110,19 +105,31 @@ function initials(name: string) {
 }
 
 export function ProfileSheetBody({
+  user,
   onNavigate,
-  confirmSignOut,
-  onAskSignOut,
-  onCancelSignOut,
 }: {
+  user: HeaderUser;
   onNavigate: () => void;
-  confirmSignOut: boolean;
-  onAskSignOut: () => void;
-  onCancelSignOut: () => void;
 }) {
-  const { theme, style, setTheme, setStyle } = useTheme();
+  const { theme, style, setStyle, toggleTheme } = useTheme();
+  const themeLabel = theme === "dark" ? "Dark" : theme === "system" ? "System" : "Light";
+  const ThemeIcon = theme === "dark" ? Moon : theme === "system" ? Monitor : Sun;
   return (
     <div className="space-y-4">
+      <div className="royal-panel flex items-center gap-3 rounded-2xl border border-border-button-default p-3.5 text-white shadow-sm">
+        <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-white/15 text-body font-bold ring-2 ring-white/25">
+          {user.avatarUrl ? (
+            <Image src={user.avatarUrl} alt="" width={48} height={48} className="size-12 object-cover" unoptimized />
+          ) : (
+            initials(user.name)
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-body font-bold">{user.name}</p>
+          <p className="truncate text-label text-text-white/85">{user.roleLabel}</p>
+          {user.email ? <p className="truncate text-caption text-text-white/70">{user.email}</p> : null}
+        </div>
+      </div>
       <div>
         <p className="field-label">Appearance</p>
         <Segmented<UIStyle>
@@ -134,14 +141,30 @@ export function ProfileSheetBody({
       </div>
       <div>
         <p className="field-label">Colour mode</p>
-        <Segmented<UITheme>
-          options={["light", "dark", "system"]}
-          selected={theme}
-          onSelect={setTheme}
-          labels={{ light: "Light", dark: "Dark", system: "System" }}
-        />
+        <div className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border-button-default bg-background-secondary-default px-3">
+          <span className="min-w-0">
+            <span className="block text-label font-semibold text-text-primary">Colour mode</span>
+            <span className="block text-caption text-text-tertiary">{themeLabel}</span>
+          </span>
+          <IconButton
+            ariaLabel={`Colour mode: ${themeLabel}. Switch to the next mode.`}
+            title={`Switch mode (currently ${themeLabel})`}
+            onClick={toggleTheme}
+            className="size-9 shrink-0"
+          >
+            <ThemeIcon size={17} aria-hidden="true" />
+          </IconButton>
+        </div>
       </div>
       <div className="grid gap-2">
+        <Link href="/assistant" onClick={onNavigate} className="list-row">
+          <Sparkles size={18} className="shrink-0 text-warning" aria-hidden="true" />
+          <span className="min-w-0 flex-1 text-body font-semibold">Ask me anything</span>
+        </Link>
+        <Link href="/help" onClick={onNavigate} className="list-row">
+          <HelpCircle size={18} className="shrink-0 text-text-secondary" aria-hidden="true" />
+          <span className="min-w-0 flex-1 text-body font-semibold">Help & guides</span>
+        </Link>
         <Link href="/profile" onClick={onNavigate} className="list-row">
           <Settings2 size={18} className="shrink-0 text-ink-2" aria-hidden="true" />
           <span className="min-w-0 flex-1 text-body font-semibold">Profile & password</span>
@@ -151,25 +174,16 @@ export function ProfileSheetBody({
           <span className="min-w-0 flex-1 text-body font-semibold">Help & privacy</span>
         </Link>
       </div>
-      {confirmSignOut ? (
-        <div className="rounded-xl border border-danger-line bg-danger-soft p-3">
-          <p className="text-label font-semibold text-danger">Sign out of Mary Royal School?</p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <button type="button" className="btn btn-secondary" onClick={onCancelSignOut}>
-              Cancel
-            </button>
-            <form action="/api/logout" method="post">
-              <button type="submit" className="btn btn-primary w-full">
-                Sign out
-              </button>
-            </form>
-          </div>
-        </div>
-      ) : (
-        <button type="button" onClick={onAskSignOut} className="btn btn-secondary w-full text-danger">
+      <ConfirmLogoutForm
+        className="w-full"
+        buttonClassName="btn btn-secondary w-full text-danger"
+        ariaLabel="Sign out of Mary Royal School"
+        title="Sign out"
+      >
+        <span className="inline-flex items-center gap-2">
           <LogOut size={16} aria-hidden="true" /> Sign out
-        </button>
-      )}
+        </span>
+      </ConfirmLogoutForm>
     </div>
   );
 }
