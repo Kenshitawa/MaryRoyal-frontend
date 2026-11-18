@@ -1084,6 +1084,33 @@ a.list-row:hover {
   animation: boardui-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Page entrance: each direct child of the portal main region rises once on
+   first paint, matching the reference UI. `list-stagger` is opt-in for
+   static lists; filtered lists should not replay it on every keystroke. */
+@media (prefers-reduced-motion: no-preference) {
+  .page-main > * {
+    animation: boardui-slide-up 200ms ease-out both;
+  }
+
+  .list-stagger > * {
+    animation: boardui-slide-up 200ms ease-out both;
+  }
+
+  .list-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .list-stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .list-stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .list-stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .list-stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .list-stagger > *:nth-child(n+6) { animation-delay: 200ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-main > *,
+  .list-stagger > * {
+    animation: none;
+  }
+}
+
 /* Toasts ------------------------------------------------------------- */
 .toast {
   display: flex;
