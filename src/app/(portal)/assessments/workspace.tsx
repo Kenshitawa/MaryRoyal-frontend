@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Calendar, Sparkles } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
 import { LearnerLink } from "@/components/learner-link";
 import { PageHeader } from "@/components/ui/primitives";
-import { DataGrid } from "@/components/application/data-grid/data-grid";
-import type { DataGridColumn } from "@/components/application/data-grid/data-grid";
+import type { DataGridColumn, DataGridProps } from "@/components/application/data-grid/data-grid";
 import { Select, SelectItem } from "@/components/base/select/select";
 import { Input } from "@/components/base/input/input";
 import { Button } from "@/components/base/buttons/button";
@@ -18,6 +18,24 @@ import { RiSaveLine } from "@remixicon/react";
 type TeachingAssignment = { grade: string; subject: string };
 type EntryRow = { learnerId: string; name: string; admissionNo: string; grade: string; mark: number | null };
 type ClassResult = { learnerId: string; name: string; admissionNo: string; grade: string; score: number; level: string; status: string };
+
+function createAssessmentGrid<T extends object>() {
+  return dynamic<DataGridProps<T>>(
+    () => import("@/components/application/data-grid/data-grid").then(({ DataGrid }) => {
+      function AssessmentGrid(props: DataGridProps<T>) {
+        return <DataGrid<T> {...props} />;
+      }
+      return AssessmentGrid;
+    }),
+    {
+      ssr: false,
+      loading: () => <div role="status" className="min-h-24 animate-pulse rounded-2xl bg-background-secondary-default" aria-label="Loading assessment grid" />,
+    },
+  );
+}
+
+const EntryGrid = createAssessmentGrid<EntryRow>();
+const ReviewGrid = createAssessmentGrid<ClassResult>();
 type Assessment = {
   id: string; subject: string; score: number; level: string; term: string; strand: string | null;
   competency: string | null; comment: string | null; reviewComment: string | null; status: string; version: number;
@@ -412,7 +430,7 @@ export default function AssessmentWorkspace({
             </p>
           ) : (
             <>
-              <DataGrid
+              <EntryGrid
                 aria-label={`${selectedGrade} ${selectedSubject} mark entry`}
                 data={rowsForEntry}
                 columns={entryColumns}
@@ -449,7 +467,7 @@ export default function AssessmentWorkspace({
                   CBE levels are calculated from each mark. New marks remain drafts until submitted through the review workflow.
                 </p>
               </div>
-              <DataGrid
+              <ReviewGrid
                 aria-label={`${selectedGrade} ${selectedSubject} class results review`}
                 data={classResults}
                 columns={reviewColumns}

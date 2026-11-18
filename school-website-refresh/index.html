@@ -15,6 +15,7 @@
     <meta property="og:title" content="Mary Royal School | Nurturing Future Leaders">
     <meta property="og:description" content="Discover holistic education, state-of-the-art facilities, and vibrant extracurricular activities at Mary Royal School.">
     <meta property="og:image" content="assets/images/hero-banner.webp">
+    <link rel="preload" as="image" href="assets/images/hero-banner.webp" fetchpriority="high">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,17 +35,48 @@
             theme: {
                 extend: {
                     colors: {
-                        royal: {
-                            50: '#f0f4ff',
-                            100: '#e0e9fe',
-                            200: '#bae0fd',
-                            600: '#1e40af',
-                            700: '#1d4ed8',
-                            800: '#1e3a8a',
-                            900: '#0f172a',
-                            gold: '#d97706',
-                            goldHover: '#b45309',
-                            goldLight: '#fef3c7'
+                        'text-primary': 'rgb(var(--color-text-primary) / <alpha-value>)',
+                        'text-secondary': 'rgb(var(--color-text-secondary) / <alpha-value>)',
+                        'text-tertiary': 'rgb(var(--color-text-tertiary) / <alpha-value>)',
+                        'foreground-full': 'rgb(var(--color-foreground-full) / <alpha-value>)',
+                        'background-full': 'rgb(var(--color-background-full) / <alpha-value>)',
+                        'background-primary-default': 'rgb(var(--color-background-primary-default) / <alpha-value>)',
+                        'background-secondary-default': 'rgb(var(--color-background-secondary-default) / <alpha-value>)',
+                        'background-secondary-hover': 'rgb(var(--color-background-secondary-hover) / <alpha-value>)',
+                        'background-tertiary-default': 'rgb(var(--color-background-tertiary-default) / <alpha-value>)',
+                        'separator-border': 'rgb(var(--color-separator-border) / <alpha-value>)',
+                        'border-button-default': 'rgb(var(--color-border-button-default) / <alpha-value>)',
+                        'border-button-hover': 'rgb(var(--color-border-button-hover) / <alpha-value>)',
+                        'border-focus-ring': 'rgb(var(--color-border-focus-ring) / <alpha-value>)',
+                        'brand-primary': 'rgb(var(--color-brand-primary) / <alpha-value>)',
+                        'brand-primary-hover': 'rgb(var(--color-brand-primary-hover) / <alpha-value>)',
+                        'brand-deep': 'rgb(var(--color-brand-deep) / <alpha-value>)',
+                        'brand-overlay': 'rgb(var(--color-brand-overlay) / <alpha-value>)',
+                        'brand-gold': 'rgb(var(--color-brand-gold) / <alpha-value>)',
+                        'brand-gold-fill': 'rgb(var(--color-brand-gold-fill) / <alpha-value>)',
+                        'brand-gold-hover': 'rgb(var(--color-brand-gold-hover) / <alpha-value>)',
+                        'highlight-soft': 'rgb(var(--color-highlight-soft) / <alpha-value>)',
+                        'highlight-strong': 'rgb(var(--color-highlight-strong) / <alpha-value>)',
+                        'highlight-strong-hover': 'rgb(var(--color-highlight-strong-hover) / <alpha-value>)',
+                        accent: {
+                            50: 'rgb(var(--color-accent-50) / <alpha-value>)',
+                            100: 'rgb(var(--color-accent-100) / <alpha-value>)',
+                            200: 'rgb(var(--color-accent-200) / <alpha-value>)',
+                            300: 'rgb(var(--color-accent-300) / <alpha-value>)',
+                            400: 'rgb(var(--color-accent-400) / <alpha-value>)',
+                            500: 'rgb(var(--color-accent-500) / <alpha-value>)',
+                            600: 'rgb(var(--color-accent-600) / <alpha-value>)',
+                            700: 'rgb(var(--color-accent-700) / <alpha-value>)',
+                            800: 'rgb(var(--color-accent-800) / <alpha-value>)',
+                            900: 'rgb(var(--color-accent-900) / <alpha-value>)',
+                            950: 'rgb(var(--color-accent-950) / <alpha-value>)'
+                        },
+                        chart: {
+                            1: 'rgb(var(--color-chart-1) / <alpha-value>)',
+                            2: 'rgb(var(--color-chart-2) / <alpha-value>)',
+                            3: 'rgb(var(--color-chart-3) / <alpha-value>)',
+                            4: 'rgb(var(--color-chart-4) / <alpha-value>)',
+                            5: 'rgb(var(--color-chart-5) / <alpha-value>)'
                         }
                     },
                     fontFamily: {
@@ -52,8 +84,8 @@
                         display: ['Outfit', 'sans-serif'],
                     },
                     boxShadow: {
-                        'glow': '0 0 25px -5px rgba(29, 78, 216, 0.3)',
-                        'gold-glow': '0 0 25px -5px rgba(217, 119, 6, 0.4)',
+                        'glow': '0 0 25px -5px rgb(var(--color-accent-600) / 0.3)',
+                        'gold-glow': '0 0 25px -5px rgb(var(--color-brand-gold-fill) / 0.35)',
                     }
                 }
             }
@@ -63,13 +95,251 @@
     <style>
         /* CSS Variables for Palette */
         :root {
-            --color-primary: #1d4ed8;
-            --color-primary-dark: #1e3a8a;
-            --color-accent: #d97706;
-            --color-bg-light: #f8fafc;
-            --color-surface-light: #ffffff;
+            --color-text-primary: 15 34 63;
+            --color-text-secondary: 67 86 112;
+            --color-text-tertiary: 105 124 148;
+            --color-foreground-full: 255 255 255;
+            --color-background-full: 244 248 253;
+            --color-background-primary-default: 255 255 255;
+            --color-background-secondary-default: 238 244 251;
+            --color-background-secondary-hover: 225 235 247;
+            --color-background-tertiary-default: 229 238 248;
+            --color-separator-border: 222 231 242;
+            --color-border-button-default: 202 216 234;
+            --color-border-button-hover: 165 190 222;
+            --color-border-focus-ring: 46 112 214;
+            --color-brand-primary: 29 78 216;
+            --color-brand-primary-hover: 27 66 177;
+            --color-brand-deep: 15 37 78;
+            --color-brand-overlay: 7 19 43;
+            --color-brand-gold: 153 85 12;
+            --color-brand-gold-fill: 237 169 44;
+            --color-brand-gold-hover: 210 137 23;
+            --color-highlight-soft: 255 244 214;
+            --color-highlight-strong: 146 79 9;
+            --color-highlight-strong-hover: 116 62 8;
+            --color-accent-50: 240 246 255;
+            --color-accent-100: 224 235 255;
+            --color-accent-200: 190 211 247;
+            --color-accent-300: 148 183 235;
+            --color-accent-400: 94 145 220;
+            --color-accent-500: 57 119 207;
+            --color-accent-600: 37 96 186;
+            --color-accent-700: 29 78 216;
+            --color-accent-800: 25 61 153;
+            --color-accent-900: 20 45 102;
+            --color-accent-950: 12 28 64;
+            --color-chart-1: 29 78 216;
+            --color-chart-2: 16 145 104;
+            --color-chart-3: 219 137 21;
+            --color-chart-4: 213 68 89;
+            --color-chart-5: 117 86 193;
+            --color-grid-line: 29 78 216;
         }
 
+        .dark {
+            --color-text-primary: 242 247 255;
+            --color-text-secondary: 190 205 225;
+            --color-text-tertiary: 145 164 190;
+            --color-background-full: 7 15 32;
+            --color-background-primary-default: 14 27 49;
+            --color-background-secondary-default: 19 37 64;
+            --color-background-secondary-hover: 28 50 82;
+            --color-background-tertiary-default: 31 54 88;
+            --color-separator-border: 34 51 77;
+            --color-border-button-default: 43 63 94;
+            --color-border-button-hover: 65 93 132;
+            --color-border-focus-ring: 116 171 245;
+            --color-brand-primary: 40 95 179;
+            --color-brand-primary-hover: 49 111 201;
+            --color-brand-deep: 6 19 45;
+            --color-brand-overlay: 2 7 19;
+            --color-brand-gold: 255 208 112;
+            --color-brand-gold-fill: 228 162 44;
+            --color-brand-gold-hover: 244 185 72;
+            --color-highlight-soft: 73 53 24;
+            --color-highlight-strong: 255 211 119;
+            --color-highlight-strong-hover: 255 226 165;
+            --color-accent-50: 15 31 55;
+            --color-accent-100: 20 41 71;
+            --color-accent-200: 29 58 97;
+            --color-accent-300: 39 76 126;
+            --color-accent-400: 52 98 157;
+            --color-accent-500: 63 119 184;
+            --color-accent-600: 76 139 207;
+            --color-accent-700: 95 157 223;
+            --color-accent-800: 160 194 238;
+            --color-accent-900: 210 227 250;
+            --color-accent-950: 239 247 255;
+            --color-chart-1: 119 174 255;
+            --color-chart-2: 76 208 154;
+            --color-chart-3: 250 190 82;
+            --color-chart-4: 255 130 147;
+            --color-chart-5: 182 157 255;
+            --color-grid-line: 132 175 235;
+        }
+
+        body {
+            background:
+                radial-gradient(50rem 26rem at 10% -8%, rgb(var(--color-accent-400) / 0.1), transparent 70%),
+                radial-gradient(42rem 24rem at 93% 5%, rgb(var(--color-chart-2) / 0.08), transparent 70%),
+                rgb(var(--color-background-full));
+            color: rgb(var(--color-text-primary));
+        }
+
+        .hero-stage {
+            isolation: isolate;
+            background:
+                radial-gradient(52rem 34rem at 88% 18%, rgb(var(--color-chart-3) / 0.12), transparent 65%),
+                radial-gradient(48rem 30rem at 9% 12%, rgb(var(--color-accent-500) / 0.16), transparent 70%),
+                linear-gradient(180deg, rgb(var(--color-background-secondary-default)), rgb(var(--color-background-full)));
+        }
+
+        .hero-grid {
+            background-image:
+                linear-gradient(to right, rgb(var(--color-grid-line) / 0.07) 1px, transparent 1px),
+                linear-gradient(to bottom, rgb(var(--color-grid-line) / 0.07) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: radial-gradient(ellipse 75% 65% at 50% 25%, black 15%, transparent 78%);
+        }
+
+        .hero-title {
+            text-wrap: balance;
+        }
+
+        .hero-gradient {
+            background-image: linear-gradient(105deg, rgb(var(--color-brand-primary)), rgb(var(--color-chart-5)), rgb(var(--color-brand-gold)));
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-stats > div {
+            padding: 1rem 0.75rem;
+            border: 1px solid rgb(var(--color-border-button-default) / 0.75);
+            border-radius: 1rem;
+            background: rgb(var(--color-background-primary-default) / 0.76);
+            box-shadow: 0 12px 30px rgb(var(--color-brand-deep) / 0.07);
+        }
+
+        .site-announcement {
+            background: linear-gradient(90deg, rgb(var(--color-brand-deep)), rgb(var(--color-brand-primary)));
+        }
+
+        .site-header {
+            background: rgb(var(--color-background-primary-default) / 0.92);
+            backdrop-filter: blur(16px);
+        }
+
+        .hero-image-frame {
+            box-shadow: 0 28px 75px rgb(var(--color-brand-deep) / 0.22);
+        }
+
+        .feature-card,
+        .programme-card,
+        .activity-card,
+        .event-card {
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 14px 35px rgb(var(--color-brand-deep) / 0.06);
+            transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+        }
+
+        .feature-card:hover,
+        .programme-card:hover,
+        .activity-card:hover,
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 22px 45px rgb(var(--color-brand-deep) / 0.12);
+        }
+
+        .feature-card::before,
+        .programme-card::before,
+        .activity-card::before {
+            position: absolute;
+            inset: 0 0 auto;
+            height: 4px;
+            background: var(--card-accent, rgb(var(--color-brand-primary)));
+            content: "";
+        }
+
+        .feature-card--blue { --card-accent: rgb(var(--color-chart-1)); }
+        .feature-card--gold { --card-accent: rgb(var(--color-chart-3)); }
+        .feature-card--green { --card-accent: rgb(var(--color-chart-2)); }
+        .programme-card--blue { --card-accent: rgb(var(--color-chart-1)); }
+        .programme-card--violet { --card-accent: rgb(var(--color-chart-5)); }
+        .programme-card--green { --card-accent: rgb(var(--color-chart-2)); }
+        .activity-card--rose { --card-accent: rgb(var(--color-chart-4)); }
+        .activity-card--gold { --card-accent: rgb(var(--color-chart-3)); }
+        .activity-card--blue { --card-accent: rgb(var(--color-chart-1)); }
+        .activity-card--green { --card-accent: rgb(var(--color-chart-2)); }
+
+        .section-warm {
+            background:
+                radial-gradient(35rem 18rem at 92% 10%, rgb(var(--color-chart-3) / 0.08), transparent 70%),
+                rgb(var(--color-background-primary-default));
+        }
+
+        .section-cool {
+            background:
+                radial-gradient(38rem 20rem at 8% 0%, rgb(var(--color-chart-1) / 0.08), transparent 70%),
+                rgb(var(--color-background-secondary-default));
+        }
+
+        .educator-banner,
+        .community-spotlight,
+        .site-footer {
+            background:
+                radial-gradient(35rem 24rem at 88% 14%, rgb(var(--color-chart-1) / 0.22), transparent 72%),
+                linear-gradient(135deg, rgb(var(--color-brand-deep)), rgb(var(--color-accent-950)));
+            background-color: rgb(var(--color-brand-deep));
+            --color-text-primary: 242 247 255;
+            --color-text-secondary: 190 205 225;
+            --color-text-tertiary: 155 177 204;
+        }
+
+        .gallery-grid {
+            grid-auto-rows: 12rem;
+        }
+
+        .gallery-grid > div {
+            height: auto;
+        }
+
+        .gallery-grid > div:nth-child(1),
+        .gallery-grid > div:nth-child(6) {
+            grid-row: span 2;
+        }
+
+        .contact-panel {
+            box-shadow: 0 24px 60px rgb(var(--color-brand-deep) / 0.09);
+        }
+
+        @media (max-width: 639px) {
+            .gallery-grid {
+                grid-auto-rows: 10rem;
+            }
+
+            .gallery-grid > div:nth-child(1),
+            .gallery-grid > div:nth-child(6) {
+                grid-row: auto;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .feature-card,
+            .programme-card,
+            .activity-card,
+            .event-card {
+                transition: none;
+            }
+
+            .feature-card:hover,
+            .programme-card:hover,
+            .activity-card:hover,
+            .event-card:hover {
+                transform: none;
+            }
+        }
         /* Mobile safe-area padding for notched screens */
         .header-safe {
             padding-top: max(0.75rem, env(safe-area-inset-top));
@@ -86,17 +356,14 @@
             width: 10px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .dark ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: rgb(var(--color-background-secondary-default));
         }
         ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
+            background: rgb(var(--color-text-tertiary));
             border-radius: 5px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
+            background: rgb(var(--color-text-secondary));
         }
 
         /* Parallax & Floating Animation */
@@ -121,31 +388,31 @@
     </style>
 </head>
 
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+<body class="bg-background-full text-text-primary font-sans antialiased transition-colors duration-300">
 
     <!-- Top Announcement Bar -->
-    <div class="bg-royal-800 text-amber-300 text-xs sm:text-sm py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
-        <span class="bg-amber-500 text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Admissions Open</span>
+    <div class="site-announcement text-foreground-full text-xs sm:text-sm py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
+        <span class="bg-brand-gold-fill text-brand-deep text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Admissions Open</span>
         <span>2026/2027 Academic Year Registration is Ongoing!</span>
-        <button onclick="openModal('admissions-modal')" class="underline hover:text-white font-semibold ml-2 transition-colors">Apply Now &rarr;</button>
+        <button onclick="openModal('admissions-modal')" class="underline hover:text-foreground-full font-semibold ml-2 transition-colors">Apply Now &rarr;</button>
     </div>
 
     <!-- MAIN HEADER & NAVIGATION -->
-    <header id="main-header" class="sticky top-0 z-50 w-full header-safe bg-white/95 dark:bg-slate-900/95 border-b border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-300">
+    <header id="main-header" class="site-header sticky top-0 z-50 w-full header-safe border-b border-separator-border shadow-sm transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20">
 
                 <!-- Logo -->
-                <a href="#hero" class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-royal-600 rounded-lg p-1">
+                <a href="#hero" class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-border-focus-ring rounded-lg p-1">
                     <img src="assets/images/logo-transparent.webp"
                          onerror="this.src='https://placehold.co/120x120/1d4ed8/ffffff?text=MRS'"
                          alt="Mary Royal School Logo"
                          class="h-10 w-10 sm:h-12 sm:w-12 object-contain group-hover:scale-105 transition-transform duration-300" />
                     <div>
-                        <span class="font-display font-extrabold text-lg sm:text-2xl tracking-tight text-royal-800 dark:text-white block leading-none">
+                        <span class="font-display font-extrabold text-lg sm:text-2xl tracking-tight text-accent-800 block leading-none">
                             MARY ROYAL
                         </span>
-                        <span class="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-bold uppercase tracking-widest block mt-0.5">
+                        <span class="text-[10px] sm:text-xs text-brand-gold font-bold uppercase tracking-widest block mt-0.5">
                             School of Excellence
                         </span>
                     </div>
@@ -153,30 +420,30 @@
 
                 <!-- Desktop Navigation Links -->
                 <nav class="hidden md:flex items-center space-x-1 lg:space-x-4">
-                    <a href="#about" class="px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-royal-700 dark:hover:text-amber-400 rounded-lg transition-colors">About Us</a>
-                    <a href="#academics" class="px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-royal-700 dark:hover:text-amber-400 rounded-lg transition-colors">Academics</a>
-                    <a href="#activities" class="px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-royal-700 dark:hover:text-amber-400 rounded-lg transition-colors">Activities & Life</a>
-                    <a href="#gallery" class="px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-royal-700 dark:hover:text-amber-400 rounded-lg transition-colors">Gallery</a>
-                    <a href="#events" class="px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-royal-700 dark:hover:text-amber-400 rounded-lg transition-colors">Events</a>
-                    <a href="#contact" class="px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-royal-700 dark:hover:text-amber-400 rounded-lg transition-colors">Contact</a>
+                    <a href="#about" class="px-3 py-2 text-sm font-semibold text-text-secondary hover:text-accent-700 rounded-lg transition-colors">About Us</a>
+                    <a href="#academics" class="px-3 py-2 text-sm font-semibold text-text-secondary hover:text-accent-700 rounded-lg transition-colors">Academics</a>
+                    <a href="#activities" class="px-3 py-2 text-sm font-semibold text-text-secondary hover:text-accent-700 rounded-lg transition-colors">Activities & Life</a>
+                    <a href="#gallery" class="px-3 py-2 text-sm font-semibold text-text-secondary hover:text-accent-700 rounded-lg transition-colors">Gallery</a>
+                    <a href="#events" class="px-3 py-2 text-sm font-semibold text-text-secondary hover:text-accent-700 rounded-lg transition-colors">Events</a>
+                    <a href="#contact" class="px-3 py-2 text-sm font-semibold text-text-secondary hover:text-accent-700 rounded-lg transition-colors">Contact</a>
                 </nav>
 
                 <!-- Desktop CTA & Theme Toggle -->
                 <div class="hidden md:flex items-center gap-3">
-                    <button id="theme-toggle" aria-label="Toggle Dark Mode" class="p-2.5 min-w-[44px] min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-royal-600 transition-colors">
+                    <button id="theme-toggle" aria-label="Toggle Dark Mode" class="p-2.5 min-w-[44px] min-h-[44px] rounded-xl border border-separator-border text-text-secondary hover:bg-background-secondary-default focus:outline-none focus:ring-2 focus:ring-border-focus-ring transition-colors">
                         <i id="theme-icon" class="fas fa-moon text-base"></i>
                     </button>
-                    <a href="https://portal.maryroyalschool.co.ke/" class="min-h-[44px] px-4 py-2 text-sm font-semibold text-royal-700 dark:text-royal-100 border border-royal-600 hover:bg-royal-50 dark:hover:bg-slate-800 rounded-xl transition-all flex items-center justify-center">
+                    <a href="https://portal.maryroyalschool.co.ke/" class="min-h-[44px] px-4 py-2 text-sm font-semibold text-accent-700 border border-border-button-default hover:bg-accent-50 rounded-xl transition-all flex items-center justify-center">
                         Staff / Parent / Learner Portal
                     </a>
-                    <button onclick="openModal('admissions-modal')" class="min-h-[44px] px-5 py-2 text-sm font-bold text-white bg-royal-700 hover:bg-royal-800 rounded-xl shadow-md hover:shadow-glow transition-all flex items-center justify-center">
+                    <button onclick="openModal('admissions-modal')" class="min-h-[44px] px-5 py-2 text-sm font-bold text-foreground-full bg-brand-primary hover:bg-brand-primary-hover rounded-xl shadow-md hover:shadow-glow transition-all flex items-center justify-center">
                         Admissions
                     </button>
                 </div>
 
                 <!-- Mobile Navigation Controls (Hamburger + Dark Toggle) -->
                 <div class="flex items-center gap-2 md:hidden">
-                    <button id="mobile-theme-toggle" aria-label="Toggle Dark Mode" class="p-2.5 min-w-[44px] min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                    <button id="mobile-theme-toggle" aria-label="Toggle Dark Mode" class="p-2.5 min-w-[44px] min-h-[44px] rounded-xl border border-separator-border text-text-secondary">
                         <i id="mobile-theme-icon" class="fas fa-moon"></i>
                     </button>
 
@@ -184,7 +451,7 @@
                             aria-expanded="false"
                             aria-controls="mobile-nav-drawer"
                             aria-label="Open Navigation Menu"
-                            class="min-w-[44px] min-h-[44px] p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-royal-600 flex items-center justify-center">
+                            class="min-w-[44px] min-h-[44px] p-2.5 rounded-xl border border-separator-border bg-background-secondary-default text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring flex items-center justify-center">
                         <i id="menu-icon-bars" class="fas fa-bars text-xl"></i>
                         <i id="menu-icon-close" class="fas fa-times text-xl hidden"></i>
                     </button>
@@ -195,119 +462,120 @@
 
     <!-- MOBILE NAVIGATION DRAWER & BACKDROP -->
     <!-- Solid/Near-Solid crisp background with high z-index fixing blur bug -->
-    <div id="mobile-nav-backdrop" class="fixed inset-0 bg-slate-900/70 z-40 hidden transition-opacity duration-300" onclick="closeMobileMenu()"></div>
+    <div id="mobile-nav-backdrop" class="fixed inset-0 bg-brand-overlay/70 z-40 hidden transition-opacity duration-300" onclick="closeMobileMenu()"></div>
 
     <aside id="mobile-nav-drawer"
-           class="fixed top-0 right-0 z-50 w-[85%] max-w-sm h-full bg-white dark:bg-slate-900 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between overflow-y-auto"
+           class="fixed top-0 right-0 z-50 w-[85%] max-w-sm h-full bg-background-primary-default shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between overflow-y-auto"
            aria-label="Mobile Navigation Drawer">
 
         <div class="p-6">
-            <div class="flex items-center justify-between pb-6 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center justify-between pb-6 border-b border-separator-border">
                 <div class="flex items-center gap-2">
                     <img src="assets/images/logo-transparent.webp" onerror="this.src='https://placehold.co/60x60/1d4ed8/ffffff?text=MRS'" alt="Mary Royal School" class="h-8 w-8 object-contain">
-                    <span class="font-display font-bold text-lg text-royal-800 dark:text-white">Mary Royal</span>
+                    <span class="font-display font-bold text-lg text-accent-800">Mary Royal</span>
                 </div>
-                <button onclick="closeMobileMenu()" aria-label="Close menu" class="min-w-[44px] min-h-[44px] p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-lg flex items-center justify-center">
+                <button onclick="closeMobileMenu()" aria-label="Close menu" class="min-w-[44px] min-h-[44px] p-2 text-text-tertiary hover:text-text-primary rounded-lg flex items-center justify-center">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
             <!-- Mobile Drawer Prominent Action Buttons -->
             <div class="mt-6 flex flex-col gap-3">
-                <a href="https://portal.maryroyalschool.co.ke/" class="w-full min-h-[48px] py-3 text-center text-sm font-bold text-royal-700 dark:text-royal-200 bg-royal-50 dark:bg-slate-800 border border-royal-200 dark:border-slate-700 rounded-xl flex items-center justify-center gap-2">
+                <a href="https://portal.maryroyalschool.co.ke/" class="w-full min-h-[48px] py-3 text-center text-sm font-bold text-accent-700 bg-accent-50 border border-border-button-default rounded-xl flex items-center justify-center gap-2">
                     <i class="fas fa-user-lock"></i> Staff / Parent / Learner Portal
                 </a>
-                <button onclick="closeMobileMenu(); openModal('admissions-modal');" class="w-full min-h-[48px] py-3 text-center text-sm font-bold text-white bg-royal-700 hover:bg-royal-800 rounded-xl shadow-md flex items-center justify-center gap-2">
+                <button onclick="closeMobileMenu(); openModal('admissions-modal');" class="w-full min-h-[48px] py-3 text-center text-sm font-bold text-foreground-full bg-brand-primary hover:bg-brand-primary-hover rounded-xl shadow-md flex items-center justify-center gap-2">
                     <i class="fas fa-file-signature"></i> Apply for Admission
                 </button>
             </div>
 
             <!-- Mobile Nav Links -->
             <nav class="mt-8 flex flex-col space-y-2">
-                <a href="#about" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center justify-between">
+                <a href="#about" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-text-primary hover:bg-background-secondary-default rounded-xl flex items-center justify-between">
                     <span>About Us</span>
-                    <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                    <i class="fas fa-chevron-right text-xs text-text-tertiary"></i>
                 </a>
-                <a href="#academics" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center justify-between">
+                <a href="#academics" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-text-primary hover:bg-background-secondary-default rounded-xl flex items-center justify-between">
                     <span>Academics</span>
-                    <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                    <i class="fas fa-chevron-right text-xs text-text-tertiary"></i>
                 </a>
-                <a href="#activities" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center justify-between">
+                <a href="#activities" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-text-primary hover:bg-background-secondary-default rounded-xl flex items-center justify-between">
                     <span>Activities & Life</span>
-                    <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                    <i class="fas fa-chevron-right text-xs text-text-tertiary"></i>
                 </a>
-                <a href="#gallery" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center justify-between">
+                <a href="#gallery" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-text-primary hover:bg-background-secondary-default rounded-xl flex items-center justify-between">
                     <span>Gallery</span>
-                    <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                    <i class="fas fa-chevron-right text-xs text-text-tertiary"></i>
                 </a>
-                <a href="#events" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center justify-between">
+                <a href="#events" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-text-primary hover:bg-background-secondary-default rounded-xl flex items-center justify-between">
                     <span>Events & News</span>
-                    <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                    <i class="fas fa-chevron-right text-xs text-text-tertiary"></i>
                 </a>
-                <a href="#contact" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center justify-between">
+                <a href="#contact" onclick="closeMobileMenu()" class="min-h-[44px] px-4 py-3 text-base font-semibold text-text-primary hover:bg-background-secondary-default rounded-xl flex items-center justify-between">
                     <span>Contact Us</span>
-                    <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+                    <i class="fas fa-chevron-right text-xs text-text-tertiary"></i>
                 </a>
             </nav>
         </div>
 
-        <div class="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-            <p class="text-xs text-slate-500 text-center">Need immediate assistance?</p>
-            <a href="tel:+254718216374" class="mt-2 text-center block text-sm font-bold text-royal-700 dark:text-amber-400">
+        <div class="p-6 border-t border-separator-border bg-background-full">
+            <p class="text-xs text-text-tertiary text-center">Need immediate assistance?</p>
+            <a href="tel:+254718216374" class="mt-2 text-center block text-sm font-bold text-accent-700">
                 <i class="fas fa-phone-alt mr-1"></i> 0718216374
             </a>
         </div>
     </aside>
 
     <!-- HERO SECTION -->
-    <section id="hero" class="relative overflow-hidden pt-8 pb-16 lg:pt-16 lg:pb-28 bg-gradient-to-b from-royal-50/60 via-slate-50 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+    <section id="hero" class="hero-stage relative overflow-hidden pt-8 pb-16 lg:pt-16 lg:pb-28">
         <!-- Floating Decorative Elements -->
-        <div class="absolute top-10 left-10 w-72 h-72 bg-royal-600/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute bottom-10 right-10 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="hero-grid absolute inset-0 pointer-events-none"></div>
+        <div class="absolute top-10 left-10 w-72 h-72 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-10 right-10 w-80 h-80 bg-brand-gold-fill/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
 
                 <!-- Left Column Text & Action -->
                 <div class="lg:col-span-7 text-center lg:text-left">
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs sm:text-sm font-semibold mb-6">
-                        <i class="fas fa-star text-amber-500"></i>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-highlight-soft border border-brand-gold text-brand-gold text-xs sm:text-sm font-semibold mb-6">
+                        <i class="fas fa-star text-brand-gold"></i>
                         <span>Nurturing Minds, Building Character & Integrity</span>
                     </div>
 
-                    <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-                        Inspiring Today's Learners to Become <span class="bg-gradient-to-r from-royal-700 via-royal-600 to-amber-600 bg-clip-text text-transparent">Tomorrow's Leaders</span>
+                    <h1 class="hero-title font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-text-primary tracking-tight leading-tight">
+                        Inspiring Today's Learners to Become <span class="hero-gradient">Tomorrow's Leaders</span>
                     </h1>
 
-                    <p class="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                    <p class="mt-6 text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                         Mary Royal School offers an enriched Competency-Based Curriculum (CBC) integrated with values, modern technology, sports, and creative arts in a safe, nurturing environment.
                     </p>
 
                     <!-- CTAs -->
                     <div class="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                        <button onclick="openModal('admissions-modal')" class="w-full sm:w-auto min-h-[52px] px-8 py-3.5 bg-royal-700 hover:bg-royal-800 text-white font-bold rounded-xl shadow-lg hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2">
+                        <button onclick="openModal('admissions-modal')" class="w-full sm:w-auto min-h-[52px] px-8 py-3.5 bg-brand-primary hover:bg-brand-primary-hover text-foreground-full font-bold rounded-xl shadow-lg hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-2">
                             <span>Enroll Your Child</span>
                             <i class="fas fa-arrow-right"></i>
                         </button>
-                        <a href="#about" class="w-full sm:w-auto min-h-[52px] px-8 py-3.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-semibold border border-slate-300 dark:border-slate-700 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
-                            <i class="fas fa-play-circle text-royal-600 dark:text-amber-400"></i>
+                        <a href="#about" class="w-full sm:w-auto min-h-[52px] px-8 py-3.5 bg-background-primary-default hover:bg-background-secondary-hover text-text-primary font-semibold border border-border-button-default rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                            <i class="fas fa-play-circle text-accent-700"></i>
                             <span>Explore Our School</span>
                         </a>
                     </div>
 
                     <!-- Key Stats Strip -->
-                    <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 grid grid-cols-3 gap-4 text-center lg:text-left">
+                    <div class="hero-stats mt-12 pt-8 border-t border-separator-border grid grid-cols-3 gap-3 sm:gap-4 text-center lg:text-left">
                         <div>
-                            <span class="block font-display text-2xl sm:text-3xl font-extrabold text-royal-800 dark:text-amber-400">100%</span>
-                            <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Academic Pass Rate</span>
+                            <span class="block font-display text-2xl sm:text-3xl font-extrabold text-accent-800">100%</span>
+                            <span class="text-xs sm:text-sm text-text-tertiary font-medium">Academic Pass Rate</span>
                         </div>
                         <div>
-                            <span class="block font-display text-2xl sm:text-3xl font-extrabold text-royal-800 dark:text-amber-400">15+</span>
-                            <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Co-Curricular Clubs</span>
+                            <span class="block font-display text-2xl sm:text-3xl font-extrabold text-accent-800">15+</span>
+                            <span class="text-xs sm:text-sm text-text-tertiary font-medium">Co-Curricular Clubs</span>
                         </div>
                         <div>
-                            <span class="block font-display text-2xl sm:text-3xl font-extrabold text-royal-800 dark:text-amber-400">1:15</span>
-                            <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Teacher-Student Ratio</span>
+                            <span class="block font-display text-2xl sm:text-3xl font-extrabold text-accent-800">1:15</span>
+                            <span class="text-xs sm:text-sm text-text-tertiary font-medium">Teacher-Student Ratio</span>
                         </div>
                     </div>
                 </div>
@@ -316,35 +584,35 @@
                 <div class="lg:col-span-5 relative">
                     <div class="relative mx-auto max-w-md lg:max-w-none">
                         <!-- Polished Frame Glow -->
-                        <div class="absolute -inset-2 bg-gradient-to-r from-royal-600 to-amber-500 rounded-3xl blur-lg opacity-30 dark:opacity-50 animate-pulse"></div>
+                        <div class="absolute -inset-2 bg-gradient-to-r from-brand-primary to-brand-gold-fill rounded-3xl blur-lg opacity-30 dark:opacity-50 animate-pulse"></div>
 
-                        <div class="relative rounded-3xl overflow-hidden bg-white dark:bg-slate-800 border-4 border-white dark:border-slate-800 shadow-2xl">
+                        <div class="hero-image-frame relative rounded-3xl overflow-hidden bg-background-primary-default border-4 border-background-primary-default shadow-2xl">
                             <img src="assets/images/hero-banner.webp"
                                  onerror="this.src='https://placehold.co/800x600/1d4ed8/ffffff?text=Mary+Royal+School+Banner'"
                                  alt="Mary Royal School Students"
                                  class="w-full h-[350px] sm:h-[450px] object-cover object-center scale-105"
-                                 loading="eager" />
+                                 loading="eager" fetchpriority="high" decoding="async" />
 
                             <!-- Overlay Card -->
-                            <div class="absolute bottom-4 left-4 right-4 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-lg flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <div class="absolute bottom-4 left-4 right-4 bg-background-primary-default/90 backdrop-blur-md p-4 rounded-2xl border border-foreground-full/20 shadow-lg flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-brand-gold-fill/20 text-brand-gold flex items-center justify-center shrink-0">
                                     <i class="fas fa-award text-lg"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Top Rated CBC School</h2>
-                                    <p class="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">Providing premier early childhood & junior secondary learning.</p>
+                                    <h2 class="text-xs font-bold uppercase tracking-wider text-text-tertiary">Top Rated CBC School</h2>
+                                    <p class="text-xs sm:text-sm font-semibold text-text-primary">Providing premier early childhood & junior secondary learning.</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Floating Badge -->
-                        <div class="absolute -top-4 -right-4 bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 hidden sm:flex items-center gap-3 animate-float">
-                            <div class="w-10 h-10 rounded-xl bg-royal-100 dark:bg-royal-900 text-royal-700 dark:text-royal-200 flex items-center justify-center font-bold">
+                        <div class="absolute -top-4 -right-4 bg-background-primary-default p-3 rounded-2xl shadow-xl border border-separator-border hidden sm:flex items-center gap-3 animate-float">
+                            <div class="w-10 h-10 rounded-xl bg-accent-100 text-accent-700 flex items-center justify-center font-bold">
                                 <i class="fas fa-graduation-cap text-lg"></i>
                             </div>
                             <div class="pr-2">
-                                <p class="text-xs font-bold text-slate-900 dark:text-white">Holistic Growth</p>
-                                <p class="text-[10px] text-slate-500">Academics & Values</p>
+                                <p class="text-xs font-bold text-text-primary">Holistic Growth</p>
+                                <p class="text-[10px] text-text-tertiary">Academics & Values</p>
                             </div>
                         </div>
 
@@ -356,70 +624,70 @@
     </section>
 
     <!-- ABOUT SECTION -->
-    <section id="about" class="py-16 sm:py-24 bg-white dark:bg-slate-900">
+    <section id="about" class="section-warm py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-2">About Mary Royal School</h2>
-                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">A Center of Academic Rigor & Ethical Foundation</h3>
-                <p class="mt-4 text-slate-600 dark:text-slate-300 text-base sm:text-lg">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-brand-gold mb-2">About Mary Royal School</h2>
+                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-text-primary">A Center of Academic Rigor & Ethical Foundation</h3>
+                <p class="mt-4 text-text-secondary text-base sm:text-lg">
                     We are dedicated to equipping every learner with critical thinking, moral integrity, digital literacy, and practical skills required to excel in modern society.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Card 1 -->
-                <div class="p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-royal-500 dark:hover:border-amber-400 transition-all duration-300 shadow-sm hover:shadow-md">
-                    <div class="w-14 h-14 rounded-xl bg-royal-600/10 text-royal-700 dark:text-amber-400 flex items-center justify-center text-2xl mb-6">
+                <div class="feature-card feature-card--blue p-8 rounded-2xl bg-background-primary-default border border-border-button-default hover:border-border-button-hover transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-brand-primary/10 text-accent-700 flex items-center justify-center text-2xl mb-6">
                         <i class="fas fa-lightbulb"></i>
                     </div>
-                    <h4 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-3">Our Vision</h4>
-                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    <h4 class="font-display text-xl font-bold text-text-primary mb-3">Our Vision</h4>
+                    <p class="text-text-secondary text-sm leading-relaxed">
                         To be a premier institution recognized for nurturing well-rounded, innovative, and ethically grounded global citizens.
                     </p>
                 </div>
 
                 <!-- Card 2 -->
-                <div class="p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-royal-500 dark:hover:border-amber-400 transition-all duration-300 shadow-sm hover:shadow-md">
-                    <div class="w-14 h-14 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl mb-6">
+                <div class="feature-card feature-card--gold p-8 rounded-2xl bg-background-primary-default border border-border-button-default hover:border-border-button-hover transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-brand-gold-fill/10 text-brand-gold flex items-center justify-center text-2xl mb-6">
                         <i class="fas fa-bullseye"></i>
                     </div>
-                    <h4 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-3">Our Mission</h4>
-                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    <h4 class="font-display text-xl font-bold text-text-primary mb-3">Our Mission</h4>
+                    <p class="text-text-secondary text-sm leading-relaxed">
                         Providing a dynamic, child-centered education that fosters academic excellence, talent development, and strong moral principles.
                     </p>
                 </div>
 
                 <!-- Card 3 -->
-                <div class="p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-royal-500 dark:hover:border-amber-400 transition-all duration-300 shadow-sm hover:shadow-md">
-                    <div class="w-14 h-14 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl mb-6">
+                <div class="feature-card feature-card--green p-8 rounded-2xl bg-background-primary-default border border-border-button-default hover:border-border-button-hover transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-chart-2/10 text-chart-2 flex items-center justify-center text-2xl mb-6">
                         <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h4 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-3">Core Values</h4>
-                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    <h4 class="font-display text-xl font-bold text-text-primary mb-3">Core Values</h4>
+                    <p class="text-text-secondary text-sm leading-relaxed">
                         Integrity, Respect, Continuous Improvement, Innovation, Compassion, and Teamwork guide every action in our school community.
                     </p>
                 </div>
             </div>
 
             <!-- Supporting Educator Showcase -->
-            <div class="mt-16 rounded-3xl overflow-hidden bg-royal-900 text-white p-8 sm:p-12 relative">
+            <div class="educator-banner mt-16 rounded-3xl overflow-hidden text-foreground-full p-8 sm:p-12 relative">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                     <div class="lg:col-span-4">
                         <img src="assets/images/teacher-supporting-learner.webp"
                              onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Teacher+Supporting+Learner'"
                              alt="Teacher Supporting Learner"
-                             class="rounded-2xl w-full h-64 lg:h-80 object-cover shadow-lg" />
+                             class="rounded-2xl w-full h-64 lg:h-80 object-cover shadow-lg" loading="lazy" decoding="async" />
                     </div>
                     <div class="lg:col-span-8">
-                        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Personalized Mentorship</span>
+                        <span class="text-xs font-bold text-brand-gold uppercase tracking-widest">Personalized Mentorship</span>
                         <h4 class="font-display text-2xl sm:text-3xl font-extrabold mt-2 mb-4">Dedicated Educators Who Care For Every Child</h4>
-                        <p class="text-royal-100 text-base leading-relaxed mb-6">
+                        <p class="text-foreground-full text-base leading-relaxed mb-6">
                             Our qualified teaching staff ensures that no learner is left behind. Through individual attention, practical exercises, and psychological support, we create a thriving environment for academic and emotional resilience.
                         </p>
                         <div class="flex flex-wrap gap-4">
-                            <span class="bg-white/10 px-4 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-check text-amber-400 mr-2"></i>Certified CBC Facilitators</span>
-                            <span class="bg-white/10 px-4 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-check text-amber-400 mr-2"></i>STEM & Coding Tutors</span>
-                            <span class="bg-white/10 px-4 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-check text-amber-400 mr-2"></i>Guidance & Counseling</span>
+                            <span class="bg-foreground-full/10 px-4 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-check text-brand-gold mr-2"></i>Certified CBC Facilitators</span>
+                            <span class="bg-foreground-full/10 px-4 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-check text-brand-gold mr-2"></i>STEM & Coding Tutors</span>
+                            <span class="bg-foreground-full/10 px-4 py-2 rounded-lg text-xs font-semibold"><i class="fas fa-check text-brand-gold mr-2"></i>Guidance & Counseling</span>
                         </div>
                     </div>
                 </div>
@@ -429,93 +697,93 @@
     </section>
 
     <!-- ACADEMIC PROGRAMMES -->
-    <section id="academics" class="py-16 sm:py-24 bg-slate-50 dark:bg-slate-950">
+    <section id="academics" class="section-cool py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-xs font-bold uppercase tracking-widest text-royal-700 dark:text-amber-400 mb-2">Educational Pathways</h2>
-                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">Structured Learning at Every Stage</h3>
-                <p class="mt-4 text-slate-600 dark:text-slate-300 text-base">From foundation years to junior secondary, our curriculum builds confidence and competence.</p>
+                <h2 class="text-xs font-bold uppercase tracking-widest text-accent-700 mb-2">Educational Pathways</h2>
+                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-text-primary">Structured Learning at Every Stage</h3>
+                <p class="mt-4 text-text-secondary text-base">From foundation years to junior secondary, our curriculum builds confidence and competence.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Level 1 -->
-                <div class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                <div class="programme-card programme-card--blue bg-background-primary-default rounded-2xl overflow-hidden border border-border-button-default flex flex-col justify-between">
                     <div>
                         <div class="h-48 overflow-hidden relative">
                             <img src="assets/images/early-years-school-event.webp"
                                  onerror="this.src='https://placehold.co/600x400/1d4ed8/ffffff?text=Early+Years'"
                                  alt="Early Years Education"
-                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                            <span class="absolute top-4 left-4 bg-amber-500 text-slate-900 text-xs font-bold px-3 py-1 rounded-full">Playgroup - PP2</span>
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
+                            <span class="absolute top-4 left-4 bg-brand-gold-fill text-brand-deep text-xs font-bold px-3 py-1 rounded-full">Playgroup - PP2</span>
                         </div>
                         <div class="p-6">
-                            <h4 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-2">Early Years Education (EYE)</h4>
-                            <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">
+                            <h4 class="font-display text-xl font-bold text-text-primary mb-2">Early Years Education (EYE)</h4>
+                            <p class="text-text-secondary text-sm mb-4">
                                 Play-based and activity-driven learning designed to spark curiosity, social skills, language acquisition, and motor coordination.
                             </p>
-                            <ul class="text-xs text-slate-500 dark:text-slate-400 space-y-2 mb-4">
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Phonics & Early Literacy</li>
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Creative Arts & Music Play</li>
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Safe Playground Facilities</li>
+                            <ul class="text-xs text-text-tertiary space-y-2 mb-4">
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Phonics & Early Literacy</li>
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Creative Arts & Music Play</li>
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Safe Playground Facilities</li>
                             </ul>
                         </div>
                     </div>
                     <div class="p-6 pt-0">
-                        <button onclick="openModal('admissions-modal')" class="w-full py-2.5 text-xs font-bold text-royal-700 dark:text-amber-400 bg-royal-50 dark:bg-slate-800 rounded-xl hover:bg-royal-100 transition-colors">Learn More & Register</button>
+                        <button onclick="openModal('admissions-modal')" class="w-full py-2.5 text-xs font-bold text-accent-700 bg-accent-50 rounded-xl hover:bg-accent-100 transition-colors">Learn More & Register</button>
                     </div>
                 </div>
 
                 <!-- Level 2 -->
-                <div class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                <div class="programme-card programme-card--violet bg-background-primary-default rounded-2xl overflow-hidden border border-border-button-default flex flex-col justify-between">
                     <div>
                         <div class="h-48 overflow-hidden relative">
                             <img src="assets/images/junior-learners-performing.webp"
                                  onerror="this.src='https://placehold.co/600x400/1d4ed8/ffffff?text=Primary+School'"
                                  alt="Primary School Learners"
-                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                            <span class="absolute top-4 left-4 bg-royal-700 text-white text-xs font-bold px-3 py-1 rounded-full">Grade 1 - Grade 6</span>
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
+                            <span class="absolute top-4 left-4 bg-brand-primary text-foreground-full text-xs font-bold px-3 py-1 rounded-full">Grade 1 - Grade 6</span>
                         </div>
                         <div class="p-6">
-                            <h4 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-2">Primary School (CBC)</h4>
-                            <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">
+                            <h4 class="font-display text-xl font-bold text-text-primary mb-2">Primary School (CBC)</h4>
+                            <p class="text-text-secondary text-sm mb-4">
                                 Comprehensive CBC framework laying firm foundations in Mathematics, Science, Social Studies, ICT, and Languages.
                             </p>
-                            <ul class="text-xs text-slate-500 dark:text-slate-400 space-y-2 mb-4">
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Interactive Computer Labs</li>
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>STEM Practical Projects</li>
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Languages (English, Kiswahili, French)</li>
+                            <ul class="text-xs text-text-tertiary space-y-2 mb-4">
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Interactive Computer Labs</li>
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>STEM Practical Projects</li>
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Languages (English, Kiswahili, French)</li>
                             </ul>
                         </div>
                     </div>
                     <div class="p-6 pt-0">
-                        <button onclick="openModal('admissions-modal')" class="w-full py-2.5 text-xs font-bold text-royal-700 dark:text-amber-400 bg-royal-50 dark:bg-slate-800 rounded-xl hover:bg-royal-100 transition-colors">Learn More & Register</button>
+                        <button onclick="openModal('admissions-modal')" class="w-full py-2.5 text-xs font-bold text-accent-700 bg-accent-50 rounded-xl hover:bg-accent-100 transition-colors">Learn More & Register</button>
                     </div>
                 </div>
 
                 <!-- Level 3 -->
-                <div class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                <div class="programme-card programme-card--green bg-background-primary-default rounded-2xl overflow-hidden border border-border-button-default flex flex-col justify-between">
                     <div>
                         <div class="h-48 overflow-hidden relative">
                             <img src="assets/images/graduation-celebration.webp"
                                  onerror="this.src='https://placehold.co/600x400/1d4ed8/ffffff?text=Junior+Secondary'"
                                  alt="Junior Secondary Learners"
-                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                            <span class="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">Grade 7 - Grade 9</span>
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
+                            <span class="absolute top-4 left-4 bg-chart-2 text-foreground-full text-xs font-bold px-3 py-1 rounded-full">Grade 7 - Grade 9</span>
                         </div>
                         <div class="p-6">
-                            <h4 class="font-display text-xl font-bold text-slate-900 dark:text-white mb-2">Junior Secondary School</h4>
-                            <p class="text-slate-600 dark:text-slate-300 text-sm mb-4">
+                            <h4 class="font-display text-xl font-bold text-text-primary mb-2">Junior Secondary School</h4>
+                            <p class="text-text-secondary text-sm mb-4">
                                 Advanced learning pathways featuring integrated science laboratories, technical skills, leadership, and career guidance.
                             </p>
-                            <ul class="text-xs text-slate-500 dark:text-slate-400 space-y-2 mb-4">
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Fully Equipped Science Labs</li>
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Career Mentorship & Counseling</li>
-                                <li><i class="fas fa-check-circle text-royal-600 mr-2"></i>Leadership & Public Speaking</li>
+                            <ul class="text-xs text-text-tertiary space-y-2 mb-4">
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Fully Equipped Science Labs</li>
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Career Mentorship & Counseling</li>
+                                <li><i class="fas fa-check-circle text-accent-700 mr-2"></i>Leadership & Public Speaking</li>
                             </ul>
                         </div>
                     </div>
                     <div class="p-6 pt-0">
-                        <button onclick="openModal('admissions-modal')" class="w-full py-2.5 text-xs font-bold text-royal-700 dark:text-amber-400 bg-royal-50 dark:bg-slate-800 rounded-xl hover:bg-royal-100 transition-colors">Learn More & Register</button>
+                        <button onclick="openModal('admissions-modal')" class="w-full py-2.5 text-xs font-bold text-accent-700 bg-accent-50 rounded-xl hover:bg-accent-100 transition-colors">Learn More & Register</button>
                     </div>
                 </div>
 
@@ -524,113 +792,113 @@
     </section>
 
     <!-- ACTIVITIES & SCHOOL LIFE -->
-    <section id="activities" class="py-16 sm:py-24 bg-white dark:bg-slate-900">
+    <section id="activities" class="section-warm py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-2">Vibrant Student Life</h2>
-                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">Co-Curricular & Talent Nurturing</h3>
-                <p class="mt-4 text-slate-600 dark:text-slate-300 text-base">Education goes beyond books. We discover and sharpen every child's unique talents.</p>
+                <h2 class="text-xs font-bold uppercase tracking-widest text-brand-gold mb-2">Vibrant Student Life</h2>
+                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-text-primary">Co-Curricular & Talent Nurturing</h3>
+                <p class="mt-4 text-text-secondary text-base">Education goes beyond books. We discover and sharpen every child's unique talents.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Activity 1 -->
-                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center hover:shadow-lg transition-all">
-                    <img src="assets/images/cultural-dance-performance.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Performing+Arts'" alt="Music & Cultural Arts" class="w-full h-40 object-cover rounded-xl mb-4" />
-                    <h4 class="font-display font-bold text-lg text-slate-900 dark:text-white mb-2">Music & Cultural Arts</h4>
-                    <p class="text-xs text-slate-600 dark:text-slate-300">Drama, traditional dance, choir, and instrumental training for expression.</p>
+                <div class="activity-card activity-card--rose p-6 rounded-2xl bg-background-primary-default border border-border-button-default text-center">
+                    <img src="assets/images/cultural-dance-performance.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Performing+Arts'" alt="Music & Cultural Arts" class="w-full h-40 object-cover rounded-xl mb-4" loading="lazy" decoding="async" />
+                    <h4 class="font-display font-bold text-lg text-text-primary mb-2">Music & Cultural Arts</h4>
+                    <p class="text-xs text-text-secondary">Drama, traditional dance, choir, and instrumental training for expression.</p>
                 </div>
 
                 <!-- Activity 2 -->
-                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center hover:shadow-lg transition-all">
-                    <img src="assets/images/learners-in-school-parade.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Scouting+and+Parade'" alt="Scouting & Leadership" class="w-full h-40 object-cover rounded-xl mb-4" />
-                    <h4 class="font-display font-bold text-lg text-slate-900 dark:text-white mb-2">Scouting & Parades</h4>
-                    <p class="text-xs text-slate-600 dark:text-slate-300">Building discipline, teamwork, first-aid, and civic responsibility.</p>
+                <div class="activity-card activity-card--gold p-6 rounded-2xl bg-background-primary-default border border-border-button-default text-center">
+                    <img src="assets/images/learners-in-school-parade.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Scouting+and+Parade'" alt="Scouting & Leadership" class="w-full h-40 object-cover rounded-xl mb-4" loading="lazy" decoding="async" />
+                    <h4 class="font-display font-bold text-lg text-text-primary mb-2">Scouting & Parades</h4>
+                    <p class="text-xs text-text-secondary">Building discipline, teamwork, first-aid, and civic responsibility.</p>
                 </div>
 
                 <!-- Activity 3 -->
-                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center hover:shadow-lg transition-all">
-                    <img src="assets/images/learner-speaking-at-assembly.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Public+Speaking'" alt="Debate & Public Speaking" class="w-full h-40 object-cover rounded-xl mb-4" />
-                    <h4 class="font-display font-bold text-lg text-slate-900 dark:text-white mb-2">Debate & Public Speaking</h4>
-                    <p class="text-xs text-slate-600 dark:text-slate-300">Fostering articulate expression, research skills, and self-confidence.</p>
+                <div class="activity-card activity-card--blue p-6 rounded-2xl bg-background-primary-default border border-border-button-default text-center">
+                    <img src="assets/images/learner-speaking-at-assembly.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Public+Speaking'" alt="Debate & Public Speaking" class="w-full h-40 object-cover rounded-xl mb-4" loading="lazy" decoding="async" />
+                    <h4 class="font-display font-bold text-lg text-text-primary mb-2">Debate & Public Speaking</h4>
+                    <p class="text-xs text-text-secondary">Fostering articulate expression, research skills, and self-confidence.</p>
                 </div>
 
                 <!-- Activity 4 -->
-                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center hover:shadow-lg transition-all">
-                    <img src="assets/images/learners-at-school-event.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Sports+Clubs'" alt="Sports & Athletics" class="w-full h-40 object-cover rounded-xl mb-4" />
-                    <h4 class="font-display font-bold text-lg text-slate-900 dark:text-white mb-2">Sports & Athletics</h4>
-                    <p class="text-xs text-slate-600 dark:text-slate-300">Football, athletics, swimming, and indoor games for physical health.</p>
+                <div class="activity-card activity-card--green p-6 rounded-2xl bg-background-primary-default border border-border-button-default text-center">
+                    <img src="assets/images/learners-at-school-event.webp" onerror="this.src='https://placehold.co/400x300/1d4ed8/ffffff?text=Sports+Clubs'" alt="Sports & Athletics" class="w-full h-40 object-cover rounded-xl mb-4" loading="lazy" decoding="async" />
+                    <h4 class="font-display font-bold text-lg text-text-primary mb-2">Sports & Athletics</h4>
+                    <p class="text-xs text-text-secondary">Football, athletics, swimming, and indoor games for physical health.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- GALLERY SECTION & LIGHTBOX -->
-    <section id="gallery" class="py-16 sm:py-24 bg-slate-50 dark:bg-slate-950">
+    <section id="gallery" class="section-cool py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
                 <div>
-                    <h2 class="text-xs font-bold uppercase tracking-widest text-royal-700 dark:text-amber-400 mb-2">Campus Life in Pictures</h2>
-                    <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">Our Photo Gallery</h3>
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-accent-700 mb-2">Campus Life in Pictures</h2>
+                    <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-text-primary">Our Photo Gallery</h3>
                 </div>
-                <p class="text-slate-600 dark:text-slate-400 text-sm max-w-md mt-2 md:mt-0">
+                <p class="text-text-secondary text-sm max-w-md mt-2 md:mt-0">
                     Snapshots of learning moments, achievements, cultural festivals, and celebrations at Mary Royal School.
                 </p>
             </div>
 
             <!-- Image Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/1.webp', 'School Event 1')">
+            <div class="gallery-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/1.webp', 'School Event 1')">
                     <img src="assets/images/1.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Gallery+1'" alt="Gallery Image 1" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
 
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/2.webp', 'School Event 2')">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/2.webp', 'School Event 2')">
                     <img src="assets/images/2.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Gallery+2'" alt="Gallery Image 2" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
 
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/3.webp', 'School Event 3')">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/3.webp', 'School Event 3')">
                     <img src="assets/images/3.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Gallery+3'" alt="Gallery Image 3" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
 
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/graduation-gifts-display.webp', 'Graduation Gifts')">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/graduation-gifts-display.webp', 'Graduation Gifts')">
                     <img src="assets/images/graduation-gifts-display.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Graduation+Gifts'" alt="Graduation Gifts" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
 
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/school-celebration-stage.webp', 'Celebration Stage')">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/school-celebration-stage.webp', 'Celebration Stage')">
                     <img src="assets/images/school-celebration-stage.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Celebration+Stage'" alt="Celebration Stage" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
 
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/school-graduation-hero.webp', 'Graduation Ceremony')">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/school-graduation-hero.webp', 'Graduation Ceremony')">
                     <img src="assets/images/school-graduation-hero.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Graduation+Hero'" alt="Graduation Day" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
 
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/4.webp', 'School Activity')">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/4.webp', 'School Activity')">
                     <img src="assets/images/4.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Gallery+4'" alt="School Activity" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
 
-                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-slate-200 dark:bg-slate-800" onclick="openLightbox('assets/images/5.webp', 'School Event')">
+                <div class="relative group cursor-pointer overflow-hidden rounded-2xl h-52 bg-background-tertiary-default" onclick="openLightbox('assets/images/5.webp', 'School Event')">
                     <img src="assets/images/5.webp" onerror="this.src='https://placehold.co/500x500/1d4ed8/ffffff?text=Gallery+5'" alt="School Event" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    <div class="absolute inset-0 bg-brand-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground-full">
                         <i class="fas fa-search-plus text-2xl"></i>
                     </div>
                 </div>
@@ -639,50 +907,50 @@
     </section>
 
     <!-- EVENTS & CALENDAR -->
-    <section id="events" class="py-16 sm:py-24 bg-white dark:bg-slate-900">
+    <section id="events" class="section-warm py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-2">Upcoming Activities</h2>
-                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">School Events & Dates</h3>
+                <h2 class="text-xs font-bold uppercase tracking-widest text-brand-gold mb-2">Upcoming Activities</h2>
+                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-text-primary">School Events & Dates</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Event 1 -->
-                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-start gap-4">
-                    <div class="bg-royal-700 text-white rounded-xl p-3 text-center min-w-[64px] shrink-0">
+                <div class="event-card p-6 rounded-2xl bg-background-primary-default border border-border-button-default flex items-start gap-4">
+                    <div class="bg-brand-primary text-foreground-full rounded-xl p-3 text-center min-w-[64px] shrink-0">
                         <span class="block text-xl font-extrabold font-display leading-none">15</span>
                         <span class="text-[10px] uppercase tracking-wider font-semibold">NOV</span>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-900 dark:text-white text-base">Annual Sports Day</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><i class="far fa-clock mr-1"></i>8:30 AM - 4:00 PM</p>
-                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-2">Inter-house track competitions, games, and award distribution.</p>
+                        <h4 class="font-bold text-text-primary text-base">Annual Sports Day</h4>
+                        <p class="text-xs text-text-tertiary mt-1"><i class="far fa-clock mr-1"></i>8:30 AM - 4:00 PM</p>
+                        <p class="text-xs text-text-secondary mt-2">Inter-house track competitions, games, and award distribution.</p>
                     </div>
                 </div>
 
                 <!-- Event 2 -->
-                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-start gap-4">
-                    <div class="bg-amber-600 text-white rounded-xl p-3 text-center min-w-[64px] shrink-0">
+                <div class="event-card p-6 rounded-2xl bg-background-primary-default border border-border-button-default flex items-start gap-4">
+                    <div class="bg-brand-gold-fill text-brand-deep rounded-xl p-3 text-center min-w-[64px] shrink-0">
                         <span class="block text-xl font-extrabold font-display leading-none">28</span>
                         <span class="text-[10px] uppercase tracking-wider font-semibold">NOV</span>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-900 dark:text-white text-base">Graduation & Thanksgiving</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><i class="far fa-clock mr-1"></i>9:00 AM - 1:00 PM</p>
-                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-2">Celebrating PP2 and Grade 6 transition to higher learning levels.</p>
+                        <h4 class="font-bold text-text-primary text-base">Graduation & Thanksgiving</h4>
+                        <p class="text-xs text-text-tertiary mt-1"><i class="far fa-clock mr-1"></i>9:00 AM - 1:00 PM</p>
+                        <p class="text-xs text-text-secondary mt-2">Celebrating PP2 and Grade 6 transition to higher learning levels.</p>
                     </div>
                 </div>
 
                 <!-- Event 3 -->
-                <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-start gap-4">
-                    <div class="bg-emerald-600 text-white rounded-xl p-3 text-center min-w-[64px] shrink-0">
+                <div class="event-card p-6 rounded-2xl bg-background-primary-default border border-border-button-default flex items-start gap-4">
+                    <div class="bg-chart-2 text-foreground-full rounded-xl p-3 text-center min-w-[64px] shrink-0">
                         <span class="block text-xl font-extrabold font-display leading-none">05</span>
                         <span class="text-[10px] uppercase tracking-wider font-semibold">DEC</span>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-900 dark:text-white text-base">Parent-Teacher Conference</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><i class="far fa-clock mr-1"></i>8:00 AM - 3:00 PM</p>
-                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-2">One-on-one progress review for Term III performance with class tutors.</p>
+                        <h4 class="font-bold text-text-primary text-base">Parent-Teacher Conference</h4>
+                        <p class="text-xs text-text-tertiary mt-1"><i class="far fa-clock mr-1"></i>8:00 AM - 3:00 PM</p>
+                        <p class="text-xs text-text-secondary mt-2">One-on-one progress review for Term III performance with class tutors.</p>
                     </div>
                 </div>
             </div>
@@ -690,48 +958,48 @@
     </section>
 
     <!-- TESTIMONIALS -->
-    <section class="py-16 sm:py-24 bg-royal-900 text-white">
+    <section class="community-spotlight py-16 sm:py-24 text-foreground-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2">Parents & Alumni Feedback</h2>
+                <h2 class="text-xs font-bold uppercase tracking-widest text-brand-gold mb-2">Parents & Alumni Feedback</h2>
                 <h3 class="font-display text-3xl sm:text-4xl font-extrabold">What Our Community Says</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                 <!-- Testimonial 1 -->
-                <div class="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/10">
-                    <div class="flex items-center text-amber-400 gap-1 mb-4">
+                <div class="bg-foreground-full/10 backdrop-blur-md p-8 rounded-2xl border border-foreground-full/10">
+                    <div class="flex items-center text-brand-gold gap-1 mb-4">
                         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                     </div>
-                    <p class="text-royal-100 text-sm sm:text-base italic leading-relaxed mb-6">
+                    <p class="text-foreground-full text-sm sm:text-base italic leading-relaxed mb-6">
                         "Mary Royal School has transformed my child’s confidence and academic drive. The teachers are incredibly attentive, and the CBC project guidance is unmatched."
                     </p>
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-amber-500 text-slate-900 font-bold flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-full bg-brand-gold-fill text-brand-deep font-bold flex items-center justify-center">
                             JM
                         </div>
                         <div>
                             <h4 class="font-bold text-sm">Jane Mwangi</h4>
-                            <p class="text-xs text-royal-200">Parent (Grade 4 & Grade 7)</p>
+                            <p class="text-xs text-foreground-full">Parent (Grade 4 & Grade 7)</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Testimonial 2 -->
-                <div class="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/10">
-                    <div class="flex items-center text-amber-400 gap-1 mb-4">
+                <div class="bg-foreground-full/10 backdrop-blur-md p-8 rounded-2xl border border-foreground-full/10">
+                    <div class="flex items-center text-brand-gold gap-1 mb-4">
                         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                     </div>
-                    <p class="text-royal-100 text-sm sm:text-base italic leading-relaxed mb-6">
+                    <p class="text-foreground-full text-sm sm:text-base italic leading-relaxed mb-6">
                         "The school's emphasis on discipline, Christian values, and public speaking gave my daughter a solid foundation. She seamlessly transitioned into top high school standards."
                     </p>
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-amber-500 text-slate-900 font-bold flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-full bg-brand-gold-fill text-brand-deep font-bold flex items-center justify-center">
                             KO
                         </div>
                         <div>
                             <h4 class="font-bold text-sm">Kevin Otieno</h4>
-                            <p class="text-xs text-royal-200">Alumni Parent</p>
+                            <p class="text-xs text-foreground-full">Alumni Parent</p>
                         </div>
                     </div>
                 </div>
@@ -740,83 +1008,83 @@
     </section>
 
     <!-- CONTACT SECTION WITH WORKING FORM -->
-    <section id="contact" class="py-16 sm:py-24 bg-slate-50 dark:bg-slate-950">
+    <section id="contact" class="section-cool py-16 sm:py-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
                 <!-- Contact Details -->
                 <div class="lg:col-span-5">
-                    <h2 class="text-xs font-bold uppercase tracking-widest text-royal-700 dark:text-amber-400 mb-2">Get In Touch</h2>
-                    <h3 class="font-display text-3xl font-extrabold text-slate-900 dark:text-white mb-6">We'd Love to Hear From You</h3>
-                    <p class="text-slate-600 dark:text-slate-300 text-sm mb-8 leading-relaxed">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-accent-700 mb-2">Get In Touch</h2>
+                    <h3 class="font-display text-3xl font-extrabold text-text-primary mb-6">We'd Love to Hear From You</h3>
+                    <p class="text-text-secondary text-sm mb-8 leading-relaxed">
                         Have questions regarding admissions, fee structure, or school visits? Contact our administration desk or drop us a message below.
                     </p>
 
                     <div class="space-y-6">
                         <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-royal-100 dark:bg-slate-800 text-royal-700 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+                            <div class="w-12 h-12 rounded-xl bg-accent-100 text-accent-700 flex items-center justify-center text-xl shrink-0">
                                 <i class="fas fa-map-marker-alt"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-900 dark:text-white text-base">School Location</h4>
-                                <p class="text-slate-600 dark:text-slate-400 text-sm">Mary Royal School Campus, Off Main Highway, Kenya</p>
+                                <h4 class="font-bold text-text-primary text-base">School Location</h4>
+                                <p class="text-text-secondary text-sm">Mary Royal School Campus, Off Main Highway, Kenya</p>
                             </div>
                         </div>
 
                         <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-royal-100 dark:bg-slate-800 text-royal-700 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+                            <div class="w-12 h-12 rounded-xl bg-accent-100 text-accent-700 flex items-center justify-center text-xl shrink-0">
                                 <i class="fas fa-phone-alt"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-900 dark:text-white text-base">Phone & WhatsApp</h4>
-                                <p class="text-slate-600 dark:text-slate-400 text-sm">0718216374</p>
+                                <h4 class="font-bold text-text-primary text-base">Phone & WhatsApp</h4>
+                                <p class="text-text-secondary text-sm">0718216374</p>
                             </div>
                         </div>
 
                         <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-royal-100 dark:bg-slate-800 text-royal-700 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+                            <div class="w-12 h-12 rounded-xl bg-accent-100 text-accent-700 flex items-center justify-center text-xl shrink-0">
                                 <i class="fas fa-envelope"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-900 dark:text-white text-base">Email Address</h4>
-                                <p class="text-slate-600 dark:text-slate-400 text-sm">info@maryroyalschool.sc.ke / admissions@maryroyalschool.sc.ke</p>
+                                <h4 class="font-bold text-text-primary text-base">Email Address</h4>
+                                <p class="text-text-secondary text-sm">info@maryroyalschool.sc.ke / admissions@maryroyalschool.sc.ke</p>
                             </div>
                         </div>
 
                         <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-royal-100 dark:bg-slate-800 text-royal-700 dark:text-amber-400 flex items-center justify-center text-xl shrink-0">
+                            <div class="w-12 h-12 rounded-xl bg-accent-100 text-accent-700 flex items-center justify-center text-xl shrink-0">
                                 <i class="fas fa-clock"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-900 dark:text-white text-base">Office Hours</h4>
-                                <p class="text-slate-600 dark:text-slate-400 text-sm">Monday - Friday: 7:30 AM - 5:00 PM<br>Saturday: 8:00 AM - 12:00 PM</p>
+                                <h4 class="font-bold text-text-primary text-base">Office Hours</h4>
+                                <p class="text-text-secondary text-sm">Monday - Friday: 7:30 AM - 5:00 PM<br>Saturday: 8:00 AM - 12:00 PM</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Contact Form -->
-                <div class="lg:col-span-7 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md">
+                <div class="contact-panel lg:col-span-7 bg-background-primary-default p-8 rounded-3xl border border-border-button-default">
                     <form id="contact-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                                <label for="fullName" class="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-2">Full Name *</label>
-                                <input type="text" id="fullName" required placeholder="e.g. John Doe" class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600 transition-colors">
+                                <label for="fullName" class="block text-xs font-bold uppercase text-text-secondary mb-2">Full Name *</label>
+                                <input type="text" id="fullName" required placeholder="e.g. John Doe" class="w-full px-4 py-3 rounded-xl border border-border-button-default bg-background-full text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring transition-colors">
                             </div>
                             <div>
-                                <label for="email" class="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-2">Email Address *</label>
-                                <input type="email" id="email" required placeholder="john@example.com" class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600 transition-colors">
+                                <label for="email" class="block text-xs font-bold uppercase text-text-secondary mb-2">Email Address *</label>
+                                <input type="email" id="email" required placeholder="john@example.com" class="w-full px-4 py-3 rounded-xl border border-border-button-default bg-background-full text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring transition-colors">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                                <label for="phone" class="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-2">Phone Number *</label>
-                                <input type="tel" id="phone" required placeholder="0718216374" class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600 transition-colors">
+                                <label for="phone" class="block text-xs font-bold uppercase text-text-secondary mb-2">Phone Number *</label>
+                                <input type="tel" id="phone" required placeholder="0718216374" class="w-full px-4 py-3 rounded-xl border border-border-button-default bg-background-full text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring transition-colors">
                             </div>
                             <div>
-                                <label for="subject" class="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-2">Inquiry Type</label>
-                                <select id="subject" class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600 transition-colors">
+                                <label for="subject" class="block text-xs font-bold uppercase text-text-secondary mb-2">Inquiry Type</label>
+                                <select id="subject" class="w-full px-4 py-3 rounded-xl border border-border-button-default bg-background-full text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring transition-colors">
                                     <option value="Admissions Inquiry">Admissions Inquiry</option>
                                     <option value="Fee Structure">Fee Structure</option>
                                     <option value="School Tour">Schedule School Tour</option>
@@ -826,11 +1094,11 @@
                         </div>
 
                         <div>
-                            <label for="message" class="block text-xs font-bold uppercase text-slate-700 dark:text-slate-300 mb-2">Your Message *</label>
-                            <textarea id="message" rows="4" required placeholder="Tell us about your child or inquiry..." class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600 transition-colors"></textarea>
+                            <label for="message" class="block text-xs font-bold uppercase text-text-secondary mb-2">Your Message *</label>
+                            <textarea id="message" rows="4" required placeholder="Tell us about your child or inquiry..." class="w-full px-4 py-3 rounded-xl border border-border-button-default bg-background-full text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring transition-colors"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full min-h-[48px] py-3 px-6 bg-royal-700 hover:bg-royal-800 text-white font-bold rounded-xl shadow-md transition-all duration-300">
+                        <button type="submit" class="w-full min-h-[48px] py-3 px-6 bg-brand-primary hover:bg-brand-primary-hover text-foreground-full font-bold rounded-xl shadow-md transition-all duration-300">
                             Send Message
                         </button>
                     </form>
@@ -844,30 +1112,30 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 pt-16 pb-12 border-t border-slate-800">
+    <footer class="site-footer text-text-tertiary pt-16 pb-12 border-t border-border-button-default">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-border-button-default">
 
                 <!-- Col 1 -->
                 <div>
                     <div class="flex items-center gap-3 mb-4">
                         <img src="assets/images/logo-transparent.webp" onerror="this.src='https://placehold.co/60x60/1d4ed8/ffffff?text=MRS'" alt="Mary Royal School Logo" class="h-10 w-10 object-contain" />
-                        <span class="font-display font-extrabold text-xl text-white">Mary Royal School</span>
+                        <span class="font-display font-extrabold text-xl text-foreground-full">Mary Royal School</span>
                     </div>
-                    <p class="text-xs leading-relaxed text-slate-400">
+                    <p class="text-xs leading-relaxed text-text-tertiary">
                         Empowering young minds through quality CBC education, character development, and holistic learning since establishment.
                     </p>
                     <div class="flex items-center gap-3 mt-6">
-                        <a href="#" aria-label="Facebook" class="w-9 h-9 rounded-lg bg-slate-800 text-slate-300 hover:bg-royal-600 hover:text-white flex items-center justify-center transition-colors">
+                        <a href="#" aria-label="Facebook" class="w-9 h-9 rounded-lg bg-background-primary-default text-text-tertiary hover:bg-brand-primary hover:text-foreground-full flex items-center justify-center transition-colors">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" aria-label="Twitter" class="w-9 h-9 rounded-lg bg-slate-800 text-slate-300 hover:bg-royal-600 hover:text-white flex items-center justify-center transition-colors">
+                        <a href="#" aria-label="Twitter" class="w-9 h-9 rounded-lg bg-background-primary-default text-text-tertiary hover:bg-brand-primary hover:text-foreground-full flex items-center justify-center transition-colors">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="#" aria-label="Instagram" class="w-9 h-9 rounded-lg bg-slate-800 text-slate-300 hover:bg-royal-600 hover:text-white flex items-center justify-center transition-colors">
+                        <a href="#" aria-label="Instagram" class="w-9 h-9 rounded-lg bg-background-primary-default text-text-tertiary hover:bg-brand-primary hover:text-foreground-full flex items-center justify-center transition-colors">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" aria-label="YouTube" class="w-9 h-9 rounded-lg bg-slate-800 text-slate-300 hover:bg-royal-600 hover:text-white flex items-center justify-center transition-colors">
+                        <a href="#" aria-label="YouTube" class="w-9 h-9 rounded-lg bg-background-primary-default text-text-tertiary hover:bg-brand-primary hover:text-foreground-full flex items-center justify-center transition-colors">
                             <i class="fab fa-youtube"></i>
                         </a>
                     </div>
@@ -875,34 +1143,34 @@
 
                 <!-- Col 2 -->
                 <div>
-                    <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Quick Links</h4>
+                    <h4 class="text-sm font-bold text-foreground-full uppercase tracking-wider mb-4">Quick Links</h4>
                     <ul class="space-y-2 text-xs">
-                        <li><a href="#about" class="hover:text-amber-400 transition-colors">About Our School</a></li>
-                        <li><a href="#academics" class="hover:text-amber-400 transition-colors">Academic Programmes</a></li>
-                        <li><a href="#activities" class="hover:text-amber-400 transition-colors">Co-Curricular Activities</a></li>
-                        <li><a href="#gallery" class="hover:text-amber-400 transition-colors">School Gallery</a></li>
-                        <li><a href="#events" class="hover:text-amber-400 transition-colors">Events & Calendar</a></li>
-                        <li><a href="https://portal.maryroyalschool.co.ke/" class="hover:text-amber-400 transition-colors">Staff / Parent / Learner Portal</a></li>
+                        <li><a href="#about" class="hover:text-brand-gold transition-colors">About Our School</a></li>
+                        <li><a href="#academics" class="hover:text-brand-gold transition-colors">Academic Programmes</a></li>
+                        <li><a href="#activities" class="hover:text-brand-gold transition-colors">Co-Curricular Activities</a></li>
+                        <li><a href="#gallery" class="hover:text-brand-gold transition-colors">School Gallery</a></li>
+                        <li><a href="#events" class="hover:text-brand-gold transition-colors">Events & Calendar</a></li>
+                        <li><a href="https://portal.maryroyalschool.co.ke/" class="hover:text-brand-gold transition-colors">Staff / Parent / Learner Portal</a></li>
                     </ul>
                 </div>
 
                 <!-- Col 3 -->
                 <div>
-                    <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Academics</h4>
+                    <h4 class="text-sm font-bold text-foreground-full uppercase tracking-wider mb-4">Academics</h4>
                     <ul class="space-y-2 text-xs">
-                        <li><a href="#academics" class="hover:text-amber-400 transition-colors">Playgroup & Kindergarten</a></li>
-                        <li><a href="#academics" class="hover:text-amber-400 transition-colors">Primary CBC (Grade 1-6)</a></li>
-                        <li><a href="#academics" class="hover:text-amber-400 transition-colors">Junior Secondary (Grade 7-9)</a></li>
-                        <li><a href="#academics" class="hover:text-amber-400 transition-colors">Computer & STEM Labs</a></li>
-                        <li><a href="#academics" class="hover:text-amber-400 transition-colors">Guidance & Counseling</a></li>
+                        <li><a href="#academics" class="hover:text-brand-gold transition-colors">Playgroup & Kindergarten</a></li>
+                        <li><a href="#academics" class="hover:text-brand-gold transition-colors">Primary CBC (Grade 1-6)</a></li>
+                        <li><a href="#academics" class="hover:text-brand-gold transition-colors">Junior Secondary (Grade 7-9)</a></li>
+                        <li><a href="#academics" class="hover:text-brand-gold transition-colors">Computer & STEM Labs</a></li>
+                        <li><a href="#academics" class="hover:text-brand-gold transition-colors">Guidance & Counseling</a></li>
                     </ul>
                 </div>
 
                 <!-- Col 4 -->
                 <div>
-                    <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Admissions & Contact</h4>
-                    <p class="text-xs text-slate-400 mb-3">Admissions office is open Mon-Fri during working hours.</p>
-                    <button onclick="openModal('admissions-modal')" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-slate-900 font-bold rounded-xl text-xs transition-colors">
+                    <h4 class="text-sm font-bold text-foreground-full uppercase tracking-wider mb-4">Admissions & Contact</h4>
+                    <p class="text-xs text-text-tertiary mb-3">Admissions office is open Mon-Fri during working hours.</p>
+                    <button onclick="openModal('admissions-modal')" class="w-full py-2.5 bg-brand-gold-fill hover:bg-brand-gold-hover text-brand-deep font-bold rounded-xl text-xs transition-colors">
                         Apply Online Today
                     </button>
                 </div>
@@ -910,51 +1178,51 @@
             </div>
 
             <!-- Bottom Copyright -->
-            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-text-tertiary gap-4">
                 <p>&copy; 2026 Mary Royal School. All Rights Reserved.</p>
                 <div class="flex items-center space-x-6">
-                    <a href="sitemap.xml" class="hover:text-slate-400">Sitemap</a>
-                    <a href="robots.txt" class="hover:text-slate-400">Robots.txt</a>
-                    <a href="#" class="hover:text-slate-400">Privacy Policy</a>
+                    <a href="sitemap.xml" class="hover:text-text-tertiary">Sitemap</a>
+                    <a href="robots.txt" class="hover:text-text-tertiary">Robots.txt</a>
+                    <a href="#" class="hover:text-text-tertiary">Privacy Policy</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- ADMISSIONS MODAL -->
-    <div id="admissions-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeModalOnOutsideClick(event, 'admissions-modal')">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative modal-enter modal-enter-active">
-            <button onclick="closeModal('admissions-modal')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white p-2">
+    <div id="admissions-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-brand-overlay/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeModalOnOutsideClick(event, 'admissions-modal')">
+        <div class="bg-background-primary-default rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-separator-border relative modal-enter modal-enter-active">
+            <button onclick="closeModal('admissions-modal')" class="absolute top-5 right-5 text-text-tertiary hover:text-text-secondary p-2">
                 <i class="fas fa-times text-xl"></i>
             </button>
 
             <div class="text-center mb-6">
-                <div class="w-12 h-12 rounded-full bg-royal-100 dark:bg-slate-800 text-royal-700 dark:text-amber-400 mx-auto flex items-center justify-center text-xl mb-3">
+                <div class="w-12 h-12 rounded-full bg-accent-100 text-accent-700 mx-auto flex items-center justify-center text-xl mb-3">
                     <i class="fas fa-file-signature"></i>
                 </div>
-                <h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white">Admission Application</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Fill in the details below to initiate registration for your child.</p>
+                <h3 class="font-display text-2xl font-bold text-text-primary">Admission Application</h3>
+                <p class="text-xs text-text-tertiary mt-1">Fill in the details below to initiate registration for your child.</p>
             </div>
 
             <form id="admission-form" onsubmit="handleAdmissionSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Parent/Guardian Name</label>
-                    <input type="text" required placeholder="Full Name" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600">
+                    <label class="block text-xs font-bold text-text-secondary uppercase mb-1">Parent/Guardian Name</label>
+                    <input type="text" required placeholder="Full Name" class="w-full px-4 py-2.5 rounded-xl border border-border-button-default bg-background-full text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Phone Number</label>
-                    <input type="tel" required placeholder="0718216374" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600">
+                    <label class="block text-xs font-bold text-text-secondary uppercase mb-1">Phone Number</label>
+                    <input type="tel" required placeholder="0718216374" class="w-full px-4 py-2.5 rounded-xl border border-border-button-default bg-background-full text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Child's Name & Current Age</label>
-                    <input type="text" required placeholder="e.g. Mary Wanjiku (6 Years)" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600">
+                    <label class="block text-xs font-bold text-text-secondary uppercase mb-1">Child's Name & Current Age</label>
+                    <input type="text" required placeholder="e.g. Mary Wanjiku (6 Years)" class="w-full px-4 py-2.5 rounded-xl border border-border-button-default bg-background-full text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Grade / Level Applying For</label>
-                    <select required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-royal-600">
+                    <label class="block text-xs font-bold text-text-secondary uppercase mb-1">Grade / Level Applying For</label>
+                    <select required class="w-full px-4 py-2.5 rounded-xl border border-border-button-default bg-background-full text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-border-focus-ring">
                         <option value="">Select Level</option>
                         <option value="Playgroup / PP1 / PP2">Playgroup / Early Childhood</option>
                         <option value="Primary Grade 1-6">Primary School (Grade 1 - 6)</option>
@@ -962,7 +1230,7 @@
                     </select>
                 </div>
 
-                <button type="submit" class="w-full py-3 bg-royal-700 hover:bg-royal-800 text-white font-bold rounded-xl shadow-md text-sm transition-all mt-4">
+                <button type="submit" class="w-full py-3 bg-brand-primary hover:bg-brand-primary-hover text-foreground-full font-bold rounded-xl shadow-md text-sm transition-all mt-4">
                     Submit Application
                 </button>
             </form>
@@ -972,13 +1240,13 @@
     </div>
 
     <!-- LIGHTBOX MODAL FOR GALLERY -->
-    <div id="lightbox-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4" onclick="closeLightbox()">
+    <div id="lightbox-modal" class="fixed inset-0 z-50 hidden bg-brand-overlay/90 backdrop-blur-md flex items-center justify-center p-4" onclick="closeLightbox()">
         <div class="relative max-w-4xl w-full text-center" onclick="event.stopPropagation()">
-            <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white text-2xl hover:text-amber-400 p-2">
+            <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-foreground-full text-2xl hover:text-brand-gold p-2">
                 <i class="fas fa-times"></i>
             </button>
             <img id="lightbox-img" src="" alt="Enlarged View" class="max-h-[80vh] mx-auto rounded-2xl shadow-2xl object-contain">
-            <p id="lightbox-caption" class="text-white text-sm font-semibold mt-4"></p>
+            <p id="lightbox-caption" class="text-foreground-full text-sm font-semibold mt-4"></p>
         </div>
     </div>
 
@@ -993,8 +1261,8 @@
         function setTheme(isDark) {
             if (isDark) {
                 document.documentElement.classList.add('dark');
-                themeIcon.className = 'fas fa-sun text-amber-400';
-                mobileThemeIcon.className = 'fas fa-sun text-amber-400';
+                themeIcon.className = 'fas fa-sun text-brand-gold';
+                mobileThemeIcon.className = 'fas fa-sun text-brand-gold';
                 localStorage.setItem('theme', 'dark');
             } else {
                 document.documentElement.classList.remove('dark');
@@ -1085,7 +1353,7 @@
         function handleFormSubmit(event) {
             event.preventDefault();
             const alertBox = document.getElementById('form-alert');
-            alertBox.className = "mt-4 p-4 rounded-xl text-sm font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 block";
+            alertBox.className = "mt-4 p-4 rounded-xl text-sm font-semibold bg-chart-2/10 text-chart-2 block";
             alertBox.textContent = "Thank you! Your message has been sent successfully. Our administration will contact you shortly.";
             document.getElementById('contact-form').reset();
         }
@@ -1093,7 +1361,7 @@
         function handleAdmissionSubmit(event) {
             event.preventDefault();
             const alertBox = document.getElementById('admission-alert');
-            alertBox.className = "mt-4 p-3 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 block";
+            alertBox.className = "mt-4 p-3 rounded-xl text-xs font-semibold bg-chart-2/10 text-chart-2 block";
             alertBox.textContent = "Application submitted! Our admissions desk will reach out with the application pack.";
             document.getElementById('admission-form').reset();
             setTimeout(() => {

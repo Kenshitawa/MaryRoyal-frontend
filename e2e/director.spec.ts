@@ -74,11 +74,11 @@ test("Director signs in, changes temporary password when required, and manages l
  await themeControls.getByRole("button",{name:"Switch mode (currently Light)",exact:true}).click();
  await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
  await expect(page.locator("html")).toHaveClass(/dark/);
- await expect(page.locator("html")).toHaveCSS("background-color","rgb(18, 18, 18)");
+ await expect(page.locator("html")).toHaveCSS("background-color","rgb(10, 16, 29)");
  expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("dark");
  await page.reload();
  await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
- await expect(page.locator("html")).toHaveCSS("background-color","rgb(18, 18, 18)");
+ await expect(page.locator("html")).toHaveCSS("background-color","rgb(10, 16, 29)");
  await expect(themeControls.getByRole("button",{name:"Switch mode (currently Dark)",exact:true})).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("dark");
  await themeControls.getByRole("button",{name:"Switch mode (currently Dark)",exact:true}).click();
@@ -218,7 +218,7 @@ test("root page applies saved dark theme before render without browser errors",a
  await page.getByRole("button",{name:"Hide password"}).click();
  await expect(password).toHaveAttribute("type","password");
  // The redesigned canvas is painted on html; body intentionally stays transparent.
- await expect(page.locator("html")).toHaveCSS("background-color","rgb(18, 18, 18)");
+ await expect(page.locator("html")).toHaveCSS("background-color","rgb(10, 16, 29)");
  await expect(page.locator("html")).toHaveCSS("color-scheme","dark");
  const lightContext=await browser.newContext();
  const lightPage=await lightContext.newPage();
@@ -252,8 +252,9 @@ test("non-director roles receive only the account and learner access configured 
    const admissions=await api.get("/api/admissions");expect(admissions.status()).toBe(["director","headteacher","deputy","secretary"].includes(role)?200:403);
    const admissionDraft=await api.post("/api/admissions",{data:{}});expect(admissionDraft.status()).toBe(["director","secretary"].includes(role)?201:403);if(admissionDraft.status()===201)testAdmissionDraftIds.push(((await admissionDraft.json()).draft as {id:string}).id);
   const learners=await api.get("/api/learners");
-  const canViewLearners=["headteacher","deputy","secretary","teacher","parent","learner","accountant"].includes(role);
+  const canViewLearners=["headteacher","deputy","secretary","parent","learner","accountant"].includes(role);
   expect(learners.status()).toBe(canViewLearners?200:403);
+  if(role==="teacher"){const assignedRoster=await api.get("/api/learners/academics?grade=Grade%204&subject=English");expect(assignedRoster.status()).toBe(200);const roster=await assignedRoster.json() as {learners:Array<{id:string;name:string}>};expect(roster.learners.length).toBeGreaterThan(0);}
   if(role==="accountant"){const directory=await learners.json() as {learners:Array<Record<string,unknown>>};expect(directory.learners.length).toBeGreaterThan(0);expect(directory.learners[0]).not.toHaveProperty("gender");const firstId=String(directory.learners[0].id);const profile=await api.get(`/learners/${firstId}`);expect(profile.ok()).toBeTruthy();const html=await profile.text();expect(html).toContain("Outstanding Fee Balance");expect(html).not.toContain("Parents &amp; Guardians");expect(html).not.toContain("Biography &amp; Profile");expect(html).not.toContain("Restricted health information");expect(html).not.toContain("Learner timeline");expect(html).not.toContain("Academics and progress");expect(html).not.toContain("Discipline and follow-up");}
   if(["parent","learner","teacher"].includes(role)){const profile=await api.get(`/learners/${testOutOfScopeLearnerId}`);const profileContent=await profile.text();expect(profileContent,`${role} must not receive another learner's profile`).not.toContain("Role Probe Learner");expect(profileContent).not.toContain("Restricted health information");}
   if(role==="teacher"){const teacherUser=await cleanupDb.user.findUnique({where:{email:"teacher@maryroyal.ac.ke"},select:{id:true,name:true}});expect(teacherUser).toBeTruthy();const profile=await api.get(`/staff/${teacherUser!.id}`);expect(profile.ok()).toBeTruthy();expect(await profile.text()).toContain(teacherUser!.name);}
@@ -321,9 +322,9 @@ test("teacher marks require assignment, Head Teacher approval, and Director rele
   return api;
  }
  const teacher=await login("teacher@maryroyal.ac.ke",["PortalTest2026!","MaryRoyal2026!"]);
- const learnerResult=await teacher.get("/api/learners?take=100");expect(learnerResult.ok()).toBeTruthy();
- const learnerData=await learnerResult.json() as {learners:Array<{id:string;admissionNo:string;grade:string}>};
- const learner=learnerData.learners.find(item=>item.admissionNo===testLearnerAdmission)??learnerData.learners.find(item=>item.grade==="Grade 4");expect(learner).toBeTruthy();
+ const learnerResult=await teacher.get("/api/learners/academics?grade=Grade%204&subject=English");expect(learnerResult.ok()).toBeTruthy();
+ const learnerData=await learnerResult.json() as {learners:Array<{id:string;name:string}>};
+ const learner=learnerData.learners[0];expect(learner).toBeTruthy();
  const term="2027 Term 1";
  const idor=await teacher.post("/api/assessments",{data:{learnerId:testOutOfScopeLearnerId,subject:"English",score:60,term:"2026 Term 3"}});expect(idor.status()).toBe(403);
  const created=await teacher.post("/api/assessments",{data:{learnerId:learner!.id,subject:"English",score:77,term,strand:"Reading",competency:"Reads with understanding",comment:"Good progress."}});
@@ -520,7 +521,7 @@ test("admission slip download returns a valid one-page PDF", async ({ playwright
 
 test("teacher records attendance only for an assigned class and cannot tamper with another class",async({playwright})=>{
  const api=await playwright.request.newContext({baseURL:"http://127.0.0.1:3187",extraHTTPHeaders:loginHeaders()});let login=await api.post("/api/login",{data:{email:"teacher@maryroyal.ac.ke",password:"PortalTest2026!"}});if(!login.ok())login=await api.post("/api/login",{data:{email:"teacher@maryroyal.ac.ke",password:"MaryRoyal2026!"}});expect(login.ok()).toBeTruthy();if((await login.json()).forcePasswordChange)await api.post("/api/change-password",{data:{password:"PortalTest2026!"}});
- const learnerData=await (await api.get("/api/learners?take=100")).json() as {learners:Array<{id:string;grade:string}>};const learner=learnerData.learners.find(item=>item.grade==="Grade 4");expect(learner).toBeTruthy();const date=new Date().toISOString().slice(0,10);const day=new Date(`${date}T00:00:00.000Z`);const existingAttendance=await cleanupDb.attendance.findUnique({where:{learnerId_date:{learnerId:learner!.id,date:day}}});attendanceFixture={learnerId:learner!.id,date,previousStatus:existingAttendance?.status??null};const saved=await api.post("/api/attendance",{data:{grade:"Grade 4",date,records:[{learnerId:learner!.id,status:"ABSENT"}]}});expect(saved.status()).toBe(200);const updated=await api.get(`/api/attendance?grade=Grade%204&date=${date}`);expect(updated.ok()).toBeTruthy();const updatedData=await updated.json() as {learners:Array<{id:string;status:string}>};expect(updatedData.learners.find(item=>item.id===learner!.id)?.status).toBe("ABSENT");const idor=await api.post("/api/attendance",{data:{grade:"Grade 9",date,records:[{learnerId:learner!.id,status:"PRESENT"}]}});expect(idor.status()).toBe(403);await api.dispose();
+ const learnerData=await (await api.get("/api/learners/academics?grade=Grade%204&subject=Mathematics")).json() as {learners:Array<{id:string}>};const learner=learnerData.learners[0];expect(learner).toBeTruthy();const date=new Date().toISOString().slice(0,10);const day=new Date(`${date}T00:00:00.000Z`);const existingAttendance=await cleanupDb.attendance.findUnique({where:{learnerId_date:{learnerId:learner!.id,date:day}}});attendanceFixture={learnerId:learner!.id,date,previousStatus:existingAttendance?.status??null};const saved=await api.post("/api/attendance",{data:{grade:"Grade 4",date,records:[{learnerId:learner!.id,status:"ABSENT"}]}});expect(saved.status()).toBe(200);const updated=await api.get(`/api/attendance?grade=Grade%204&date=${date}`);expect(updated.ok()).toBeTruthy();const updatedData=await updated.json() as {learners:Array<{id:string;status:string}>};expect(updatedData.learners.find(item=>item.id===learner!.id)?.status).toBe("ABSENT");const idor=await api.post("/api/attendance",{data:{grade:"Grade 9",date,records:[{learnerId:learner!.id,status:"PRESENT"}]}});expect(idor.status()).toBe(403);await api.dispose();
 });
 
 test("assigned teachers publish work, learners submit it, and school leaders confirm teaching logs",async({playwright})=>{

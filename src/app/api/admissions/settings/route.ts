@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
+import { getDraftRetentionDays, invalidateDraftRetentionDaysCache } from "@/lib/redis-cache";
 
 async function actor() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -24,11 +25,12 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const setting = await db.schoolSetting.findUnique({
-    where: { key: "draft_retention_days" },
+  const days = await getDraftRetentionDays(async () => {
+    const setting = await db.schoolSetting.findUnique({
+      where: { key: "draft_retention_days" },
+    });
+    return setting ? parseInt(setting.value, 10) || 0 : 0;
   });
-
-  const days = setting ? parseInt(setting.value, 10) || 0 : 0;
 
   return NextResponse.json({
     draftRetentionDays: days,
@@ -86,6 +88,7 @@ export async function PATCH(request: Request) {
       entityId: `draft_retention_days=${days}`,
     },
   });
+  await invalidateDraftRetentionDaysCache();
 
   return NextResponse.json({
     success: true,

@@ -86,3 +86,11 @@ Production database and app-host regions were not verified. `.env` contains a `D
 - `npm test -- --maxWorkers=1 --testTimeout=20000` passed (16 files, 81/81 tests).
 - `npm run build` passed on retry (SQLite/local schema); `npm run build:production` passed (PostgreSQL schema, 82 routes).
 - Lighthouse and E2E/mobile non-regression checks remain outstanding.
+
+## Follow-up implementation and measurement — 2026-11-18
+
+- The assessment workspace now loads its typed data-grid adapter through a dynamic import. The production build completed for 82 routes; Next.js reported `/assessments` at 8.92 kB route JS and 250 kB First Load JS. Other route summaries were learners 7.54/203 kB, learning 8.82/203 kB, and library 10.2/194 kB.
+- The raw bundle gate still fails: shared JavaScript is 476.3 KiB against 350 KiB, and route-specific JavaScript is 394.8 KiB for assessments, 274.3 KiB for learning, 256.9 KiB for learners and 256.0 KiB for library against 250 KiB. Five total violations remain. The Next.js route summary and raw-size budget use different accounting; neither result is substituted for the other. The thresholds are unchanged.
+- Added an optional Redis read-through cache only for the non-personal, school-wide admission draft-retention setting (30-second TTL, invalidated on update). All child, family, staff, finance, academic and health data is excluded. No Redis service was provisioned or live-tested, so broad latency improvement has not been established.
+- `npm audit --omit=dev` reported zero production dependency vulnerabilities. Lighthouse, real query timings, live Redis behavior and production-region measurements remain unverified. The current Node 26.12.1 runtime is outside the declared Node 20.9–22 range.
+- The standalone school website passed a Playwright smoke check for mobile and desktop dark-mode toggles, mobile-menu open/close, no horizontal overflow at 390px/1440px, and no page errors. Full authenticated-app E2E remains a separate release gate.

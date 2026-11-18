@@ -3,6 +3,7 @@ import { z } from "zod";
 const productionEnvironmentSchema = z.object({
   DATABASE_URL: z.string().url().refine(value => /^postgres(ql)?:\/\//i.test(value), "must be a PostgreSQL URL"),
   SESSION_SECRET: z.string().min(32).refine(value => !/replace-this|example|change-me/i.test(value), "must be a unique secret"),
+  REDIS_URL: z.string().url().refine(value => /^rediss?:\/\//i.test(value), "must be a Redis URL").optional(),
   OBJECT_STORAGE_DRIVER: z.enum(["supabase", "local"]).default("local"),
   VERCEL: z.string().optional(),
   SUPABASE_URL: z.string().url().optional(),

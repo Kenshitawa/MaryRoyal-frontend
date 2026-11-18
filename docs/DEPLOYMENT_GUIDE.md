@@ -32,6 +32,8 @@ The supplied Supabase dashboard showed project status Healthy on 2026-10-27. Its
 
 At Node server startup, the app validates production `DATABASE_URL`, `SESSION_SECRET`, and storage-driver configuration. Build-time validation is skipped because Vercel builds do not connect to the database; production server startup remains strict. When `OBJECT_STORAGE_DRIVER=supabase`, all three Supabase storage variables are required. Vercel production rejects local file storage because its filesystem is ephemeral. Validation reports variable names only, never values. `DIRECT_URL` is needed by migration commands, not app requests.
 
+An optional `REDIS_URL` enables a 30-second cache for the non-personal admission draft-retention setting only; learner, family, finance, grade, and session data are never cached there. The cache is invalidated when the setting changes, and Redis connection/data errors are surfaced rather than silently bypassed. Use a self-hosted Redis endpoint only after network access and authentication are secured; Redis is not provisioned by this project and no paid cache service is required.
+
 ## Vercel + Supabase setup
 
 1. Connect `MaryRoyal-frontend`, select the repository root, and keep the Next.js framework preset. Its current `main` branch contains the complete monolith. The included `vercel.json` selects `npm ci` and `npm run build:production`.

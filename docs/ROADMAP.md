@@ -18,6 +18,14 @@ This roadmap separates source implementation, verified acceptance, and productio
 - The Deputy follow-up exposed low contrast in the shared dark-mode secondary-text token. It now resolves to neutral-300, and the focused Deputy rerun passed. The earlier parent payment-guide size finding and exam empty-state finding are also absent from these focused latest-source results.
 - Welfare Chair and Non-teaching Staff at both widths, the remaining three 390px role collections, refreshed visual contact sheets, sign-in visual review, desktop/keyboard/screen-reader review, and browser/physical print QA remain unverified. U10 and U11 are not complete; no production-readiness claim follows from these partial checks.
 
+## Public website refresh and performance follow-up — 2026-11-18
+
+- The standalone public school website has a BoardUI-token-based color refresh, a higher-priority hero-image preload, and lazy-loaded below-fold images. A static-page Playwright check passed at 390px and 1440px for theme controls, mobile menu open/close, horizontal overflow, and browser errors. This is not a substitute for the incomplete authenticated-app mobile audit.
+- The assessment workspace now dynamically loads its typed data-grid adapter. A PostgreSQL-schema production build completed for 82 routes. The raw performance gate still fails: 476.3 KiB shared against 350 KiB, and assessments 394.8 KiB, learning 274.3 KiB, learners 256.9 KiB and library 256.0 KiB against 250 KiB. Thresholds remain unchanged.
+- Optional Redis caching is limited to the non-personal, school-wide draft-retention setting (30-second TTL and invalidation on update). No Redis service was provisioned or live-tested; this is not a broad latency claim. Production dependency audit reported zero vulnerabilities.
+- Lint, type-check, 86 unit tests, schema parity, history secret scan, production build and `git diff --check` passed. The 48-test Playwright attempt was stopped after the first mobile-audit collection failed; it is not a full-suite result. Stale dark-surface and teacher-roster expectations were aligned with current styling and assigned-class access, and the isolated `e2e/director.spec.ts` run then passed 12/12. The complete Playwright/mobile sweep remains open. Node 26.12.1 remains outside the declared Node 20.9–22 range.
+- No production deployment is authorized by this work. U11, mobile/privacy/IDOR, backup/restore and other documented release gates remain open.
+
 ## Owner-directed production release — 2026-11-01
 
 - The owner explicitly directed deployment of feature commit 02712366cfc50a00e77d0ef2ec89e6ec3c4d07da to Vercel Production while assuming unresolved gates, and deferred the encrypted production backup. This is a risk acceptance for this deployment only; it does not close the technical gates below or certify the app for real learner data.
