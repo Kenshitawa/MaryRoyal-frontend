@@ -31,11 +31,17 @@ export default async function TimetablePage() {
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
-    db.user.findMany({
-      where: { role: { in: ["TEACHER", "DEPUTY", "SENIOR_TEACHER"] }, suspended: false },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
+    // Cast the enum to text so this page remains usable while a production
+    // database is catching up with the SENIOR_TEACHER enum migration. Prisma
+    // sends enum labels as typed values, which makes the entire page fail on
+    // older databases even though the rest of the timetable schema is ready.
+    db.$queryRaw<Array<{ id: string; name: string }>>`
+      SELECT "id", "name"
+      FROM "User"
+      WHERE "role"::text IN ('TEACHER', 'DEPUTY', 'SENIOR_TEACHER')
+        AND "suspended" = false
+      ORDER BY "name" ASC
+    `,
     db.teacherAssignment.findMany({
       select: { teacherId: true, grade: true, subject: true },
     }),
