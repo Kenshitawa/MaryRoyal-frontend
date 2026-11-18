@@ -182,10 +182,13 @@ function StatHint({ label, hint }: { label: string; hint: string }) {
 
 function PlainStatCard({ stat }: { stat: Stat }) {
   const localize = useTemplateCopy();
+  const tone = stat.tone ?? "blue";
+  const cardTone = tone === "emerald" ? "success" : tone === "orange" ? "warning" : tone === "pink" ? "danger" : tone === "purple" ? "neutral" : "brand";
+  const iconTone = tone === "emerald" ? "bg-status-lime-background text-status-lime-text" : tone === "orange" ? "bg-status-yellow-background text-status-yellow-text" : tone === "pink" ? "bg-status-rose-background text-status-rose-text" : tone === "purple" ? "bg-status-purple-background text-status-purple-text" : "bg-status-blue-background text-status-blue-text";
   return localize((
-    <section className="flex h-[132px] min-w-0 flex-col items-start justify-between rounded-2xl bg-background-secondary-default p-4">
-      <span className="flex items-center rounded-md bg-stat-card-icon-background p-1.5">
-        <stat.icon className="size-5 shrink-0 text-foreground-icon-primary" aria-hidden />
+    <section data-dashboard-tone={cardTone} className="dashboard-stat flex h-[132px] min-w-0 flex-col items-start justify-between rounded-2xl border p-4">
+      <span className={cx("flex items-center rounded-md p-1.5", iconTone)}>
+        <stat.icon className="size-5 shrink-0" aria-hidden />
       </span>
       <div className="flex w-full flex-col gap-0.5">
         <p className="w-full text-body-medium text-text-secondary">{stat.label}</p>
@@ -271,13 +274,15 @@ export function StatCards({
         className,
       )}
     >
-      {items.slice(0, count ?? items.length).map((stat) =>
+      {items.slice(0, count ?? items.length).map((stat, index) => {
+        const resolvedStat = stat.tone ? stat : { ...stat, tone: (["blue", "purple", "emerald", "orange"] as const)[index % 4] };
+        return (
         variant === "footer" ? (
-          <FooterStatCard key={stat.label} stat={stat} />
+          <FooterStatCard key={stat.label} stat={resolvedStat} />
         ) : (
-          <PlainStatCard key={stat.label} stat={stat} />
-        ),
-      )}
+          <PlainStatCard key={stat.label} stat={resolvedStat} />
+        ));
+      })}
     </div>
   ));
 }

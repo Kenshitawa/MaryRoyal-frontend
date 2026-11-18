@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { BookOpen, Send, Users } from "lucide-react";
+import { BookOpen, PenLine, Send, Users } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { Select, SelectItem } from "@/components/base/select/select";
@@ -16,6 +16,7 @@ type DiaryReply = { id: string; message: string; createdAt: string; author: Writ
 type DiaryEntry = { id: string; subject: string; message: string; createdAt: string; learner: Person; author: Writer; replies: DiaryReply[] };
 
 const WRITERS = new Set(["DIRECTOR", "HEAD_TEACHER", "SECRETARY", "TEACHER"]);
+const GRADES = ["PP1", "PP2", ...Array.from({ length: 9 }, (_, index) => `Grade ${index + 1}`)];
 
 function dateLabel(value: string) {
   return new Intl.DateTimeFormat("en-KE", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Nairobi" }).format(new Date(value));
@@ -27,6 +28,8 @@ export default function DiaryClient({ role }: { role: string }) {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [learners, setLearners] = useState<Person[]>([]);
   const [selectedLearner, setSelectedLearner] = useState("");
+  const [selectedGrade, setSelectedGrade] = useState("PP1");
+  const [composeOpen, setComposeOpen] = useState(false);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -43,7 +46,10 @@ export default function DiaryClient({ role }: { role: string }) {
       if (!response.ok) throw new Error(data.error ?? "The diary could not be loaded.");
       setEntries(data.entries ?? []);
       setLearners(data.learners ?? []);
-      setSelectedLearner((current) => current || data.learners?.[0]?.id || "");
+      if (data.learners?.length) {
+        setSelectedGrade(data.learners[0].grade);
+        setSelectedLearner(data.learners[0].id);
+      } else setSelectedLearner("");
       setError(null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "The diary could not be loaded.");
@@ -51,6 +57,8 @@ export default function DiaryClient({ role }: { role: string }) {
       setLoading(false);
     }
   }, []);
+
+  const gradeLearners = learners.filter((learner) => learner.grade === selectedGrade);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -101,20 +109,29 @@ export default function DiaryClient({ role }: { role: string }) {
       {error ? <p role="alert" className="rounded-xl border border-border-error-default bg-background-tertiary-error p-3 text-body-2-regular text-text-error-primary">{error}</p> : null}
 
       {canWrite ? <Card className="space-y-3 p-4">
-        <div className="flex items-center gap-2 text-text-primary">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-text-primary">
+          <div className="flex min-w-0 items-center gap-2">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-background-secondary-default text-foreground-icon-primary"><BookOpen size={18} aria-hidden="true" /></span>
           <div><h2 className="text-headline-medium">Write to a parent</h2><p className="text-caption-1-regular text-text-secondary">Only this learner’s linked parent accounts can see the message.</p></div>
+          </div>
+          <Button type="button" variant={composeOpen ? "secondary" : "primary"} leadingIcon={PenLine} onClick={() => setComposeOpen((open) => !open)} aria-expanded={composeOpen} aria-controls="diary-compose">
+            {composeOpen ? "Close message" : "Write message"}
+          </Button>
         </div>
-        {learners.length ? <form onSubmit={submitEntry} className="space-y-3">
-          <Select label="Learner" selectedKey={selectedLearner} onSelectionChange={(key) => setSelectedLearner(String(key))} triggerClassName="w-full" popoverClassName="w-(--trigger-width)">
-            {learners.map((learner) => <SelectItem key={learner.id} id={learner.id}>{learner.name} · {learner.grade}</SelectItem>)}
+        {composeOpen ? <form id="diary-compose" onSubmit={submitEntry} className="space-y-3 border-t border-separator-border pt-3">
+          <Select label="Grade" selectedKey={selectedGrade} onSelectionChange={(key) => { const grade = String(key); setSelectedGrade(grade); setSelectedLearner(learners.find((learner) => learner.grade === grade)?.id ?? ""); }} triggerClassName="w-full" popoverClassName="w-(--trigger-width)">
+            {GRADES.map((grade) => <SelectItem key={grade} id={grade}>{grade}</SelectItem>)}
           </Select>
+          <Select label="Learner" selectedKey={selectedLearner || null} onSelectionChange={(key) => setSelectedLearner(String(key))} isDisabled={!gradeLearners.length} triggerClassName="w-full" popoverClassName="w-(--trigger-width)">
+            {gradeLearners.map((learner) => <SelectItem key={learner.id} id={learner.id}>{learner.name}</SelectItem>)}
+          </Select>
+          {!gradeLearners.length ? <p className="rounded-xl bg-background-secondary-default p-3 text-body-2-regular text-text-secondary">No active learners are available in {selectedGrade}. Choose another grade or ask the office to complete learner admissions.</p> : null}
           <Input label="Subject" value={subject} onChange={setSubject} maxLength={120} isRequired />
           <Textarea label="Diary message" value={message} onChange={setMessage} rows={3} maxLength={3000} isRequired />
-          <Button type="submit" disabled={busy || !selectedLearner || !subject.trim() || !message.trim()} aria-busy={busy} leadingIcon={busy ? undefined : Send} className="w-full sm:w-auto">
+          <Button type="submit" disabled={busy || !gradeLearners.length || !selectedLearner || !subject.trim() || !message.trim()} aria-busy={busy} leadingIcon={busy ? undefined : Send} className="w-full sm:w-auto">
             {busy ? <><Spinner size="sm" aria-hidden className="text-current" /> Sending…</> : "Send to parent"}
           </Button>
-        </form> : <p className="rounded-xl bg-background-secondary-default p-3 text-body-2-regular text-text-secondary">No active learners are available for a diary message.</p>}
+        </form> : null}
       </Card> : null}
 
       <div className="flex items-center justify-between gap-3">

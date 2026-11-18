@@ -54,15 +54,15 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
   return (
     <>
       <header aria-label="Mobile app bar" className="app-mobile-bar">
-        <div className="flex min-w-0 flex-1 items-center gap-1">
-          {isDetail ? <IconButton ariaLabel="Go back" onClick={goBack}><ArrowLeft size={20} /></IconButton> : null}
-          <p className="min-w-0 truncate text-body font-semibold text-ink">{section}</p>
-        </div>
         <Link href={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} aria-label="Mary Royal home" className="app-mobile-brand icon-btn">
           <span className="grid size-8 place-items-center rounded-md bg-brand-mark-surface p-0.5">
             <Image src="/mary-royal-logo.png" alt="" width={32} height={32} className="h-full w-full object-contain" />
           </span>
         </Link>
+        <div className="flex min-w-0 flex-1 items-center gap-1">
+          {isDetail ? <IconButton ariaLabel="Go back" onClick={goBack}><ArrowLeft size={20} /></IconButton> : null}
+          <p className="min-w-0 truncate text-body font-semibold text-ink">{section}</p>
+        </div>
         <div className="flex shrink-0 items-center gap-0.5">
           <IconButton ariaLabel="Search" onClick={() => setSearchOpen(true)}><Search size={19} /></IconButton>
           <IconButton ariaLabel={`Colour mode: ${theme === "dark" ? "dark" : theme === "system" ? "system" : "light"}. Switch theme.`} title="Switch colour mode" onClick={toggleTheme}>

@@ -161,13 +161,13 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
 
   return (
     <div ref={cardRef} className={cx("flex h-[min(calc(100dvh-17rem),38rem)] min-h-[280px] flex-col overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-sm sm:h-[min(62dvh,42rem)] sm:min-h-[420px]", family && "learner-chat")}>
-      <div className="flex shrink-0 items-center gap-2 border-b border-separator-border bg-background-secondary-default px-3 py-2.5 text-text-primary sm:gap-3 sm:px-5 sm:py-3.5">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-background-primary-default text-foreground-icon-primary">
+      <div className="flex shrink-0 items-center gap-2 border-b border-accent-900/20 bg-accent-800 px-3 py-2.5 text-text-white sm:gap-3 sm:px-5 sm:py-3.5">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-50/10 text-accent-50">
           <Sparkles size={18} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-body-medium">Mary Royal Assistant</p>
-          <p className="text-caption-1-regular text-text-secondary">Local · private · role-scoped</p>
+          <p className="text-caption-1-regular text-accent-100">Local · private · role-scoped</p>
         </div>
         <Button type="button" variant="secondary" size="xs" onClick={() => setMinimized(true)}>Minimize</Button>
         <Button type="button" variant="secondary" size="xs" onClick={resetChat} leadingIcon={RotateCcw}>Clear</Button>

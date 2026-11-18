@@ -472,10 +472,10 @@ export default function FinanceClient({
 
       {/* KPI Stats Cards */}
       <section aria-label="Finance summary"><StatCards columns={4} stats={[
-        { label: "Total invoiced", value: loading ? "…" : kesShort(totalBilled), note: `${invoices.length} learner ${invoices.length === 1 ? "invoice" : "invoices"}`, icon: RiReceiptLine },
-        { label: "Collected", value: loading ? "…" : kesShort(totalCollected), note: `${collectionRate}% collection target`, icon: RiCoinsFill },
-        { label: "Outstanding arrears", value: loading ? "…" : kesShort(totalOutstanding), note: "Pending recovery", icon: RiWallet3Line },
-        { label: "Collection rate", value: loading ? "…" : `${collectionRate}%`, note: "Against invoiced total", icon: RiPercentLine },
+        { label: "Total invoiced", value: loading ? "…" : kesShort(totalBilled), note: `${invoices.length} learner ${invoices.length === 1 ? "invoice" : "invoices"}`, icon: RiReceiptLine, tone: "blue" },
+        { label: "Collected", value: loading ? "…" : kesShort(totalCollected), note: `${collectionRate}% collection target`, icon: RiCoinsFill, tone: "emerald" },
+        { label: "Outstanding arrears", value: loading ? "…" : kesShort(totalOutstanding), note: "Pending recovery", icon: RiWallet3Line, tone: "orange" },
+        { label: "Collection rate", value: loading ? "…" : `${collectionRate}%`, note: "Against invoiced total", icon: RiPercentLine, tone: "purple" },
       ] satisfies Stat[]} /></section>
 
       {/* Tabs navigation */}

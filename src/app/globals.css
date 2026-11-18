@@ -1291,11 +1291,9 @@ a.list-row:hover {
 }
 
 .app-mobile-brand {
-  position: absolute;
-  top: calc(env(safe-area-inset-top) + 28px);
-  inset-inline-start: 50%;
+  position: relative;
   z-index: 1;
-  transform: translate(-50%, -50%);
+  flex: 0 0 auto;
 }
 
 .app-mobile-bar > div:first-child {
