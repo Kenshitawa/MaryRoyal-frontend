@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Lock, CheckCircle2, ShieldCheck, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Lock, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 
 export default function ChangePasswordForm() {
   const [error, setError] = useState("");
@@ -153,7 +154,7 @@ export default function ChangePasswordForm() {
         disabled={busy || !hasLength || (confirmPassword.length > 0 && !matches)}
         className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 font-bold text-white shadow-md shadow-blue-700/20 transition hover:bg-blue-800 disabled:opacity-50"
       >
-        {busy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={16} />}
+        {busy ? <Spinner size="sm" aria-hidden className="text-current" /> : <Lock size={16} />}
           Update password &amp; continue
       </button>
     </form>

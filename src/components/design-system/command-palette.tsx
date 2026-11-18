@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, Users, BookOpen, ArrowRight, User } from "lucide-react";
+import { InlineLoader } from "@/components/ui/loader";
 
 interface SearchItem {
   id: string;
@@ -146,7 +147,9 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
         {/* Results List */}
         <div className="max-h-80 overflow-y-auto p-2">
           {loading && (
-            <p className="p-3 text-center text-xs text-slate-400">Searching...</p>
+            <div className="p-3 text-center">
+              <InlineLoader label="Searching…" />
+            </div>
           )}
 
           {!loading && results.length === 0 && (

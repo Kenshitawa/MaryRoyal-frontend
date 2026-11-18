@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { LearnerLink } from "@/components/learner-link";
 import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { InlineLoader, LoadingState } from "@/components/ui/loader";
 
 type Learner = {
   id: string;
@@ -374,8 +375,8 @@ export default function LearnerDirectory({
         {/* Learner register: cards on phones, table on wide screens */}
         <div className="mt-5 space-y-3 lg:hidden">
           {busy ? (
-            <div className="card p-4">
-              <p className="text-body text-ink-2">Loading learner records…</p>
+            <div className="card">
+              <LoadingState label="Loading learner records…" className="min-h-32 gap-2 py-6" />
             </div>
           ) : filteredRows.length === 0 ? (
             <div className="card p-6 text-center text-body text-ink-2">
@@ -472,10 +473,9 @@ export default function LearnerDirectory({
                 <tr>
                   <td
                     colSpan={identityOnly ? 3 : canApprove ? 8 : 7}
-                    className="p-12 text-center text-slate-500"
+                    className="p-12 text-center"
                   >
-                    <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                    <p className="mt-2 text-xs">Loading learner records…</p>
+                    <InlineLoader label="Loading learner records…" className="justify-center" />
                   </td>
                 </tr>
               ) : filteredRows.length === 0 ? (

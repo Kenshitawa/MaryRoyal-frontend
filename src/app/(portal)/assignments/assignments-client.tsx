@@ -22,6 +22,7 @@ import {
   ExternalLink,
   Image as ImageIcon,
 } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 
 type Teaching = { grade: string; subject: string };
 type Submission = {
@@ -510,7 +511,7 @@ export default function AssignmentsClient({  role,
                 onClick={() => void assist()}
                 className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-purple-700 px-4 text-xs font-bold text-white shadow-sm transition hover:bg-purple-800 disabled:opacity-40"
               >
-                <Sparkles size={14} className={busy ? "animate-spin" : ""} />
+                {busy ? <Spinner size="sm" aria-hidden className="text-current" /> : <Sparkles size={14} />}
                 {busy ? "Drafting..." : "Draft Questions with AI"}
               </button>
             </div>

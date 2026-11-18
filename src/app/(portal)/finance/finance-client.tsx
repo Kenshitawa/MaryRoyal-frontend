@@ -3,11 +3,15 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Wallet, Plus, Search, CheckCircle2, Download, X
+  Wallet, Plus, Search, CheckCircle2, Download, X, Receipt, CreditCard, AlertTriangle
 } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
 import { LearnerLink } from "@/components/learner-link";
+import { EmptyState, StatCard } from "@/components/ui/primitives";
+import { LoadingState } from "@/components/ui/loader";
+import { Input } from "@/components/base/input/input";
+import { ButtonLink } from "@/components/base/buttons/button";
 
 type Learner = { id: string; name: string; admissionNo: string; grade: string };
 type Line = { id: string; category: string; description: string; amount: number; optional?: boolean };
@@ -98,6 +102,7 @@ export default function FinanceClient({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     try {
@@ -114,6 +119,8 @@ export default function FinanceClient({
       if (waiverRes?.ok) setWaivers((await waiverRes.json()).waivers || []);
     } catch {
       // fallback
+    } finally {
+      setLoading(false);
     }
   }, [canViewWaivers]);
 
@@ -352,7 +359,7 @@ export default function FinanceClient({
   const invoiceActions = (inv: Invoice) => {
     const latestPayment = inv.payments[0];
     return (
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-1.5">
         {canPay && inv.balance > 0 && (
           <button
             type="button"
@@ -369,35 +376,13 @@ export default function FinanceClient({
         )}
         {canApprove && latestPayment?.status === "PENDING" && (
           <button type="button" onClick={() => void confirmPayment(latestPayment)} className="btn btn-secondary btn-sm">
-            Confirm payment
+            Confirm
           </button>
         )}
         {canVoid && latestPayment && latestPayment.status !== "VOIDED" && (
-          <button type="button" onClick={() => void voidPayment(latestPayment)} className="btn btn-danger btn-sm">
+          <button type="button" onClick={() => void voidPayment(latestPayment)} className="btn btn-ghost btn-sm text-danger">
             Void
           </button>
-        )}
-        <a
-          href={`/api/finance/invoices/${inv.id}/pdf`}
-          target="_blank"
-          rel="noreferrer"
-          className="btn btn-secondary btn-sm"
-          title="Download official invoice PDF"
-        >
-          <Download size={14} aria-hidden="true" />
-          Invoice PDF
-        </a>
-        {inv.payments.length > 0 && (
-          <a
-            href={`/api/finance/payments/${inv.payments[0].id}/pdf`}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-secondary btn-sm"
-            title="Download official PDF receipt with verification QR code"
-          >
-            <Download size={14} aria-hidden="true" />
-            Receipt PDF
-          </a>
         )}
         {canInvoice && (
           <button
@@ -407,12 +392,35 @@ export default function FinanceClient({
               setShowWaiverModal(true);
             }}
             className="btn btn-ghost btn-sm"
-            title="Request fee discount or waiver"
+            title="Request a fee discount or waiver"
           >
-            Discount
+            Waiver
           </button>
         )}
-      </div>
+        <ButtonLink
+          href={`/api/finance/invoices/${inv.id}/pdf`}
+          target="_blank"
+          rel="noreferrer"
+          variant="secondary"
+          size="small"
+          iconOnly
+          leadingIcon={Download}
+          title="Download official invoice PDF"
+          aria-label={`Download invoice PDF for ${inv.learner.name}`}
+        />
+        {latestPayment ? (
+          <ButtonLink
+            href={`/api/finance/payments/${latestPayment.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            variant="secondary"
+            size="small"
+            iconOnly
+            leadingIcon={Receipt}
+            title="Download official PDF receipt with verification QR code"
+            aria-label={`Download receipt PDF for ${inv.learner.name}`}
+          />
+        ) : null}      </div>
     );
   };
 
@@ -461,30 +469,37 @@ export default function FinanceClient({
       )}
 
       {/* KPI Stats Cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="card p-3.5">
-          <p className="text-label font-semibold text-ink-2">Total invoiced</p>
-          <p className="mt-2 text-kpi font-semibold tabular-nums text-ink">{kesShort(totalBilled)}</p>
-          <p className="mt-1 text-caption text-ink-3">{invoices.length} learner invoices</p>
-        </div>
-        <div className="card p-3.5">
-          <p className="text-label font-semibold text-ink-2">Collected</p>
-          <p className="mt-2 text-kpi font-semibold tabular-nums text-success">{kesShort(totalCollected)}</p>
-          <p className="mt-1 text-caption text-ink-3">{collectionRate}% collection target</p>
-        </div>
-        <div className="card p-3.5">
-          <p className="text-label font-semibold text-ink-2">Outstanding arrears</p>
-          <p className="mt-2 text-kpi font-semibold tabular-nums text-danger">{kesShort(totalOutstanding)}</p>
-          <p className="mt-1 text-caption text-ink-3">Pending recovery</p>
-        </div>
-        <div className="card p-3.5">
-          <p className="text-label font-semibold text-ink-2">Collection rate</p>
-          <p className="mt-2 text-kpi font-semibold tabular-nums text-ink">{collectionRate}%</p>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-2">
-            <div className="h-full rounded-full bg-brand" style={{ width: `${collectionRate}%` }} />
-          </div>
-        </div>
-      </div>
+      <section aria-label="Finance summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          label="Total invoiced"
+          value={loading ? "…" : kesShort(totalBilled)}
+          note={`${invoices.length} learner ${invoices.length === 1 ? "invoice" : "invoices"}`}
+          icon={Receipt}
+          tone="brand"
+        />
+        <StatCard
+          label="Collected"
+          value={loading ? "…" : kesShort(totalCollected)}
+          note={`${collectionRate}% collection target`}
+          icon={CheckCircle2}
+          tone="success"
+        />
+        <StatCard
+          label="Outstanding arrears"
+          value={loading ? "…" : kesShort(totalOutstanding)}
+          note="Pending recovery"
+          icon={Wallet}
+          tone="warning"
+        />
+        <StatCard
+          label="Collection rate"
+          value={loading ? "…" : `${collectionRate}%`}
+          note="Against invoiced total"
+          icon={CreditCard}
+          tone="brand"
+          progress={loading ? 0 : collectionRate}
+        />
+      </section>
 
       {/* Tabs navigation */}
       <div className="grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1" role="tablist" aria-label="Finance views">
@@ -519,166 +534,157 @@ export default function FinanceClient({
         )}
       </div>
 
-      {/* TAB 1: Invoices & Receipts List */}
+      {/* TAB 1: Invoices — one BoardUI list for every breakpoint */}
       {activeTab === "invoices" && (
-        <ThemedCard className="overflow-hidden p-0">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-4 dark:border-slate-800">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-800 dark:bg-slate-900">
-              <Search size={16} className="text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+        <section className="overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-xs">
+          <header className="flex flex-col gap-3 border-b border-separator-border p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
+            <div className="min-w-0">
+              <h2 className="text-title-3-semibold text-text-primary">Learner invoices</h2>
+              <p className="mt-0.5 text-body-2-regular text-text-tertiary">
+                {loading
+                  ? "Term invoices"
+                  : `${filteredInvoices.length} of ${invoices.length} invoices · ${kes(totalOutstanding)} outstanding`}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                aria-label="Search invoices"
                 placeholder="Search learner or admission no."
-                className="w-56 sm:w-72 bg-transparent text-xs outline-none placeholder:text-slate-400"
+                value={searchQuery}
+                onChange={setSearchQuery}
+                leadingIcon={Search}
+                className="w-full sm:w-72"
+              />
+              <button
+                type="button"
+                onClick={() => void refresh()}
+                className="btn btn-secondary btn-sm min-h-9 shrink-0"
+              >
+                Refresh
+              </button>
+            </div>
+          </header>
+
+          {loading ? (
+            <LoadingState
+              label="Loading invoices…"
+              hint="Fetching billed totals, receipts and outstanding balances."
+            />
+          ) : filteredInvoices.length === 0 ? (
+            <div className="p-5">
+              <EmptyState
+                title="No matching invoices"
+                description="Try a different learner, admission number or term."
+                icon={Wallet}
               />
             </div>
-            <button
-              onClick={() => void refresh()}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300"
-            >
-              Refresh Table
-            </button>
-          </div>
-
-          <div className="divide-y divide-slate-100 dark:divide-slate-800 lg:hidden">
-            {filteredInvoices.length === 0 ? (
-              <p className="p-6 text-center text-body text-ink-2">No matching fee invoices found.</p>
-            ) : (
-              filteredInvoices.map(inv => {
+          ) : (
+            <ul className="divide-y divide-separator-border">
+              {filteredInvoices.map((inv) => {
                 const status = inv.balance <= 0 ? "PAID" : inv.paid > 0 ? "PARTIAL" : "UNPAID";
+                const initials = inv.learner.name
+                  .split(/\s+/)
+                  .map((part) => part[0])
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase();
                 return (
-                  <article key={inv.id} className="min-w-0 p-4">
-                    <div className="flex min-w-0 items-start justify-between gap-3">
-                      <LearnerLink
-                        id={inv.learner.id}
-                        name={inv.learner.name}
-                        admissionNo={inv.learner.admissionNo}
-                        subtext={inv.learner.grade}
-                      />
-                      <StatusPill status={status} />
+                  <li
+                    key={inv.id}
+                    className="group flex flex-col gap-3 p-4 transition-colors hover:bg-background-secondary-hover sm:p-5 lg:grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1.05fr)_auto] lg:items-center lg:gap-5"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="grid size-11 shrink-0 place-items-center rounded-2xl bg-accent-50 text-body-2-medium text-accent-700 ring-1 ring-inset ring-accent-100 dark:bg-accent-950/60 dark:text-accent-200 dark:ring-accent-800/60"
+                      >
+                        {initials}
+                      </span>
+                      <div className="min-w-0">
+                        <LearnerLink
+                          id={inv.learner.id}
+                          name={inv.learner.name}
+                          admissionNo={inv.learner.admissionNo}
+                          subtext={inv.learner.grade}
+                        />
+                        <p className="mt-1 text-caption text-text-tertiary">
+                          {inv.term}
+                          {inv.payments.length > 0
+                            ? ` · ${inv.payments.length} payment${inv.payments.length === 1 ? "" : "s"}`
+                            : ""}
+                        </p>
+                      </div>
                     </div>
-                    <p className="mt-1 text-label text-ink-2">{inv.term}</p>
-                    {inv.lines.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {inv.lines.map(l => (
-                          <span key={l.id} className="rounded bg-slate-100 px-1.5 py-0.5 text-caption font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                            {l.description}
-                          </span>
-                        ))}
+
+                    <dl className="grid grid-cols-3 gap-2 rounded-xl bg-background-secondary-default px-3 py-2.5 lg:bg-transparent lg:p-0">
+                      <div className="min-w-0">
+                        <dt className="text-caption text-text-tertiary">Invoiced</dt>
+                        <dd className="truncate text-body-2-medium tabular-nums text-text-primary">
+                          {kes(inv.total)}
+                        </dd>
                       </div>
-                    )}
-                    <dl className="mt-3 space-y-1 text-body">
-                      <div className="flex justify-between gap-3">
-                        <dt className="text-ink-2">Invoiced</dt>
-                        <dd className="font-semibold text-ink tabular-nums">{kes(inv.total)}</dd>
+                      <div className="min-w-0">
+                        <dt className="text-caption text-text-tertiary">Paid</dt>
+                        <dd className="truncate text-body-2-medium tabular-nums text-success dark:text-emerald-300">
+                          {kes(inv.paid)}
+                        </dd>
                       </div>
-                      <div className="flex justify-between gap-3">
-                        <dt className="text-ink-2">Paid</dt>
-                        <dd className="font-semibold text-success tabular-nums">{kes(inv.paid)}</dd>
-                      </div>
-                      <div className="flex justify-between gap-3">
-                        <dt className="text-ink-2">Balance</dt>
-                        <dd className="font-semibold text-ink tabular-nums">{kes(inv.balance)}</dd>
+                      <div className="min-w-0">
+                        <dt className="text-caption text-text-tertiary">Balance</dt>
+                        <dd
+                          className={`truncate text-body-2-medium tabular-nums ${
+                            inv.balance > 0 ? "text-text-primary" : "text-text-tertiary"
+                          }`}
+                        >
+                          {kes(inv.balance)}
+                        </dd>
                       </div>
                     </dl>
-                    <div className="mt-3">{invoiceActions(inv)}</div>
-                  </article>
-                );
-              })
-            )}
-          </div>
 
-          <div className="hidden overflow-x-auto lg:block">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="border-b border-slate-100 bg-slate-50/70 text-caption uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40">
-                <tr>
-                  <th className="px-4 py-3.5">Learner</th>
-                  <th className="px-4 py-3.5">Term</th>
-                  <th className="px-4 py-3.5">Fee Items</th>
-                  <th className="px-4 py-3.5">Invoiced</th>
-                  <th className="px-4 py-3.5">Paid</th>
-                  <th className="px-4 py-3.5">Balance</th>
-                  <th className="px-4 py-3.5">Status</th>
-                  <th className="px-4 py-3.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredInvoices.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="p-8 text-center text-slate-400">
-                      No matching fee invoices found.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredInvoices.map(inv => {
-                    const status = inv.balance <= 0 ? "PAID" : inv.paid > 0 ? "PARTIAL" : "UNPAID";
-                    return (
-                      <tr key={inv.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                        <td className="px-4 py-3.5">
-                          <LearnerLink
-                            id={inv.learner.id}
-                            name={inv.learner.name}
-                            admissionNo={inv.learner.admissionNo}
-                            subtext={inv.learner.grade}
-                          />
-                        </td>
-                        <td className="px-4 py-3.5 font-semibold text-slate-700 dark:text-slate-300">{inv.term}</td>
-                        <td className="px-4 py-3.5">
-                          <div className="flex flex-wrap gap-1">
-                            {inv.lines.map(l => (
-                              <span key={l.id} className="rounded bg-slate-100 px-1.5 py-0.5 text-caption font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                {l.description}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3.5 font-bold text-slate-900 dark:text-white">{kes(inv.total)}</td>
-                        <td className="px-4 py-3.5 font-bold text-emerald-700 dark:text-emerald-300">{kes(inv.paid)}</td>
-                        <td className="px-4 py-3.5 font-extrabold text-slate-900 dark:text-white">{kes(inv.balance)}</td>
-                        <td className="px-4 py-3.5">
-                          <StatusPill status={status} />
-                        </td>
-                        <td className="px-4 py-3.5">
-                          <div className="flex justify-end">{invoiceActions(inv)}</div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </ThemedCard>
+                    <div className="flex flex-wrap items-center justify-between gap-2 lg:flex-col lg:items-end">
+                      <StatusPill status={status} />
+                      {invoiceActions(inv)}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       )}
 
       {/* TAB 2: Arrears & Aging Buckets */}
       {activeTab === "arrears" && (
         <div className="space-y-5">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <ThemedCard className="border-l-4 border-l-blue-500 p-5">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Current (0–30 Days)</p>
-              <p className="mt-2 text-2xl font-extrabold text-blue-700 dark:text-blue-300">{kes(aging.b0_30)}</p>
-              <p className="mt-1 text-xs text-slate-500">Recently invoiced terms</p>
-            </ThemedCard>
-
-            <ThemedCard className="border-l-4 border-l-amber-500 p-5">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Overdue (31–60 Days)</p>
-              <p className="mt-2 text-2xl font-extrabold text-amber-700 dark:text-amber-300">{kes(aging.b31_60)}</p>
-              <p className="mt-1 text-xs text-slate-500">1st reminder stage</p>
-            </ThemedCard>
-
-            <ThemedCard className="border-l-4 border-l-orange-500 p-5">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Arrears (61–90 Days)</p>
-              <p className="mt-2 text-2xl font-extrabold text-orange-700 dark:text-orange-300">{kes(aging.b61_90)}</p>
-              <p className="mt-1 text-xs text-slate-500">2nd follow-up stage</p>
-            </ThemedCard>
-
-            <ThemedCard className="border-l-4 border-l-rose-600 p-5">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Chronic (90+ Days)</p>
-              <p className="mt-2 text-2xl font-extrabold text-rose-700 dark:text-rose-300">{kes(aging.b90plus)}</p>
-              <p className="mt-1 text-xs text-slate-500">Head Teacher review required</p>
-            </ThemedCard>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatCard
+              label="Current (0–30 days)"
+              value={kes(aging.b0_30)}
+              note="Recently invoiced terms"
+              icon={Receipt}
+              tone="brand"
+            />
+            <StatCard
+              label="Overdue (31–60 days)"
+              value={kes(aging.b31_60)}
+              note="1st reminder stage"
+              icon={CreditCard}
+              tone="warning"
+            />
+            <StatCard
+              label="Arrears (61–90 days)"
+              value={kes(aging.b61_90)}
+              note="2nd follow-up stage"
+              icon={Wallet}
+              tone="warning"
+            />
+            <StatCard
+              label="Chronic (90+ days)"
+              value={kes(aging.b90plus)}
+              note="Head Teacher review required"
+              icon={AlertTriangle}
+              tone="danger"
+            />
           </div>
 
           <ThemedCard className="p-6">

@@ -23,16 +23,24 @@ import { cx } from "@/utils/cx";
  * orbit rather than stopping it: the motion is the message.
  */
 
-export type SpinnerSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type SpinnerSize = "xs" | "sm" | "md" | "lg" | "xl" | number;
 
-/** Box size and line width in px. */
-const SIZES: Record<SpinnerSize, { box: number; line: number }> = {
+/** Named box sizes and line widths in px. */
+const SIZES: Record<Exclude<SpinnerSize, number>, { box: number; line: number }> = {
   xs: { box: 12, line: 1.5 },
   sm: { box: 16, line: 2 },
   md: { box: 20, line: 2 },
   lg: { box: 24, line: 2.5 },
   xl: { box: 32, line: 3 },
 };
+
+/** Resolve a named size, or derive a proportional line width for a pixel box. */
+function resolveSize(size: SpinnerSize) {
+  if (typeof size === "number") {
+    return { box: size, line: Math.max(2, Math.round((size / 16) * 2) / 2) };
+  }
+  return SIZES[size];
+}
 
 /** One scale of the light: a conic arc masked to a ring, blurred by its wrapper. */
 function Arc({
@@ -82,7 +90,7 @@ function Arc({
 }
 
 export interface SpinnerProps {
-  /** 12, 16, 20 (default), 24, or 32px. */
+  /** 12, 16, 20 (default), 24, 32px, or any pixel box size. */
   size?: SpinnerSize;
   /** Draw the faint full circle under the light. Default true. */
   track?: boolean;
@@ -95,7 +103,7 @@ export interface SpinnerProps {
 }
 
 export function SpinnerGlyph({ size = "md", track = true, className }: Omit<SpinnerProps, "aria-label" | "aria-hidden">) {
-  const { box, line } = SIZES[size];
+  const { box, line } = resolveSize(size);
   return (
     <span
       aria-hidden
@@ -105,7 +113,7 @@ export function SpinnerGlyph({ size = "md", track = true, className }: Omit<Spin
       {track ? (
         <span className="absolute inset-0 rounded-full border-current opacity-15" style={{ borderWidth: line }} />
       ) : null}
-      <span className="absolute inset-0 animate-spin [animation-duration:900ms] motion-reduce:[animation-duration:2400ms]">
+      <span className="spinner-orbit absolute inset-0 animate-spin [animation-duration:900ms]">
         <Arc box={box} line={line} width={line * 4} blur={line * 1.6} opacity={0.32} arc={110} lag={22} />
         <Arc box={box} line={line} width={line * 2} blur={line * 0.6} opacity={0.6} arc={200} lag={9} />
         <Arc box={box} line={line} width={line} blur={0} opacity={1} arc={290} lag={0} />

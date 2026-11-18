@@ -1,8 +1,13 @@
 import { Skeleton } from "@/components/ui/primitives";
+import { Loader } from "@/components/ui/loader";
 
 export default function Loading() {
   return (
     <div aria-busy="true" aria-live="polite" className="space-y-3">
+      <div className="flex items-center gap-2.5">
+        <Loader size="sm" showLabel={false} label="Loading page" />
+        <span className="text-caption-1-semibold text-text-tertiary">Loading your workspace…</span>
+      </div>
       <div className="page-head">
         <div className="min-w-0 space-y-2">
           <Skeleton className="h-6 w-44" />

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LearnerLink } from "@/components/learner-link";
+import { InlineLoader } from "@/components/ui/loader";
 import {
   AlertCircle,
   HeartHandshake,
@@ -240,8 +241,8 @@ export default function GuardianLinks() {
         </div>
 
         {loading ? (
-          <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
-            Loading relationships…
+          <div className="py-8 text-center">
+            <InlineLoader label="Loading relationships…" />
           </div>
         ) : filteredLinks.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">

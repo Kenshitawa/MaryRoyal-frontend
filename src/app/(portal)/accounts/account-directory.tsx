@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { LoadingState } from "@/components/ui/loader";
 import { Button } from "@/components/base/buttons/button";
 import {
   AlertTriangle,
@@ -20,6 +21,7 @@ import {
   UserPlus,
   Users,
   UserX,
+  X,
 } from "lucide-react";
 
 type Account = {
@@ -30,6 +32,14 @@ type Account = {
   suspended: boolean;
   forcePasswordChange: boolean;
   failedLogins: number;
+};
+
+type TempCredential = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  password: string;
 };
 
 const roles = [
@@ -49,13 +59,15 @@ const roles = [
 export default function AccountDirectory() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [error, setError] = useState("");
-  const [temp, setTemp] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [temp, setTemp] = useState<TempCredential | null>(null);
+  const [copied, setCopied] = useState<"password" | "all" | null>(null);
+  const [copyFailed, setCopyFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [createStep, setCreateStep] = useState(1);
   const createFormRef = useRef<HTMLFormElement>(null);
+  const copyTimer = useRef<number | null>(null);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -81,6 +93,9 @@ export default function AccountDirectory() {
 
   useEffect(() => {
     void load();
+    return () => {
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    };
   }, []);
 
   async function create(event: React.FormEvent<HTMLFormElement>) {
@@ -91,7 +106,7 @@ export default function AccountDirectory() {
     }
     const form = event.currentTarget;
     setError("");
-    setTemp("");
+    setTemp(null);
     setSaving(true);
     const values = Object.fromEntries(new FormData(form));
     try {
@@ -105,7 +120,13 @@ export default function AccountDirectory() {
         setError(data.error ?? "Account could not be created.");
         return;
       }
-      setTemp(`${data.account.email} · ${data.temporaryPassword}`);
+      showCredential({
+        id: data.account.id,
+        name: data.account.name ?? String(values.name ?? ""),
+        email: data.account.email ?? String(values.email ?? ""),
+        role: data.account.role ?? String(values.role ?? ""),
+        password: data.temporaryPassword,
+      });
       form.reset();
       setShowCreate(false);
       setCreateStep(1);
@@ -145,7 +166,7 @@ export default function AccountDirectory() {
     }
 
     setError("");
-    setTemp("");
+    setTemp(null);
     setSaving(true);
     try {
       const response = await fetch("/api/accounts", {
@@ -159,7 +180,13 @@ export default function AccountDirectory() {
         return;
       }
       if (data.temporaryPassword) {
-        setTemp(`${account.email} · ${data.temporaryPassword}`);
+        showCredential({
+          id: account.id,
+          name: account.name,
+          email: account.email,
+          role: account.role,
+          password: data.temporaryPassword,
+        });
       }
       await load();
     } catch {
@@ -169,11 +196,121 @@ export default function AccountDirectory() {
     }
   }
 
-  function copyTempPassword() {
-    if (!temp) return;
-    navigator.clipboard.writeText(temp);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+  function showCredential(credential: TempCredential) {
+    setTemp(credential);
+    setCopied(null);
+    setCopyFailed(false);
+  }
+
+  function dismissCredential() {
+    setTemp(null);
+    setCopied(null);
+    setCopyFailed(false);
+  }
+
+  /**
+   * Clipboard writes can be refused (insecure origin, permissions), so fall
+   * back to a hidden textarea + execCommand before reporting a failure.
+   */
+  async function copyText(value: string, kind: "password" | "all") {
+    let ok = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        ok = true;
+      }
+    } catch {
+      ok = false;
+    }
+    if (!ok) {
+      try {
+        const field = document.createElement("textarea");
+        field.value = value;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(field);
+      } catch {
+        ok = false;
+      }
+    }
+    setCopyFailed(!ok);
+    setCopied(ok ? kind : null);
+    if (ok) {
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(null), 2600);
+    }
+  }
+
+  function credentialNotice(credential: TempCredential) {
+    const roleLabel = credential.role.replaceAll("_", " ").toLowerCase();
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="mb-3 overflow-hidden rounded-2xl border border-accent-200 bg-accent-50 p-3.5 dark:border-accent-800/70 dark:bg-accent-950/40"
+      >
+        <div className="flex items-start gap-2.5">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-600 text-white shadow-sm">
+            <KeyRound size={15} aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-caption-1-semibold text-text-primary">
+              Temporary password{credential.role ? ` · ${roleLabel}` : ""}
+            </p>
+            <p className="mt-0.5 text-body-2-regular text-text-secondary">
+              Give this to {credential.name || "the account holder"} securely. They must set a personal
+              password at first sign-in.
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <code className="select-all break-all rounded-lg border border-accent-200 bg-background-primary-default px-2.5 py-1 font-mono text-caption-1-semibold tracking-wide text-text-primary dark:border-accent-800/70">
+                {credential.password}
+              </code>
+              <button
+                type="button"
+                onClick={() => void copyText(credential.password, "password")}
+                className="inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-accent-300 bg-background-primary-default px-2.5 text-caption-1-semibold text-accent-800 transition hover:bg-accent-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring dark:border-accent-700 dark:text-accent-200 dark:hover:bg-accent-900/50"
+              >
+                {copied === "password" ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+                {copied === "password" ? "Copied" : "Copy password"}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  void copyText(
+                    `Mary Royal School portal\nEmail: ${credential.email}\nTemporary password: ${credential.password}`,
+                    "all",
+                  )
+                }
+                className="inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-separator-border bg-background-primary-default px-2.5 text-caption-1-semibold text-text-secondary transition hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              >
+                {copied === "all" ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+                {copied === "all" ? "Copied" : "Copy sign-in details"}
+              </button>
+            </div>
+            {copyFailed ? (
+              <p className="mt-1.5 text-caption-1-semibold text-danger" role="alert">
+                Could not reach the clipboard. Select the password and copy it manually.
+              </p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={dismissCredential}
+            aria-label="Dismiss temporary password"
+            className="grid size-7 shrink-0 place-items-center rounded-lg text-text-tertiary transition hover:bg-accent-100 hover:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring dark:hover:bg-accent-900/50"
+          >
+            <X size={14} aria-hidden="true" />
+          </button>
+        </div>
+        <p className="mt-2 border-t border-accent-200/70 pt-2 font-mono text-caption break-all text-text-tertiary dark:border-accent-800/60">
+          {credential.email}
+        </p>
+      </div>
+    );
   }
 
   // Filtered accounts
@@ -213,6 +350,9 @@ export default function AccountDirectory() {
     ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER", "SECRETARY", "ACCOUNTANT", "TEACHER"].includes(a.role)
   ).length;
   const alertCount = accounts.filter((a) => a.suspended || a.failedLogins >= 8).length;
+  // The credential notice belongs on the account it was issued for. If the
+  // active search/filter hides that card, fall back to showing it above the list.
+  const tempVisible = temp ? filteredAccounts.some((account) => account.id === temp.id) : false;
 
   return (
     <div className="space-y-3">
@@ -234,40 +374,8 @@ export default function AccountDirectory() {
         <StatCard label="Needs attention" value={loading ? "…" : String(alertCount)} note="Locked or suspended" icon={UserX} tone="warning" />
       </section>
 
-      {/* Temporary Password Notification Banner */}
-      {temp && (
-        <div
-          role="status"
-          className="relative overflow-hidden rounded-3xl border border-emerald-300/80 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 p-6 shadow-sm dark:border-emerald-800/80 dark:from-emerald-950/50 dark:via-teal-950/30 dark:to-emerald-950/50"
-        >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-4">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
-                <Check size={22} />
-              </span>
-              <div>
-                <h3 className="font-bold text-emerald-950 dark:text-emerald-200">
-                  Temporary Password Generated
-                </h3>
-                <p className="mt-1 font-mono text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-                  {temp}
-                </p>
-                <p className="mt-1.5 text-xs text-emerald-700 dark:text-emerald-400">
-                  Share this credential securely with the user. They must set a personal password upon
-                  first sign in.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={copyTempPassword}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-bold text-emerald-900 shadow-sm transition hover:bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-100 dark:hover:bg-emerald-800"
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? "Copied to Clipboard!" : "Copy Credential"}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Temporary password fallback: only when its account card is filtered out */}
+      {temp && !tempVisible ? credentialNotice(temp) : null}
 
       {/* Error Alert */}
       {error && (
@@ -503,10 +611,10 @@ export default function AccountDirectory() {
         {/* Account Cards Grid */}
         <div className="mt-5">
           {loading ? (
-            <div className="py-16 text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Loading directory…</p>
-            </div>
+            <LoadingState
+              label="Loading account directory…"
+              hint="Fetching roles, sign-in state and security flags."
+            />
           ) : filteredAccounts.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center dark:border-slate-800">
               <CircleUserRound className="mx-auto text-slate-400" size={32} />
@@ -545,9 +653,12 @@ export default function AccountDirectory() {
                     className={`group relative flex min-w-0 flex-col justify-between rounded-2xl border p-4 transition-all hover:shadow-md ${
                       account.suspended || locked
                         ? "border-red-200 bg-red-50/20 dark:border-red-900/40 dark:bg-red-950/20"
+                        : temp?.id === account.id
+                        ? "border-accent-300 bg-accent-50/40 ring-2 ring-accent-200/70 dark:border-accent-700 dark:bg-accent-950/20 dark:ring-accent-900"
                         : "border-slate-200/80 bg-white/70 hover:border-blue-200 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700"
                     }`}
                   >
+                    {temp?.id === account.id ? credentialNotice(temp) : null}
                     <div>
                       <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                         <div className="flex min-w-0 flex-1 items-center gap-3">

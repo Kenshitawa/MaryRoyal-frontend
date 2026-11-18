@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   HeartHandshake, TrendingUp, PiggyBank, CreditCard, Plus, AlertCircle,
-  CheckCircle2, Users, ChevronDown, ChevronUp, Banknote, Gift, X, Loader2
+  CheckCircle2, Users, ChevronDown, ChevronUp, Banknote, Gift, X
 } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 import { PageHeader } from "@/components/ui/primitives";
 
 type WelfareMember = {
@@ -633,7 +634,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
             <Field label="Receipt Ref (optional)" value={contribForm.receiptRef} onChange={(v) => setContribForm((f) => ({ ...f, receiptRef: v }))} />
             <Field label="Notes (optional)" value={contribForm.notes} onChange={(v) => setContribForm((f) => ({ ...f, notes: v }))} />
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-blue-700 py-2.5 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 size={14} className="animate-spin"/>} Record Contribution
+              {busy && <Spinner size="sm" aria-hidden className="text-current" />} Record Contribution
             </button>
           </form>
         </Modal>
@@ -663,7 +664,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
             )}
             <Field label="Purpose (optional)" value={loanForm.purpose} onChange={(v) => setLoanForm((f) => ({ ...f, purpose: v }))} />
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-blue-700 py-2.5 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 size={14} className="animate-spin"/>} Submit Application
+              {busy && <Spinner size="sm" aria-hidden className="text-current" />} Submit Application
             </button>
           </form>
         </Modal>
@@ -680,7 +681,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
             <Field label="Target Amount (KES)" type="number" value={productForm.targetAmount} onChange={(v) => setProductForm((f) => ({ ...f, targetAmount: v }))} />
             <Field label="Monthly Contribution (KES, optional)" type="number" value={productForm.monthlyAmount} onChange={(v) => setProductForm((f) => ({ ...f, monthlyAmount: v }))} />
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-rose-600 py-2.5 text-sm font-bold text-white hover:bg-rose-700 disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 size={14} className="animate-spin"/>} Create Product
+              {busy && <Spinner size="sm" aria-hidden className="text-current" />} Create Product
             </button>
           </form>
         </Modal>
@@ -699,7 +700,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
               </select>
             </div>
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-blue-700 py-2.5 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 size={14} className="animate-spin"/>} Enroll Member
+              {busy && <Spinner size="sm" aria-hidden className="text-current" />} Enroll Member
             </button>
           </form>
         </Modal>

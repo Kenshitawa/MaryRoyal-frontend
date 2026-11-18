@@ -78,6 +78,7 @@ export function StatCard({
   icon: Icon,
   tone = "brand",
   href,
+  progress,
 }: {
   label: string;
   value: ReactNode;
@@ -85,6 +86,8 @@ export function StatCard({
   icon?: LucideIcon;
   tone?: "brand" | "success" | "warning" | "danger" | "neutral";
   href?: string;
+  /** Optional 0–100 meter drawn under the value. */
+  progress?: number;
 }) {
   const tones: Record<string, string> = {
     brand: "bg-status-blue-background text-status-blue-text dark:bg-blue-500/20 dark:text-blue-300 dark:border dark:border-blue-400/30",
@@ -103,7 +106,25 @@ export function StatCard({
           </span>
         ) : null}
       </div>
-      <p className="mt-1.5 break-words text-title-3-semibold tabular-nums text-text-primary dark:text-white">{value}</p>
+      <p className="mt-1.5 break-words text-title-2-medium tabular-nums text-text-primary dark:text-white">{value}</p>
+      {typeof progress === "number" ? (
+        <div
+          className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-background-tertiary-default"
+          role="progressbar"
+          aria-label={`${label} progress`}
+          aria-valuenow={Math.max(0, Math.min(100, Math.round(progress)))}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="h-full rounded-full transition-[width] duration-500"
+            style={{
+              width: `${Math.max(0, Math.min(100, progress))}%`,
+              background: "var(--dashboard-tone)",
+            }}
+          />
+        </div>
+      ) : null}
       {note ? <p className="mt-0.5 text-body-2-regular text-text-secondary dark:text-slate-300/90">{note}</p> : null}
     </>
   );

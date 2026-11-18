@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/base/input/input";
 import { Select, SelectItem } from "@/components/base/select/select";
 import { PageHeader } from "@/components/ui/primitives";
+import { InlineLoader } from "@/components/ui/loader";
 import { cbcLevel } from "@/lib/grading";
 
 type Assignment = { grade: string; subject: string };
@@ -89,7 +90,7 @@ export default function TeacherAcademicRoster({ assignments }: { assignments: As
       </div>
 
       {error && <p role="alert" className="rounded-xl border border-border-error-default bg-background-primary-default p-4 text-body-2-regular text-text-error-primary">{error}</p>}
-      {loading && <p role="status" className="text-body-2-regular text-text-secondary">Loading academic records…</p>}
+      {loading && <InlineLoader label="Loading academic records…" />}
       {!loading && !error && assignments.length === 0 && (
         <p className="rounded-3xl border border-border-button-default bg-background-primary-default p-5 text-body-regular text-text-secondary">No classes are assigned to your account yet.</p>
       )}

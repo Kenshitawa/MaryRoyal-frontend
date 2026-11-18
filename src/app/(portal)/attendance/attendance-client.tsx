@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { LearnerLink } from "@/components/learner-link";
+import { InlineLoader } from "@/components/ui/loader";
 import { Check, Save } from "lucide-react";
 
 type Row = {
@@ -172,7 +173,7 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
       <div className="mt-6">
         {rows.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            {busy ? "Loading class roster…" : "No learners found for this class."}
+            {busy ? <InlineLoader label="Loading class roster…" /> : "No learners found for this class."}
           </div>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 dark:border-slate-800 dark:bg-slate-900/50">

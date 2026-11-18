@@ -13,6 +13,7 @@ import {
   Send,
   Sparkles,
 } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 
 type Child = { id: string; name: string; grade: string };
 type Reply = {
@@ -604,7 +605,7 @@ export default function ComplaintsClient({
                             className="inline-flex items-center gap-1 rounded-xl border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 transition hover:bg-purple-100 disabled:opacity-50 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300"
                             title="Let Local AI analyze the thread and recommend status"
                           >
-                            <Sparkles size={12} className={aiTriageBusy[complaint.id] ? "animate-spin" : ""} />
+                            {aiTriageBusy[complaint.id] ? <Spinner size="sm" aria-hidden className="text-current" /> : <Sparkles size={12} />}
                             {aiTriageBusy[complaint.id] ? "Assessing..." : "AI Assess"}
                           </button>
 

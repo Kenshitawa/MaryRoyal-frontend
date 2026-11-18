@@ -14,6 +14,7 @@ import {
   Video,
   Sparkles,
 } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 import { activeSubject, gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
 
 type Assignment = { grade: string; subject: string };
@@ -348,7 +349,7 @@ export default function LearningContentClient({
                 onClick={draftObjectivesWithAI}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700 transition hover:bg-purple-100 disabled:opacity-50 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300"
               >
-                <Sparkles size={13} className={aiBusy ? "animate-spin" : "text-purple-600 dark:text-purple-400"} />
+                {aiBusy ? <Spinner size="sm" aria-hidden className="text-current" /> : <Sparkles size={13} className="text-purple-600 dark:text-purple-400" />}
                 {aiBusy ? "Drafting..." : "Draft Objectives with AI"}
               </button>
             </div>

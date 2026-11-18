@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { LayoutList, Plus, CheckCircle2, XCircle, Filter, X, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { LayoutList, Plus, CheckCircle2, XCircle, Filter, X, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 import { PageHeader } from "@/components/ui/primitives";
 import { gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
 
@@ -318,7 +319,7 @@ export default function SchemesClient({
               <FormField label="Assessment Methods" value={form.assessmentMethods} onChange={(v) => setForm((f) => ({ ...f, assessmentMethods: v }))} required />
               <TextareaField label="Reflection (optional)" value={form.reflection} onChange={(v) => setForm((f) => ({ ...f, reflection: v }))} />
               <button type="submit" disabled={busy} className="w-full rounded-xl bg-purple-700 py-2.5 text-sm font-bold text-white hover:bg-purple-800 disabled:opacity-50 flex items-center justify-center gap-2">
-                {busy && <Loader2 size={14} className="animate-spin"/>} Submit Scheme of Work
+                {busy && <Spinner size="sm" aria-hidden className="text-current" />} Submit Scheme of Work
               </button>
             </form>
           </div>

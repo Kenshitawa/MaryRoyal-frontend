@@ -8,6 +8,7 @@ import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
 import { LearnerLink } from "@/components/learner-link";
 import { PageHeader } from "@/components/ui/primitives";
+import { InlineLoader, LoadingState } from "@/components/ui/loader";
 import type { DataGridColumn, DataGridProps } from "@/components/application/data-grid/data-grid";
 import { Select, SelectItem } from "@/components/base/select/select";
 import { Input } from "@/components/base/input/input";
@@ -29,7 +30,7 @@ function createAssessmentGrid<T extends object>() {
     }),
     {
       ssr: false,
-      loading: () => <div role="status" className="min-h-24 animate-pulse rounded-2xl bg-background-secondary-default" aria-label="Loading assessment grid" />,
+      loading: () => <LoadingState label="Loading assessment grid…" className="min-h-24 rounded-2xl bg-background-secondary-default py-4" />,
     },
   );
 }
@@ -485,7 +486,7 @@ export default function AssessmentWorkspace({
       <ThemedCard className="p-0 lg:hidden">
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
           {loading ? (
-            <p className="p-6 text-center text-body text-ink-2">Loading assessments…</p>
+            <LoadingState label="Loading assessments…" className="min-h-32 gap-2 py-6" />
           ) : rows.length === 0 ? (
             <p className="p-6 text-center text-body text-ink-2">No assessments recorded yet for {term}.</p>
           ) : (
@@ -543,7 +544,7 @@ export default function AssessmentWorkspace({
               {loading ? (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-slate-400">
-                    Loading assessments...
+                    <InlineLoader label="Loading assessments…" />
                   </td>
                 </tr>
               ) : rows.length === 0 ? (

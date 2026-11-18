@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Plus, BookOpen, Check, RotateCcw, X, AlertCircle, Loader2, Package, Sparkles } from "lucide-react";
+import { Plus, BookOpen, Check, RotateCcw, X, AlertCircle, Package, Sparkles } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 import { PageHeader } from "@/components/ui/primitives";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
@@ -475,7 +476,7 @@ export default function LibraryClient({ role }: { role: string; userId?: string 
             <Field label="Curriculum Code (optional)" value={createForm.curriculumCode} onChange={(v) => setCreateForm((f) => ({ ...f, curriculumCode: v }))} />
             <Field label="Total Copies" type="number" value={createForm.totalCopies} onChange={(v) => setCreateForm((f) => ({ ...f, totalCopies: v }))} required />
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-blue-700 py-2.5 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 size={14} className="animate-spin"/>} Register Textbook
+              {busy && <Spinner size="sm" aria-hidden className="text-current" />} Register Textbook
             </button>
           </form>
         </Modal>
@@ -496,7 +497,7 @@ export default function LibraryClient({ role }: { role: string; userId?: string 
             <Field label="Due Date (optional)" type="date" value={issueForm.dueDate} onChange={(v) => setIssueForm((f) => ({ ...f, dueDate: v }))} />
             <Field label="Remarks (optional)" value={issueForm.remarks} onChange={(v) => setIssueForm((f) => ({ ...f, remarks: v }))} />
             <button type="submit" disabled={busy} className="w-full rounded-xl bg-blue-700 py-2.5 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 size={14} className="animate-spin"/>} Issue Textbook
+              {busy && <Spinner size="sm" aria-hidden className="text-current" />} Issue Textbook
             </button>
           </form>
         </Modal>

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Save, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { Save, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Spinner } from "@/components/base/spinner/spinner";
 import { PageHeader } from "@/components/ui/primitives";
 
 interface LearnerEditFormProps {
@@ -108,7 +109,7 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
               <ArrowLeft size={14} aria-hidden="true" /> Back to profile
             </Link>
             <button type="submit" disabled={busy} className="btn btn-primary btn-sm">
-              {busy ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : <Save size={15} aria-hidden="true" />}
+              {busy ? <Spinner size="sm" aria-hidden className="text-current" /> : <Save size={15} aria-hidden="true" />}
               Save profile
             </button>
           </>
@@ -375,7 +376,7 @@ export default function LearnerEditForm({ learner }: LearnerEditFormProps) {
           disabled={busy}
           className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-6 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-700/20 transition hover:bg-blue-800 disabled:opacity-50"
         >
-          {busy ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+          {busy ? <Spinner size="sm" aria-hidden className="text-current" /> : <Save size={15} />}
           Save Profile
         </button>
       </div>

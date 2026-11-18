@@ -19,12 +19,12 @@ import {
   Download,
   Copy,
   Check,
-  LoaderCircle,
   Plus,
   Trash2,
   Lock,
 } from "lucide-react";
 import { ProgressBar } from "@/components/base/progress/progress";
+import { Spinner } from "@/components/base/spinner/spinner";
 
 interface StaffWizardProps {
   userRole: string;
@@ -1363,7 +1363,7 @@ export function StaffWizard({ userRole }: StaffWizardProps) {
                 disabled={savingDraft}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-blue-700 px-5 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-800"
               >
-                {savingDraft ? <><LoaderCircle size={14} className="animate-spin"/> Saving…</> : <>Next Step <ArrowRight size={14} /></>}
+                {savingDraft ? <><Spinner size="xs" aria-hidden className="text-current"/> Saving…</> : <>Next Step <ArrowRight size={14} /></>}
               </button>
             ) : (
               <button

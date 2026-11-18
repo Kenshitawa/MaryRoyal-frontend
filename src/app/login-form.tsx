@@ -5,12 +5,12 @@ import {
   RiAlertLine,
   RiEyeLine,
   RiEyeOffLine,
-  RiLoader4Line,
   RiLock2Line,
   RiMailLine,
 } from "@remixicon/react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
+import { Spinner } from "@/components/base/spinner/spinner";
 import { cx } from "@/utils/cx";
 
 type IconProps = {
@@ -18,13 +18,8 @@ type IconProps = {
   "aria-hidden"?: boolean | "true" | "false";
 };
 
-function LoadingIcon({ className, ...props }: IconProps) {
-  return (
-    <RiLoader4Line
-      {...props}
-      className={cx(className, "motion-safe:animate-spin")}
-    />
-  );
+function LoadingIcon({ className }: IconProps) {
+  return <Spinner size="sm" aria-hidden className={cx(className, "text-current")} />;
 }
 
 export default function LoginForm() {
@@ -34,6 +29,7 @@ export default function LoginForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError("");
     const form = new FormData(event.currentTarget);
@@ -118,7 +114,6 @@ export default function LoginForm() {
 
       <Button
         type="submit"
-        disabled={busy}
         aria-busy={busy}
         leadingIcon={busy ? LoadingIcon : undefined}
         className="mt-1 min-h-11 w-full"

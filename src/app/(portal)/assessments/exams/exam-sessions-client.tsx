@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Plus, CheckCircle2, Lock, Unlock, AlertCircle } from "lucide-react";
 import { ThemedCard } from "@/components/design-system/card";
 import { PageHeader } from "@/components/ui/primitives";
+import { LoadingState } from "@/components/ui/loader";
 import { StatusPill } from "@/components/design-system/status-pill";
 
 interface ExamSession {
@@ -327,7 +328,9 @@ export default function ExamSessionsClient({
       {/* Exam Sessions List */}
       <div className="space-y-4">
         {loading ? (
-          <p className="p-8 text-center text-sm text-slate-500">Loading exam sessions...</p>
+          <ThemedCard className="p-0">
+            <LoadingState label="Loading exam sessions…" hint="Checking schedules, progress and mark submission." />
+          </ThemedCard>
         ) : exams.length === 0 ? (
           <ThemedCard className="p-12 text-center">
             <AlertCircle className="mx-auto text-blue-500" size={32} />
