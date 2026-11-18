@@ -1,8 +1,4 @@
-"use client";
-
-import { useTemplateCopy } from "@/components/foundations/template-copy/template-copy";
-
-import { useState, type ComponentType } from "react";
+import type { ComponentType } from "react";
 import {
   RiArrowDownCircleFill,
   RiArrowUpCircleFill,
@@ -12,15 +8,13 @@ import {
   RiGroupFill,
   RiGroupLine,
   RiIndeterminateCircleFill,
-  RiInformationFill,
   RiRefund2Fill,
   RiShoppingBasket2Fill,
   RiShoppingBasketLine,
 } from "@remixicon/react";
-import { Focusable } from "react-aria-components";
 import { Chip } from "@/components/base/badges/chip";
-import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
 import { cx } from "@/utils/cx";
+import { StatHint } from "./stat-hint";
 
 /**
  * Figma source: Board UI → dashboard 1 → Frame 20 (node 3731:3160) for the
@@ -46,7 +40,7 @@ export type StatCardsVariant = "plain" | "footer";
 export type StatTone = "blue" | "orange" | "purple" | "pink" | "sky" | "emerald";
 
 export type Stat = {
-  icon: IconComponent;
+  icon?: IconComponent;
   label: string;
   value: string;
   note?: string;
@@ -140,9 +134,8 @@ const DELTA_STYLES: Record<
 /** Tinted pill with a direction glyph — the footer band's delta readout, in
  *  the same lime and rose the chart cards use for their trend chips. */
 function DeltaPill({ delta, deltaColor }: { delta: string; deltaColor: NonNullable<Stat["deltaColor"]> }) {
-  const localize = useTemplateCopy();
   const { icon: Icon, className, pill } = DELTA_STYLES[deltaColor];
-  return localize((
+  return (
     <span
       className={cx(
         "flex shrink-0 items-center gap-1 rounded-full py-0.5 pe-2 ps-1",
@@ -154,42 +147,21 @@ function DeltaPill({ delta, deltaColor }: { delta: string; deltaColor: NonNullab
         {delta}
       </span>
     </span>
-  ));
-}
-
-/** Bare info glyph with a tooltip — the footer header's trailing control.
- *  Opens on hover and focus as tooltips do, and on click as well, since a
- *  glyph this small reads as a button and gets tapped. */
-function StatHint({ label, hint }: { label: string; hint: string }) {
-  const localize = useTemplateCopy();
-  const [open, setOpen] = useState(false);
-  return localize((
-    <TooltipTrigger delay={200} isOpen={open} onOpenChange={setOpen}>
-      <Focusable>
-        <button
-          type="button"
-          aria-label={`About ${label}`}
-          onClick={() => setOpen((isOpen) => !isOpen)}
-          className="flex shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none transition-colors duration-150 ease hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-        >
-          <RiInformationFill className="size-5" aria-hidden />
-        </button>
-      </Focusable>
-      <Tooltip size="md">{hint}</Tooltip>
-    </TooltipTrigger>
-  ));
+  );
 }
 
 function PlainStatCard({ stat }: { stat: Stat }) {
-  const localize = useTemplateCopy();
   const tone = stat.tone ?? "blue";
   const cardTone = tone === "emerald" ? "success" : tone === "orange" ? "warning" : tone === "pink" ? "danger" : tone === "purple" ? "neutral" : "brand";
   const iconTone = tone === "emerald" ? "bg-status-lime-background text-status-lime-text" : tone === "orange" ? "bg-status-yellow-background text-status-yellow-text" : tone === "pink" ? "bg-status-rose-background text-status-rose-text" : tone === "purple" ? "bg-status-purple-background text-status-purple-text" : "bg-status-blue-background text-status-blue-text";
-  return localize((
+  const Icon = stat.icon;
+  return (
     <section data-dashboard-tone={cardTone} className="dashboard-stat flex h-[132px] min-w-0 flex-col items-start justify-between rounded-2xl border p-4">
-      <span className={cx("flex items-center rounded-md p-1.5", iconTone)}>
-        <stat.icon className="size-5 shrink-0" aria-hidden />
-      </span>
+      {Icon ? (
+        <span className={cx("flex items-center rounded-md p-1.5", iconTone)}>
+          <Icon className="size-5 shrink-0" aria-hidden />
+        </span>
+      ) : null}
       <div className="flex w-full flex-col gap-0.5">
         <p className="w-full text-body-medium text-text-secondary">{stat.label}</p>
         <div className="flex w-full flex-wrap items-center gap-2">
@@ -199,23 +171,25 @@ function PlainStatCard({ stat }: { stat: Stat }) {
         {stat.note ? <p className="truncate text-caption-1-medium text-text-tertiary">{stat.note}</p> : null}
       </div>
     </section>
-  ));
+  );
 }
 
 function FooterStatCard({ stat }: { stat: Stat }) {
-  const localize = useTemplateCopy();
-  return localize((
+  const Icon = stat.icon;
+  return (
     <section className="flex min-w-0 flex-col rounded-2xl bg-background-secondary-default p-2">
       {/* Icon tile + optional info glyph, both hanging from the same top inset */}
       <div className="flex w-full items-start justify-between gap-2.5 p-2">
-        <span
-          className={cx(
-            "flex size-10 shrink-0 items-center justify-center rounded-2lg bg-linear-to-b",
-            TILE_TONES[stat.tone ?? "blue"],
-          )}
-        >
-          <stat.icon className="size-5 shrink-0 text-white" aria-hidden />
-        </span>
+        {Icon ? (
+          <span
+            className={cx(
+              "flex size-10 shrink-0 items-center justify-center rounded-2lg bg-linear-to-b",
+              TILE_TONES[stat.tone ?? "blue"],
+            )}
+          >
+            <Icon className="size-5 shrink-0 text-white" aria-hidden />
+          </span>
+        ) : <span />}
         {stat.hint && <StatHint label={stat.label} hint={stat.hint} />}
       </div>
 
@@ -235,7 +209,7 @@ function FooterStatCard({ stat }: { stat: Stat }) {
         {stat.delta ? <DeltaPill delta={stat.delta} deltaColor={stat.deltaColor ?? "neutral"} /> : null}
       </div>
     </section>
-  ));
+  );
 }
 
 export function StatCards({
@@ -256,10 +230,9 @@ export function StatCards({
   columns?: 1 | 2 | 4;
   className?: string;
 } = {}) {
-  const localize = useTemplateCopy();
   const items =
     stats ?? (variant === "footer" ? DEFAULT_FOOTER_STATS : DEFAULT_STATS);
-  return localize((
+  return (
     <div
       className={cx(
         "grid w-full gap-4",
@@ -276,13 +249,12 @@ export function StatCards({
     >
       {items.slice(0, count ?? items.length).map((stat, index) => {
         const resolvedStat = stat.tone ? stat : { ...stat, tone: (["blue", "purple", "emerald", "orange"] as const)[index % 4] };
-        return (
-        variant === "footer" ? (
+        return variant === "footer" ? (
           <FooterStatCard key={stat.label} stat={resolvedStat} />
         ) : (
           <PlainStatCard key={stat.label} stat={resolvedStat} />
-        ));
+        );
       })}
     </div>
-  ));
+  );
 }
