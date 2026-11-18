@@ -667,16 +667,16 @@ export default function AccountDirectory() {
                 const color = account.suspended || locked ? "rose" : account.forcePasswordChange ? "yellow" : "lime";
                 return (
                   <TableRow key={account.id} id={account.id}>
-                    <TableCell id="person">
+                    <TableCell>
                       {temp?.id === account.id ? credentialNotice(temp) : null}
                       <div className="min-w-48">
                         <p className="text-body-medium text-text-primary">{isStaff ? <Link href={`/staff/${account.id}`} className="underline-offset-4 hover:underline">{account.name}</Link> : account.name}</p>
                         <p className="text-body-2-regular text-text-secondary" dir="ltr">{account.email}</p>
                       </div>
                     </TableCell>
-                    <TableCell id="role"><Chip variant="caption" color="soft">{account.role.replaceAll("_", " ")}</Chip></TableCell>
-                    <TableCell id="status"><Chip variant="caption" color={color}>{state}</Chip>{locked ? <p className="mt-1 text-caption-1-medium text-text-tertiary">8+ failed sign-ins</p> : null}</TableCell>
-                    <TableCell id="actions"><div className="flex max-w-[390px] flex-wrap items-center gap-1.5">
+                    <TableCell><Chip variant="caption" color="soft">{account.role.replaceAll("_", " ")}</Chip></TableCell>
+                    <TableCell><Chip variant="caption" color={color}>{state}</Chip>{locked ? <p className="mt-1 text-caption-1-medium text-text-tertiary">8+ failed sign-ins</p> : null}</TableCell>
+                    <TableCell><div className="flex max-w-[390px] flex-wrap items-center gap-1.5">
                       {account.suspended && account.suspensionReason !== "ARCHIVED" ? <Button size="small" variant="secondary" disabled={saving} onClick={() => void action(account, "reactivate")}>Reactivate</Button> : !account.suspended ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={LockKeyhole} onClick={() => void action(account, "suspend")}>Suspend</Button> : null}
                       <Button size="small" variant="secondary" disabled={saving} leadingIcon={KeyRound} onClick={() => void action(account, "reset-password")}>Reset key</Button>
                       {locked ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={UnlockKeyhole} onClick={() => void action(account, "unlock")}>Unlock</Button> : null}

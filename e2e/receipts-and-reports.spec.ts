@@ -29,6 +29,22 @@ test.describe("Dashboard, Receipts and Reports accessibility without server cras
     await expect(page.getByText("An error occurred")).toHaveCount(0);
   });
 
+  test("Director can open accounts page without crash", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("console", msg => console.log("PAGE LOG:", msg.type(), msg.text()));
+    page.on("pageerror", err => {
+      console.log("PAGE ERROR:", err.message, err.stack);
+      errors.push(err.message);
+    });
+    const response = await page.goto("/accounts");
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("h1")).toContainText("User accounts");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("tbody tr, ul[aria-label='User accounts'] li").first()).toBeVisible({ timeout: 10000 });
+    expect(errors).toEqual([]);
+    await expect(page.getByText("An error occurred")).toHaveCount(0);
+  });
+
   test("Receipt export endpoints return valid CSV and PDF", async ({ request }) => {
     const csvRes = await request.get("/api/receipts/export?format=csv");
     expect(csvRes.status()).toBe(200);
