@@ -83,13 +83,16 @@ describe("Mobile Navigation (4 Tabs + More per role)", () => {
   it("configures exact required primary tabs for Teacher", () => {
     const nav = getMobileNavigation("TEACHER");
     const labels = nav.primary.map((t) => t.label);
-    expect(labels).toEqual(["Home", "Attendance", "Learning Content", "My Classes"]);
+    expect(labels).toEqual(["Home", "Attendance", "Marks", "Class"]);
+    const moreLabels = nav.moreCategories.flatMap((category) => category.items.map((item) => item.label));
+    expect(moreLabels).toContain("Learn");
+    expect(moreLabels).toContain("Family Diary");
   });
 
   it("configures exact required primary tabs for Parent", () => {
     const nav = getMobileNavigation("PARENT");
     const labels = nav.primary.map((t) => t.label);
-    expect(labels).toEqual(["Home", "Results", "Fees", "Messages"]);
+    expect(labels).toEqual(["Home", "Results", "Fees", "Diary"]);
   });
 
   it("configures exact required primary tabs for Learner", () => {

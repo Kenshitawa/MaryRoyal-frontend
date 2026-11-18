@@ -57,6 +57,8 @@ model User {
   complaintsOpened  Complaint[] @relation("ComplaintOpener")
   complaintsAssigned Complaint[] @relation("ComplaintAssignee")
   complaintRepliesAuthored ComplaintReply[]
+  diaryEntries DiaryEntry[] @relation("DiaryEntryAuthor")
+  diaryReplies DiaryReply[] @relation("DiaryReplyAuthor")
   admissionDrafts AdmissionDraft[] @relation("AdmissionCreator")
   admissionDocuments AdmissionDocument[] @relation("AdmissionUploader")
   learningVideosAdded LearningVideo[] @relation("LearningVideoAuthor")
@@ -109,6 +111,7 @@ model Learner {
   admissionDraft AdmissionDraft?
   learningVideoWatches LearningVideoWatch[]
   disciplineIncidents DisciplineIncident[]
+  diaryEntries DiaryEntry[]
 }
 model LearnerProfile {
   id                    String   @id @default(cuid())
@@ -402,6 +405,30 @@ model ComplaintReply {
   message     String
   createdAt   DateTime  @default(now())
   @@index([complaintId, createdAt])
+}
+model DiaryEntry {
+  id          String   @id @default(cuid())
+  learnerId   String
+  learner     Learner  @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("DiaryEntryAuthor", fields: [authorId], references: [id])
+  subject     String
+  message     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  replies     DiaryReply[]
+  @@index([learnerId, createdAt])
+  @@index([authorId, createdAt])
+}
+model DiaryReply {
+  id          String     @id @default(cuid())
+  entryId     String
+  entry       DiaryEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User       @relation("DiaryReplyAuthor", fields: [authorId], references: [id])
+  message     String
+  createdAt   DateTime   @default(now())
+  @@index([entryId, createdAt])
 }
 model Assessment {
   id          String             @id @default(cuid())

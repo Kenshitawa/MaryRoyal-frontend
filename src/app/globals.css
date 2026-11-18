@@ -189,6 +189,7 @@
 
 html {
   min-height: 100%;
+  min-height: 100dvh;
   background-color: var(--canvas);
   background-image: var(--page-bg);
   background-attachment: fixed;
@@ -197,6 +198,7 @@ html {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   background: transparent;
   color: var(--ink);
@@ -1181,15 +1183,19 @@ a.list-row:hover {
 
 .app-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   min-width: 0;
 }
 
 .app-column {
   min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .app-main {
   min-height: calc(100vh - 56px);
+  min-height: calc(100dvh - 56px - env(safe-area-inset-top));
   min-width: 0;
   outline: none;
 }
@@ -1274,7 +1280,7 @@ a.list-row:hover {
   top: 0;
   z-index: 40;
   display: flex;
-  height: 56px;
+  height: calc(56px + env(safe-area-inset-top));
   align-items: center;
   gap: 4px;
   padding: 0 6px 0 8px;
@@ -1282,6 +1288,18 @@ a.list-row:hover {
   background: var(--chrome-bg);
   border-bottom: 1px solid var(--line);
   transition: transform 0.2s ease;
+}
+
+.app-mobile-brand {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 28px);
+  inset-inline-start: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+}
+
+.app-mobile-bar > div:first-child {
+  max-width: calc(50% - 1.75rem);
 }
 
 @media (min-width: 1024px) {

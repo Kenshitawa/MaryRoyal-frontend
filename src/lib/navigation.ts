@@ -60,6 +60,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Timetable", href: "/timetable", icon: CalendarDays },
     { label: "KICD videos", href: "/learning-content", icon: BookOpenCheck },
+    { label: "Family diary", href: "/diary", icon: MessageCircle },
     { label: "Complaints", href: "/complaints", icon: MessageCircle },
   ],
   HEAD_TEACHER: [
@@ -78,6 +79,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Schemes of work", href: "/schemes", icon: LayoutList },
     { label: "KICD videos", href: "/learning-content", icon: BookOpenCheck },
     { label: "Weekly teaching log", href: "/teaching-log", icon: ClipboardList },
+    { label: "Family diary", href: "/diary", icon: MessageCircle },
     { label: "Complaints", href: "/complaints", icon: MessageCircle },
   ],
   DEPUTY: [
@@ -108,6 +110,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Admissions", href: "/admissions", icon: ClipboardList },
     { label: "Finance", href: "/finance", icon: Wallet },
     { label: "Welfare", href: "/welfare", icon: HeartHandshake },
+    { label: "Family diary", href: "/diary", icon: MessageCircle },
   ],
   ACCOUNTANT: [
     { label: "Overview", href: "/dashboard", icon: GraduationCap },
@@ -127,6 +130,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Library", href: "/library", icon: Library },
     { label: "Welfare", href: "/welfare", icon: HeartHandshake },
     { label: "Timetable", href: "/timetable", icon: CalendarDays },
+    { label: "Family diary", href: "/diary", icon: MessageCircle },
   ],
   WELFARE_CHAIR: [
     { label: "Overview", href: "/dashboard", icon: GraduationCap },
@@ -138,6 +142,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
   ],
   PARENT: [
     { label: "My children", href: "/portal", icon: Users },
+    { label: "Family diary", href: "/diary", icon: BookOpen },
     { label: "Complaints", href: "/complaints", icon: MessageCircle },
   ],
   LEARNER: [
@@ -184,6 +189,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       {
         category: "Communication",
         items: [
+          { label: "Family Diary", href: "/diary", icon: BookOpen },
           { label: "Complaints", href: "/complaints", icon: MessageCircle, badgeKey: "complaints" },
         ],
       },
@@ -237,6 +243,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       {
         category: "Communication",
         items: [
+          { label: "Family Diary", href: "/diary", icon: BookOpen },
           { label: "Parent Complaints", href: "/complaints", icon: MessageCircle, badgeKey: "complaints" },
         ],
       },
@@ -336,6 +343,10 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
         ],
       },
       {
+        category: "Communication",
+        items: [{ label: "Family Diary", href: "/diary", icon: BookOpen }],
+      },
+      {
         category: "Settings",
         items: [
           { label: "Profile & Security", href: "/profile", icon: User },
@@ -380,8 +391,8 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
       { label: "Attendance", href: "/attendance", icon: CalendarCheck },
-      { label: "Learning Content", href: "/learning-content", icon: BookOpenCheck },
-      { label: "My Classes", href: "/learners", icon: Users },
+      { label: "Marks", href: "/assessments", icon: BookOpen },
+      { label: "Class", href: "/learners", icon: Users },
     ],
     moreCategories: [
       {
@@ -391,8 +402,8 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
           { label: "Timetable", href: "/timetable", icon: CalendarDays },
           { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
           { label: "Weekly Teaching Log", href: "/teaching-log", icon: FileText },
-          { label: "Marks", href: "/assessments", icon: BookOpen },
-          { label: "KICD Videos", href: "/learning-content", icon: BookOpenCheck },
+          { label: "Learn", href: "/learning-content", icon: BookOpenCheck },
+          { label: "Family Diary", href: "/diary", icon: MessageCircle },
           { label: "Textbooks & Library", href: "/library", icon: Library },
         ],
       },
@@ -416,7 +427,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       { label: "Home", href: "/portal", icon: GraduationCap },
       { label: "Results", href: "/portal?tab=results", icon: Trophy },
       { label: "Fees", href: "/portal?tab=fees", icon: Wallet },
-      { label: "Messages", href: "/complaints", icon: MessageCircle, badgeKey: "messages" },
+      { label: "Diary", href: "/diary", icon: BookOpen },
     ],
     moreCategories: [
       {

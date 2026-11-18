@@ -1,8 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { LayoutList, Plus, CheckCircle2, XCircle, Filter, X, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { LayoutList, Plus, CheckCircle2, XCircle, Filter, ChevronDown, ChevronUp, Sparkles, ChevronRight } from "lucide-react";
 import { Spinner } from "@/components/base/spinner/spinner";
+import { Button } from "@/components/base/buttons/button";
+import { Input } from "@/components/base/input/input";
+import { Select, SelectItem } from "@/components/base/select/select";
+import { Textarea } from "@/components/base/textarea/textarea";
+import { Modal, ModalBody, ModalFooter, ModalHeader } from "@/components/base/modal/modal";
 import { PageHeader } from "@/components/ui/primitives";
 import { gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
 
@@ -68,6 +73,7 @@ export default function SchemesClient({
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [filterTerm, setFilterTerm] = useState("ALL");
   const [aiBusy, setAiBusy] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
 
   const grades = useMemo(() => gradeOptions(teaching, catalog), [teaching, catalog]);
 
@@ -103,17 +109,23 @@ export default function SchemesClient({
   async function draftWithAI() {
     setAiBusy(true);
     try {
-      const response = await fetch("/api/ai/draft", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "scheme", grade: form.grade, subject: formSubject, topic: form.strand || form.subStrand || form.learningOutcomes }) });
+      const response = await fetch("/api/ai/draft", { method: "POST", signal: AbortSignal.timeout(45_000), headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "scheme", grade: form.grade, subject: formSubject, topic: form.strand || form.subStrand || form.learningOutcomes }) });
       const result = await response.json();
       if (!response.ok) { notify(result.error ?? "Draft unavailable", false); return; }
       setForm((current) => ({ ...current, ...result.draft }));
+      setPlanOpen(true);
       notify("AI draft added. Review and edit it before submitting.");
-    } catch { notify("Could not reach the local AI service.", false); }
+    } catch (error) { notify(error instanceof DOMException && error.name === "TimeoutError" ? "The local draft took too long. Your scheme is still here; try again." : "Could not reach the local AI service. Your scheme is still here; try again.", false); }
     finally { setAiBusy(false); }
   }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.grade || !formSubject || !form.strand.trim() || !form.subStrand.trim() || !form.learningOutcomes.trim() || !form.learningExperiences.trim() || !form.learningResources.trim() || !form.assessmentMethods.trim()) {
+      setPlanOpen(true);
+      notify("Complete the learning outcomes, activities, resources and assessment before submitting.", false);
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/schemes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...form, subject: formSubject, week: Number(form.week), lessonNo: Number(form.lessonNo), year: Number(form.year) }) });
@@ -122,7 +134,8 @@ export default function SchemesClient({
       notify("Scheme submitted — Deputy and Head Teacher notified!");
       setShowCreate(false);
       void load();
-    } finally { setBusy(false); }
+    } catch { notify("The scheme could not be sent. Your entries are still here; try again.", false); }
+    finally { setBusy(false); }
   }
 
   async function handleReview(schemeId: string, action: string, feedback?: string) {
@@ -261,70 +274,57 @@ export default function SchemesClient({
       )}
 
       {/* Create Modal */}
-      {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/40 px-3 py-3 sm:px-4 sm:py-6">
-          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-2xl sm:max-h-[calc(100dvh-3rem)] sm:p-6 dark:bg-slate-900">
-            <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-5 flex items-center justify-between border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:-mt-6 sm:px-6 dark:border-slate-800 dark:bg-slate-900/95">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Submit Scheme of Work</h2>
-              <button type="button" aria-label="Close scheme editor" onClick={() => setShowCreate(false)} className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-slate-100"><X size={15}/></button>
-            </div>
-            <form onSubmit={handleCreate} className="space-y-4 pb-[env(safe-area-inset-bottom)]">
-              <button type="button" onClick={() => void draftWithAI()} disabled={aiBusy || !form.grade || !formSubject || !(form.strand || form.subStrand || form.learningOutcomes)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 text-sm font-semibold text-blue-800 disabled:opacity-50 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300"><Sparkles size={15}/>{aiBusy ? "Drafting locally…" : "Draft with local AI"}</button>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Grade</label>
-                  <select
-                    value={form.grade}
-                    onChange={(e) => {
-                      const nextGrade = e.target.value;
-                      const nextSubject = subjectOptions(nextGrade, teaching, catalog)[0] ?? "";
-                      setForm((f) => ({ ...f, grade: nextGrade, subject: nextSubject }));
-                    }}
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    {grades.map((g) => <option key={g} value={g}>{g}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
-                  <select
-                    value={formSubject}
-                    onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-                    required
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    {subjects.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
+      <Modal isOpen={showCreate} onOpenChange={setShowCreate} size="lg" overlayClassName="p-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-[calc(env(safe-area-inset-bottom)+0.5rem)] sm:p-6" className="h-[calc(var(--visual-viewport-height)-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1rem)] max-h-full sm:h-[min(calc(var(--visual-viewport-height)-3rem),52rem)]">
+        {({ close }) => <>
+          <ModalHeader title="New scheme" description="Plan one lesson. Your draft stays here while you work." className="px-4 sm:px-6" closeLabel="Close scheme editor" />
+          <ModalBody className="px-4 sm:px-6">
+            <form id="scheme-create-form" onSubmit={handleCreate} className="space-y-3 pb-2">
+              <Button type="button" onClick={() => void draftWithAI()} disabled={aiBusy || !form.grade || !formSubject} variant="secondary" size="small" leadingIcon={aiBusy ? undefined : Sparkles} aria-busy={aiBusy}>
+                {aiBusy ? <><Spinner size="sm" aria-hidden className="text-current" /> Preparing your local draft…</> : "Draft with local AI"}
+              </Button>
+              <p role="status" aria-live="polite" className="min-h-5 text-caption-1-regular text-text-secondary">{aiBusy ? "Working on this screen. It will stop and show a retry message if it takes too long." : "Choose your class and lesson. Add the learning plan below."}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Select label="Grade" selectedKey={form.grade} onSelectionChange={(key) => { const nextGrade = String(key); const nextSubject = subjectOptions(nextGrade, teaching, catalog)[0] ?? ""; setForm((current) => ({ ...current, grade: nextGrade, subject: nextSubject })); }} triggerClassName="w-full" popoverClassName="w-(--trigger-width)">
+                  {grades.map((grade) => <SelectItem key={grade} id={grade}>{grade}</SelectItem>)}
+                </Select>
+                <Select label="Learning area" selectedKey={formSubject} onSelectionChange={(key) => setForm((current) => ({ ...current, subject: String(key) }))} triggerClassName="w-full" popoverClassName="w-(--trigger-width)">
+                  {subjects.map((subject) => <SelectItem key={subject} id={subject}>{subject}</SelectItem>)}
+                </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Term</label>
-                  <select value={form.term} onChange={(e) => setForm((f) => ({ ...f, term: e.target.value }))} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm">
-                    {TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Select label="Term" selectedKey={form.term} onSelectionChange={(key) => setForm((current) => ({ ...current, term: String(key) }))} triggerClassName="w-full" popoverClassName="w-(--trigger-width)">
+                  {TERMS.map((term) => <SelectItem key={term} id={term}>{term}</SelectItem>)}
+                </Select>
                 <div className="grid grid-cols-2 gap-2">
-                  <FormField label="Week" type="number" value={String(form.week)} onChange={(v) => setForm((f) => ({ ...f, week: Number(v) }))} required />
-                  <FormField label="Lesson" type="number" value={String(form.lessonNo)} onChange={(v) => setForm((f) => ({ ...f, lessonNo: Number(v) }))} required />
+                  <FormField label="Week" type="number" value={String(form.week)} onChange={(value) => setForm((current) => ({ ...current, week: Number(value) }))} required />
+                  <FormField label="Lesson" type="number" value={String(form.lessonNo)} onChange={(value) => setForm((current) => ({ ...current, lessonNo: Number(value) }))} required />
                 </div>
               </div>
-              <FormField label="Strand" value={form.strand} onChange={(v) => setForm((f) => ({ ...f, strand: v }))} required />
-              <FormField label="Sub-Strand" value={form.subStrand} onChange={(v) => setForm((f) => ({ ...f, subStrand: v }))} required />
-              <TextareaField label="Specific Learning Outcomes" value={form.learningOutcomes} onChange={(v) => setForm((f) => ({ ...f, learningOutcomes: v }))} required />
-              <TextareaField label="Key Inquiry Questions (optional)" value={form.keyInquiryQuestions} onChange={(v) => setForm((f) => ({ ...f, keyInquiryQuestions: v }))} />
-              <TextareaField label="Learning Experiences" value={form.learningExperiences} onChange={(v) => setForm((f) => ({ ...f, learningExperiences: v }))} required />
-              <FormField label="Learning Resources" value={form.learningResources} onChange={(v) => setForm((f) => ({ ...f, learningResources: v }))} required />
-              <FormField label="Assessment Methods" value={form.assessmentMethods} onChange={(v) => setForm((f) => ({ ...f, assessmentMethods: v }))} required />
-              <TextareaField label="Reflection (optional)" value={form.reflection} onChange={(v) => setForm((f) => ({ ...f, reflection: v }))} />
-              <button type="submit" disabled={busy} className="w-full rounded-xl bg-purple-700 py-2.5 text-sm font-bold text-white hover:bg-purple-800 disabled:opacity-50 flex items-center justify-center gap-2">
-                {busy && <Spinner size="sm" aria-hidden className="text-current" />} Submit Scheme of Work
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <FormField label="Strand" value={form.strand} onChange={(value) => setForm((current) => ({ ...current, strand: value }))} required />
+                <FormField label="Sub-strand" value={form.subStrand} onChange={(value) => setForm((current) => ({ ...current, subStrand: value }))} required />
+              </div>
+              <Button type="button" variant="ghost" size="small" aria-expanded={planOpen} onClick={() => setPlanOpen((open) => !open)} leadingIcon={planOpen ? ChevronDown : ChevronRight}>
+                Learning plan {planOpen ? "· close details" : "· outcomes, activities and assessment"}
+              </Button>
+              {planOpen ? <div className="space-y-3 rounded-2xl border border-border-button-default bg-background-secondary-default p-3">
+                <Textarea label="Learning outcomes" value={form.learningOutcomes} onChange={(value) => setForm((current) => ({ ...current, learningOutcomes: value }))} rows={2} maxLength={1000} />
+                <Textarea label="Learning experiences" value={form.learningExperiences} onChange={(value) => setForm((current) => ({ ...current, learningExperiences: value }))} rows={2} maxLength={1000} />
+                <FormField label="Learning resources" value={form.learningResources} onChange={(value) => setForm((current) => ({ ...current, learningResources: value }))} />
+                <FormField label="Assessment methods" value={form.assessmentMethods} onChange={(value) => setForm((current) => ({ ...current, assessmentMethods: value }))} />
+                <Textarea label="Key inquiry questions · optional" value={form.keyInquiryQuestions} onChange={(value) => setForm((current) => ({ ...current, keyInquiryQuestions: value }))} rows={2} maxLength={500} />
+                <Textarea label="Reflection · optional" value={form.reflection} onChange={(value) => setForm((current) => ({ ...current, reflection: value }))} rows={2} maxLength={500} />
+              </div> : null}
             </form>
-          </div>
-        </div>
-      )}
+          </ModalBody>
+          <ModalFooter className="px-4 pb-[env(safe-area-inset-bottom)] sm:px-6 sm:pb-0">
+            <Button type="button" variant="secondary" onClick={close} disabled={busy}>Cancel</Button>
+            <Button type="submit" form="scheme-create-form" disabled={busy} aria-busy={busy} leadingIcon={busy ? undefined : CheckCircle2} className="w-full sm:w-auto">
+              {busy ? <><Spinner size="sm" aria-hidden className="text-current" /> Sending…</> : "Submit scheme"}
+            </Button>
+          </ModalFooter>
+        </>}
+      </Modal>
     </div>
   );
 }
@@ -340,18 +340,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 function FormField({ label, value, onChange, type = "text", required }: { label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean }) {
   return (
-    <div>
-      <label className="block text-xs font-semibold text-slate-700 mb-1">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} required={required} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white" />
-    </div>
-  );
-}
-
-function TextareaField({ label, value, onChange, required }: { label: string; value: string; onChange: (v: string) => void; required?: boolean }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-slate-700 mb-1">{label}</label>
-      <textarea value={value} onChange={(e) => onChange(e.target.value)} required={required} rows={2} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white" />
-    </div>
+    <Input label={label} type={type} value={value} onChange={onChange} isRequired={required} />
   );
 }

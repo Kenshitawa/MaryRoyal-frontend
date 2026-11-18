@@ -5,6 +5,7 @@ import { ArrowUp, Bot, CheckCircle2, LockKeyhole, RotateCcw, Sparkles } from "lu
 import { Spinner } from "@/components/base/spinner/spinner";
 import { Input } from "@/components/base/input/input";
 import { Button, ButtonLink } from "@/components/base/buttons/button";
+import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
 import { cx } from "@/utils/cx";
 
 type ReplyLink = { label: string; href: string };
@@ -23,6 +24,7 @@ type ChatMessage = {
   links?: ReplyLink[];
   suggestions?: string[];
   error?: boolean;
+  retryQuestion?: string;
 };
 
 const staffPrompts = [
@@ -102,6 +104,7 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
 
     try {
       const response = await fetch("/api/assistant", {
+        signal: AbortSignal.timeout(30_000),
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ question: text }),
@@ -127,8 +130,11 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
         {
           id: nextId("bot"),
           role: "assistant",
-          text: error instanceof Error ? error.message : "The assistant could not answer that. Try again.",
+          text: error instanceof DOMException && error.name === "TimeoutError"
+            ? "That took too long. Your question is saved here; try again when you’re ready."
+            : error instanceof Error ? error.message : "The assistant could not answer that. Try again.",
           error: true,
+          retryQuestion: text,
         },
       ]);
     } finally {
@@ -154,8 +160,8 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
   }
 
   return (
-    <div ref={cardRef} className={cx("overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-sm", family && "learner-chat")}>
-      <div className="flex items-center gap-3 border-b border-separator-border bg-background-secondary-default px-4 py-3.5 text-text-primary sm:px-5">
+    <div ref={cardRef} className={cx("flex h-[min(calc(100dvh-17rem),38rem)] min-h-[280px] flex-col overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-sm sm:h-[min(62dvh,42rem)] sm:min-h-[420px]", family && "learner-chat")}>
+      <div className="flex shrink-0 items-center gap-2 border-b border-separator-border bg-background-secondary-default px-3 py-2.5 text-text-primary sm:gap-3 sm:px-5 sm:py-3.5">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-background-primary-default text-foreground-icon-primary">
           <Sparkles size={18} aria-hidden="true" />
         </span>
@@ -163,36 +169,21 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
           <p className="truncate text-body-medium">Mary Royal Assistant</p>
           <p className="text-caption-1-regular text-text-secondary">Local · private · role-scoped</p>
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          size="small"
-          onClick={() => setMinimized(true)}
-        >
-          Minimize
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="small"
-          onClick={resetChat}
-          leadingIcon={RotateCcw}
-        >
-          Clear
-        </Button>
+        <Button type="button" variant="secondary" size="xs" onClick={() => setMinimized(true)}>Minimize</Button>
+        <Button type="button" variant="secondary" size="xs" onClick={resetChat} leadingIcon={RotateCcw}>Clear</Button>
       </div>
 
       <div
-        className="flex h-[min(48dvh,560px)] min-h-[280px] max-h-[720px] flex-col overflow-y-auto bg-background-full px-3 py-4 sm:h-[min(60dvh,650px)] sm:min-h-[360px] sm:px-5"
+        className="min-h-[170px] flex-1 overflow-y-auto overscroll-contain bg-background-full px-3 py-3 sm:min-h-[320px] sm:px-5 sm:py-4"
         aria-live="polite"
         aria-label="Assistant conversation"
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           {messages.map((message) => {
             if (message.role === "user") {
               return (
                 <div key={message.id} className="flex justify-end">
-                  <div className="max-w-[86%] rounded-2xl rounded-tr-md bg-accent-100 px-3.5 py-2.5 text-body-regular text-text-primary">
+                  <div className="max-w-[86%] rounded-2xl rounded-tr-md bg-accent-100 px-3 py-2 text-body-regular text-text-primary sm:px-3.5 sm:py-2.5">
                     {message.text}
                   </div>
                 </div>
@@ -207,7 +198,7 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
                   <Bot size={15} aria-hidden="true" />
                 </span>
                 <div
-                  className={cx("min-w-0 max-w-[88%] rounded-2xl rounded-tl-md border p-3.5 shadow-sm", message.error
+                  className={cx("min-w-0 max-w-[92%] rounded-2xl rounded-tl-md border p-3 shadow-sm sm:max-w-[88%] sm:p-3.5", message.error
                     ? "border-border-error-default bg-background-primary-default text-text-error-primary"
                     : "border-border-button-default bg-background-primary-default text-text-primary")}
                 >
@@ -236,6 +227,7 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
                       ))}
                     </div>
                   ) : null}
+                  {message.error && message.retryQuestion ? <Button type="button" variant="secondary" size="small" className="mt-3" onClick={() => void ask(message.retryQuestion!)}>Try again</Button> : null}
                   {message.id === lastAssistantId && message.suggestions?.length ? (
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {message.suggestions.map((suggestion) => (
@@ -259,10 +251,10 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
 
           {loading ? (
             <div className="flex items-start gap-2.5">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-background-secondary-default text-foreground-icon-primary">
                 <Bot size={15} aria-hidden="true" />
               </span>
-              <div className="inline-flex items-center gap-2 rounded-2xl rounded-tl-md border border-border-button-default bg-background-primary-default px-3.5 py-2.5 text-body-2-regular text-text-secondary">
+              <div role="status" className="inline-flex items-center gap-2 rounded-2xl rounded-tl-md border border-border-button-default bg-background-primary-default px-3 py-2 text-body-2-regular text-text-secondary sm:px-3.5 sm:py-2.5">
                 <Spinner size="sm" aria-hidden className="text-current" />
                 Checking school records…
               </div>
@@ -272,35 +264,38 @@ export function AssistantChat({ firstName, role }: { firstName: string; role: st
         </div>
       </div>
 
-      <div className="border-t border-separator-border bg-background-primary-default px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-5 sm:pb-3">
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void ask(input);
-          }}
-          className="flex items-end gap-2"
-        >
-          <Input
-            id="assistant-question"
-            aria-label="Ask the assistant a question"
-            value={input}
-            onChange={(value) => setInput(value.slice(0, 500))}
-            placeholder={role === "LEARNER" ? "Ask about marks, homework or games…" : family ? "Ask about fees, attendance or results…" : "Ask about fees, attendance, pending work…"}
-            className="min-w-0 flex-1"
-          />
-          <Button
-            type="submit"
-            disabled={!input.trim() || loading}
-            aria-label="Send question"
-            className="h-11 w-11 shrink-0 p-0"
-            iconOnly
-            leadingIcon={ArrowUp}
+      <div className="shrink-0 border-t border-separator-border bg-background-primary-default px-3 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-3 sm:pb-3">
+        <ComposerLoader active={loading} radius={16} speed={2.8} className="rounded-2xl">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void ask(input);
+            }}
+            className="relative flex items-end gap-2 rounded-2xl p-1"
           >
-          </Button>
-        </form>
-        <p className="mt-2 flex items-start gap-1.5 text-caption-1-regular text-text-tertiary">
+            <Input
+              id="assistant-question"
+              aria-label="Ask the assistant a question"
+              value={input}
+              onChange={(value) => setInput(value.slice(0, 500))}
+              placeholder={role === "LEARNER" ? "Ask about marks, homework or games…" : family ? "Ask about fees, attendance or results…" : "Ask about fees, attendance, pending work…"}
+              fieldClassName="bg-transparent ring-transparent"
+              className="min-w-0 flex-1"
+            />
+            <Button
+              type="submit"
+              disabled={!input.trim() || loading}
+              aria-label="Send question"
+              className="h-11 w-11 shrink-0 p-0"
+              iconOnly
+              leadingIcon={ArrowUp}
+            >
+            </Button>
+          </form>
+        </ComposerLoader>
+        <p className="mt-1 flex items-start gap-1.5 text-caption-1-regular text-text-tertiary sm:mt-2">
           <LockKeyhole size={12} className="mt-0.5 shrink-0 text-foreground-icon-secondary" aria-hidden="true" />
-          Answers are generated on this server from records your role can already view. No school data is sent to an external AI service.
+          Private replies use records your role can view. No school data leaves this server.
         </p>
       </div>
     </div>

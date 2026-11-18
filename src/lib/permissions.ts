@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client";
-export type Action = "view" | "create" | "update" | "delete" | "approve" | "review" | "release" | "submit" | "confirm" | "verify" | "apply";
-export type Resource = "dashboard" | "accounts" | "staff" | "staffAttendance" | "learners" | "admissions" | "learnerAccounts" | "attendance" | "assessments" | "discipline" | "finance" | "invoices" | "payments" | "payroll" | "feeStructures" | "audit" | "operations" | "guardians" | "exports" | "teachingLogs" | "assignments" | "learning" | "learningVideos" | "complaints" | "examSessions" | "rubrics" | "feeWaivers" | "textbooks" | "schemesOfWork" | "timetable" | "welfare" | "notifications";
+export type Action = "view" | "create" | "update" | "delete" | "approve" | "review" | "release" | "submit" | "confirm" | "verify" | "apply" | "reply";
+export type Resource = "dashboard" | "accounts" | "staff" | "staffAttendance" | "learners" | "admissions" | "learnerAccounts" | "attendance" | "assessments" | "discipline" | "finance" | "invoices" | "payments" | "payroll" | "feeStructures" | "audit" | "operations" | "guardians" | "exports" | "teachingLogs" | "assignments" | "learning" | "learningVideos" | "complaints" | "diary" | "examSessions" | "rubrics" | "feeWaivers" | "textbooks" | "schemesOfWork" | "timetable" | "welfare" | "notifications";
 export type DataScope = "school" | "assigned" | "linked" | "self" | "learner-identity" | "roster" | "academic" | "operations" | "finance";
 const ALL_STAFF: Role[] = [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.SECRETARY, Role.ACCOUNTANT, Role.TEACHER, Role.WELFARE_CHAIR, Role.NON_TEACHING_STAFF];
 const ALL: Role[] = [...ALL_STAFF, Role.PARENT, Role.LEARNER];
@@ -29,6 +29,7 @@ const matrix: Record<Resource, Partial<Record<Action, Role[]>>> = {
  learning: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.PARENT, Role.LEARNER], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.LEARNER] },
  learningVideos: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.PARENT, Role.LEARNER], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], update: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER] },
  complaints: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.PARENT], create: [Role.PARENT], update: [Role.DIRECTOR, Role.HEAD_TEACHER] },
+ diary: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.TEACHER, Role.PARENT], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY, Role.TEACHER], reply: [Role.PARENT] },
  examSessions: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], create: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR], update: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR], approve: [Role.HEAD_TEACHER, Role.DIRECTOR] },
  rubrics: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], create: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR], update: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR] },
  feeWaivers: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.ACCOUNTANT], create: [Role.ACCOUNTANT], approve: [Role.DIRECTOR] },
@@ -63,6 +64,7 @@ const scopes: Record<Resource, Partial<Record<DataScope, Role[]>>> = {
  learning: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER] },
  learningVideos: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER] },
  complaints: { school: [Role.DIRECTOR, Role.HEAD_TEACHER], self: [Role.PARENT] },
+ diary: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.SECRETARY], assigned: [Role.TEACHER], linked: [Role.PARENT] },
  examSessions: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER] },
  rubrics: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER] },
  feeWaivers: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.ACCOUNTANT] },

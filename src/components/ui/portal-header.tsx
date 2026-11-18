@@ -53,36 +53,24 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
   return (
     <>
       <header aria-label="Mobile app bar" className="app-mobile-bar">
-        {isDetail ? (
-          <IconButton ariaLabel="Go back" onClick={goBack}>
-            <ArrowLeft size={20} />
-          </IconButton>
-        ) : (
-          <Link href={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} aria-label="Mary Royal home" className="icon-btn">
-            <span className="grid size-7 shrink-0 place-items-center rounded-md bg-brand-mark-surface p-0.5">
-              <Image src="/mary-royal-logo.png" alt="" width={28} height={28} className="h-full w-full object-contain" />
-            </span>
-          </Link>
-        )}
-        <p className="min-w-0 flex-1 truncate text-body font-semibold text-ink">{section}</p>
-        <IconButton ariaLabel="Search" onClick={() => setSearchOpen(true)}>
-          <Search size={19} />
-        </IconButton>
-        <NotificationBell />
-        <button
-          type="button"
-          aria-label="Open profile menu"
-          onClick={() => setProfileOpen(true)}
-          className="ml-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-full"
-        >
-          <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-brand-soft text-label font-semibold text-brand-ink ring-1 ring-brand-line">
-            {user.avatarUrl ? (
-              <Image src={user.avatarUrl} alt="" width={32} height={32} className="h-8 w-8 object-cover" unoptimized />
-            ) : (
-              initials(user.name)
-            )}
+        <div className="flex min-w-0 flex-1 items-center gap-1">
+          {isDetail ? <IconButton ariaLabel="Go back" onClick={goBack}><ArrowLeft size={20} /></IconButton> : null}
+          <p className="min-w-0 truncate text-body font-semibold text-ink">{section}</p>
+        </div>
+        <Link href={user.role === "PARENT" ? "/portal" : user.role === "LEARNER" ? "/learning" : "/dashboard"} aria-label="Mary Royal home" className="app-mobile-brand icon-btn">
+          <span className="grid size-8 place-items-center rounded-md bg-brand-mark-surface p-0.5">
+            <Image src="/mary-royal-logo.png" alt="" width={32} height={32} className="h-full w-full object-contain" />
           </span>
-        </button>
+        </Link>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <IconButton ariaLabel="Search" onClick={() => setSearchOpen(true)}><Search size={19} /></IconButton>
+          <NotificationBell />
+          <button type="button" aria-label="Open profile menu" onClick={() => setProfileOpen(true)} className="grid h-11 w-11 shrink-0 place-items-center rounded-full">
+            <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-brand-soft text-label font-semibold text-brand-ink ring-1 ring-brand-line">
+              {user.avatarUrl ? <Image src={user.avatarUrl} alt="" width={32} height={32} className="h-8 w-8 object-cover" unoptimized /> : initials(user.name)}
+            </span>
+          </button>
+        </div>
       </header>
 
       <Sheet open={profileOpen} onClose={() => setProfileOpen(false)} title={user.name} description={`${user.roleLabel}${user.email ? ` · ${user.email}` : ""}`}>
