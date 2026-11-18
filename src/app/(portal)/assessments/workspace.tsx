@@ -13,7 +13,7 @@ import type { DataGridColumn, DataGridProps } from "@/components/application/dat
 import { Select, SelectItem } from "@/components/base/select/select";
 import { Input } from "@/components/base/input/input";
 import { Button } from "@/components/base/buttons/button";
-import { CBC_LEVEL_BANDS, cbcLevel } from "@/lib/grading";
+import { cbcLevel } from "@/lib/grading";
 import { RiSaveLine } from "@remixicon/react";
 
 type TeachingAssignment = { grade: string; subject: string };
@@ -331,16 +331,6 @@ export default function AssessmentWorkspace({
           </>
         }
       />
-
-      {/* Fixed CBC exam grading scale */}
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 text-xs font-bold">
-        <span className="text-slate-400 uppercase tracking-wider mr-1">Exam grade:</span>
-        {CBC_LEVEL_BANDS.map((band) => (
-          <span key={band.code} className="rounded-lg bg-background-secondary-default px-2.5 py-1 text-text-secondary">
-            {band.code}: {band.min}–{band.maxExclusive === null ? "100" : `<${band.maxExclusive}`}%
-          </span>
-        ))}
-      </div>
 
       {message && (
         <div role="status" className="rounded-xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">

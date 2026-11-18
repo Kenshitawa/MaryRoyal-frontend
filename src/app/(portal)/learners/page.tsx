@@ -5,6 +5,7 @@ import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
 import LearnerDirectory from "./directory";
 import TeacherAcademicRoster from "./teacher-academics";
+import TeacherSchoolRoster from "./teacher-school-roster";
 
 export default async function LearnersPage() {
   const token = (await cookies()).get("mary_session")?.value;
@@ -20,20 +21,21 @@ export default async function LearnersPage() {
   if (user.forcePasswordChange) redirect("/change-password");
 
   const identityOnly = canInScope(user.role, "learners", "view", "learner-identity");
+  const rosterOnly = canInScope(user.role, "learners", "view", "roster");
   const allowed =
     canInScope(user.role, "learners", "view", "school") ||
     canInScope(user.role, "learners", "view", "assigned") ||
-    identityOnly;
+    identityOnly || rosterOnly;
 
   if (!allowed) redirect("/dashboard");
 
-  if (canInScope(user.role, "learners", "view", "assigned")) {
+  if (rosterOnly && user.role === "TEACHER") {
     const assignments = await db.teacherAssignment.findMany({
       where: { teacherId: user.id },
       select: { grade: true, subject: true },
       orderBy: [{ grade: "asc" }, { subject: "asc" }],
     });
-    return <TeacherAcademicRoster assignments={assignments} />;
+    return <><TeacherSchoolRoster /><TeacherAcademicRoster assignments={assignments} /></>;
   }
 
   return (

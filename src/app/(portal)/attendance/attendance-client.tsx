@@ -9,7 +9,7 @@ type Row = {
   id: string;
   name: string;
   admissionNo: string;
-  status: "PRESENT" | "ABSENT" | "LATE";
+  status: "PRESENT" | "ABSENT" | "LATE" | "UNMARKED";
 };
 
 const today = () =>
@@ -57,6 +57,30 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
     setRows((old) => old.map((row) => ({ ...row, status })));
   }
 
+  function downloadRegister() {
+    const escapeCell = (value: string) => `"${value.replaceAll('"', '""')}"`;
+    const rowsForFile = [
+      ["REPUBLIC OF KENYA", "MINISTRY OF EDUCATION"],
+      ["CLASS DAILY LEARNER ATTENDANCE REGISTER", ""],
+      ["School", "Mary Royal School"],
+      ["Class / Grade", grade],
+      ["Date", date],
+      [],
+      ["No.", "Admission No.", "Learner Name", "Attendance (P/A/L)", "Remarks"],
+      ...rows.map((row, index) => [String(index + 1), row.admissionNo, row.name, row.status === "PRESENT" ? "P" : row.status === "ABSENT" ? "A" : row.status === "LATE" ? "L" : "", ""]),
+      [],
+      ["Class Teacher Name & Signature", ""],
+      ["Head Teacher Name & Signature", ""],
+    ];
+    const csv = `\uFEFF${rowsForFile.map((line) => line.map((cell) => escapeCell(String(cell ?? ""))).join(",")).join("\r\n")}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `attendance-register-${grade.replaceAll(" ", "-")}-${date}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function save() {
     setBusy(true);
     setMessage("");
@@ -67,7 +91,7 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
         body: JSON.stringify({
           grade,
           date,
-          records: rows.map(({ id, status }) => ({ learnerId: id, status })),
+          records: rows.filter(({ status }) => status !== "UNMARKED").map(({ id, status }) => ({ learnerId: id, status })),
         }),
       });
       const data = await response.json();
@@ -100,6 +124,7 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
         {/* Action quick shortcut */}
         {rows.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={downloadRegister} className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">Download register</button>
             <button
               type="button"
               onClick={() => markAll("PRESENT")}
@@ -250,10 +275,10 @@ export default function AttendanceClient({ grades }: { grades: string[] }) {
             {/* Sticky Save Bar */}
             <div className="sticky bottom-0 flex items-center justify-between border-t border-slate-100 bg-white/95 p-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                {rows.length} learners enrolled · Ready to commit
+              {rows.filter(({ status }) => status !== "UNMARKED").length} marked · {rows.filter(({ status }) => status === "UNMARKED").length} unmarked
               </span>
               <button
-                disabled={busy || rows.length === 0}
+                disabled={busy || rows.every(({ status }) => status === "UNMARKED")}
                 onClick={() => void save()}
                 className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-700 px-6 text-xs font-bold text-white shadow-md shadow-blue-700/20 transition hover:brightness-110 disabled:opacity-50"
               >

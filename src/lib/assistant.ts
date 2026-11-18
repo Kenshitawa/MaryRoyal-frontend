@@ -1,6 +1,7 @@
 import type { Role } from "@prisma/client";
 import { db } from "@/lib/db";
 import { canInScope } from "@/lib/permissions";
+import { CURRICULUM_GRADES, curriculumSubjectsForGrade } from "@/lib/curriculum";
 
 export type AssistantReply = {
   reply: string;
@@ -658,8 +659,20 @@ export async function answerQuestion({
   userId: string;
   name: string;
 }): Promise<AssistantReply> {
-  const snapshot = await buildSnapshot(role, userId);
   const text = question.toLowerCase().replace(/[?!.,]/g, " ").replace(/\s+/g, " ").trim();
+
+  if (has(text, "kicd", "cbe", "cbc", "learning area", "learning areas", "curriculum")) {
+    const grade = CURRICULUM_GRADES.find((item) => text.includes(item.toLowerCase()));
+    return {
+      reply: grade ? `For ${grade}, the local curriculum guide lists these CBE learning areas:` : "I can help find the CBE learning areas used from PP1 through Grade 9. Which grade do you mean?",
+      bullets: grade ? curriculumSubjectsForGrade(grade) : [...CURRICULUM_GRADES],
+      links: [{ label: "KICD curriculum designs", href: "https://kicd.ac.ke/cbc-materials/curriculum-designs/regular-curriculum-designs/" }],
+      suggestions: grade ? ["Open learning content", "Show Grade 7 learning areas"] : ["Show PP1 learning areas", "Show Grade 4 learning areas", "Show Grade 9 learning areas"],
+      provider: "local",
+    };
+  }
+
+  const snapshot = await buildSnapshot(role, userId);
 
   if (snapshot.personal) {
     return answerPersonal(snapshot.personal, text, name);

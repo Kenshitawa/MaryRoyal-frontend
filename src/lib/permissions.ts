@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 export type Action = "view" | "create" | "update" | "delete" | "approve" | "review" | "release" | "submit" | "confirm" | "verify" | "apply";
 export type Resource = "dashboard" | "accounts" | "staff" | "staffAttendance" | "learners" | "admissions" | "learnerAccounts" | "attendance" | "assessments" | "discipline" | "finance" | "invoices" | "payments" | "payroll" | "feeStructures" | "audit" | "operations" | "guardians" | "exports" | "teachingLogs" | "assignments" | "learning" | "learningVideos" | "complaints" | "examSessions" | "rubrics" | "feeWaivers" | "textbooks" | "schemesOfWork" | "timetable" | "welfare" | "notifications";
-export type DataScope = "school" | "assigned" | "linked" | "self" | "learner-identity" | "academic" | "operations" | "finance";
+export type DataScope = "school" | "assigned" | "linked" | "self" | "learner-identity" | "roster" | "academic" | "operations" | "finance";
 const ALL_STAFF: Role[] = [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.SECRETARY, Role.ACCOUNTANT, Role.TEACHER, Role.WELFARE_CHAIR, Role.NON_TEACHING_STAFF];
 const ALL: Role[] = [...ALL_STAFF, Role.PARENT, Role.LEARNER];
 const matrix: Record<Resource, Partial<Record<Action, Role[]>>> = {
@@ -26,8 +26,8 @@ const matrix: Record<Resource, Partial<Record<Action, Role[]>>> = {
  exports: { view: [Role.DIRECTOR] },
  teachingLogs: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], create: [Role.TEACHER], approve: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER] },
  assignments: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.TEACHER, Role.LEARNER], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.TEACHER], update: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.TEACHER] },
- learning: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.LEARNER], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.LEARNER] },
- learningVideos: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.LEARNER], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], update: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER] },
+ learning: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.PARENT, Role.LEARNER], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.LEARNER] },
+ learningVideos: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER, Role.PARENT, Role.LEARNER], create: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], update: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER] },
  complaints: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.PARENT], create: [Role.PARENT], update: [Role.DIRECTOR, Role.HEAD_TEACHER] },
  examSessions: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], create: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR], update: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR], approve: [Role.HEAD_TEACHER, Role.DIRECTOR] },
  rubrics: { view: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER], create: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR], update: [Role.DEPUTY, Role.SENIOR_TEACHER, Role.HEAD_TEACHER, Role.DIRECTOR] },
@@ -44,7 +44,7 @@ const scopes: Record<Resource, Partial<Record<DataScope, Role[]>>> = {
  staff: { school: [Role.DIRECTOR, Role.HEAD_TEACHER], self: ALL_STAFF },
  staffAttendance: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], self: ALL_STAFF },
  learnerAccounts: { school: [Role.DIRECTOR] },
- learners: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.SECRETARY], assigned: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER], "learner-identity": [Role.ACCOUNTANT] },
+ learners: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.SECRETARY], assigned: [Role.TEACHER], roster: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER], "learner-identity": [Role.ACCOUNTANT] },
  admissions: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.SECRETARY] },
  attendance: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER] },
  assessments: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER] },
@@ -60,8 +60,8 @@ const scopes: Record<Resource, Partial<Record<DataScope, Role[]>>> = {
  exports: { school: [Role.DIRECTOR] },
  teachingLogs: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER] },
  assignments: { school: [Role.DIRECTOR, Role.HEAD_TEACHER], assigned: [Role.TEACHER], self: [Role.LEARNER] },
- learning: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], self: [Role.LEARNER] },
- learningVideos: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], self: [Role.LEARNER] },
+ learning: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER] },
+ learningVideos: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER], linked: [Role.PARENT], self: [Role.LEARNER] },
  complaints: { school: [Role.DIRECTOR, Role.HEAD_TEACHER], self: [Role.PARENT] },
  examSessions: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER], assigned: [Role.TEACHER] },
  rubrics: { school: [Role.DIRECTOR, Role.HEAD_TEACHER, Role.DEPUTY, Role.SENIOR_TEACHER, Role.TEACHER] },

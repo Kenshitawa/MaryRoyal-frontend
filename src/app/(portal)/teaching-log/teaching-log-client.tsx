@@ -16,7 +16,7 @@ import { activeSubject, gradeOptions, subjectOptions, type CurriculumCatalog } f
 import { Button } from "@/components/base/buttons/button";
 import { Select, SelectItem } from "@/components/base/select/select";
 
-type Assignment = { grade: string; subject: string };
+type Assignment = { grade: string; subject: string; period?: number; time?: string };
 type Log = {
   id: string;
   grade: string;
@@ -370,7 +370,7 @@ export default function TeachingLogClient({
               <h2 className="text-title-3-semibold text-text-primary">Today&apos;s lesson check-in</h2>
               <p className="mt-1 text-body-2-regular text-text-secondary">
                 {dailyDate ? new Intl.DateTimeFormat("en-KE", { dateStyle: "full", timeZone: "Africa/Nairobi" }).format(new Date(`${dailyDate}T12:00:00+03:00`)) : "Loading today’s date…"}
-                {" · "}Mark each assigned class as Done or Missed.
+                {" · "}Confirm each class and learning area scheduled for you today.
               </p>
             </div>
             <Button
@@ -392,7 +392,7 @@ export default function TeachingLogClient({
                   const key = `${item.grade}::${item.subject}`;
                   return (
                     <li key={key} className="grid gap-3 py-3 sm:grid-cols-[1fr_auto] sm:items-center">
-                      <p className="text-body-medium text-text-primary">{item.grade} · {item.subject}</p>
+                      <p className="text-body-medium text-text-primary">{item.grade} · {item.subject}{item.time ? ` · ${item.time}` : ""}</p>
                       <Select
                         aria-label={`Lesson status for ${item.grade} ${item.subject}`}
                         placeholder="Choose status"

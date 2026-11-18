@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   activeSubject,
   CURRICULUM_GRADES,
-  CURRICULUM_SUBJECTS,
+  curriculumSubjectsForGrade,
   gradeOptions,
   sortGrades,
   subjectOptions,
@@ -25,8 +25,8 @@ describe("Curriculum option builders", () => {
   });
 
   it("uses the school-wide catalogue for leaders without allocations", () => {
-    expect(gradeOptions([], { grades: ["Grade 9", "Grade 2"], subjects: ["Science"] })).toEqual(["Grade 2", "Grade 9"]);
-    expect(subjectOptions("Grade 2", [], { grades: [], subjects: ["Science", "Kiswahili"] })).toEqual(["Science", "Kiswahili"]);
+    expect(gradeOptions([], { grades: ["Grade 9", "Grade 2"], subjects: ["Science"] })).toEqual([...CURRICULUM_GRADES]);
+    expect(subjectOptions("Grade 2", [], { grades: [], subjects: ["Science", "Kiswahili"] })).toEqual([...curriculumSubjectsForGrade("Grade 2"), "Science"]);
   });
 
   it("falls back to all of a teacher's subjects when a class has no match", () => {
@@ -37,7 +37,7 @@ describe("Curriculum option builders", () => {
   it("drops blank values that would render an empty dropdown", () => {
     expect(tidyValues(["", "  ", "Grade 4", "Grade 4", null, undefined])).toEqual(["Grade 4"]);
     expect(gradeOptions([{ grade: "", subject: "" }])).toEqual([...CURRICULUM_GRADES]);
-    expect(subjectOptions("Grade 4", [{ grade: "Grade 4", subject: " " }])).toEqual([...CURRICULUM_SUBJECTS]);
+    expect(subjectOptions("Grade 4", [{ grade: "Grade 4", subject: " " }])).toEqual(curriculumSubjectsForGrade("Grade 4"));
   });
 
   it("sorts unknown grades after the national classes", () => {
@@ -48,5 +48,12 @@ describe("Curriculum option builders", () => {
     expect(activeSubject("English", ["English", "Kiswahili"])).toBe("English");
     expect(activeSubject("Physics", ["English", "Kiswahili"])).toBe("English");
     expect(activeSubject("", [])).toBe("");
+  });
+
+  it("prefills grade-level CBE learning areas across PP1 to Grade 9", () => {
+    expect(curriculumSubjectsForGrade("PP1")).toContain("Language Activities");
+    expect(curriculumSubjectsForGrade("Grade 1")).toContain("Hygiene and Nutrition Activities");
+    expect(curriculumSubjectsForGrade("Grade 4")).toContain("Science & Technology");
+    expect(curriculumSubjectsForGrade("Grade 9")).toContain("Pre-Technical Studies");
   });
 });

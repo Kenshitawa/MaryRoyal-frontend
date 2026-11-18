@@ -43,6 +43,12 @@ export async function GET() {
     const videos = subjects.length ? await db.learningVideo.findMany({ where: { grade: link.learner.grade, subject: { in: subjects }, status: "VERIFIED", OR: weak.flatMap((row) => row.strand ? [{ subject: row.subject, strand: row.strand }, { subject: row.subject, strand: "General revision" }] : [{ subject: row.subject }]) }, include: { watches: { where: { learnerId: link.learnerId }, select: { watchedAt: true } } }, orderBy: [{ subject: "asc" }, { strand: "asc" }] }) : [];
     return NextResponse.json({ videos: videos.map(({ watches, ...video }) => ({ ...video, watched: watches.length > 0, watchedAt: watches[0]?.watchedAt ?? null })), weakTopics: [...new Map(weak.map((row) => [`${row.subject}:${row.strand ?? ""}`, row])).values()] });
   }
+  if (user.role === "PARENT" && canInScope(user.role, "learningVideos", "view", "linked")) {
+    const links = await db.guardianLink.findMany({ where: { userId: user.id, relation: "Learner", learner: { archivedAt: null, admissionStatus: "APPROVED" } }, select: { learner: { select: { grade: true } } } });
+    const grades = [...new Set(links.map((link) => link.learner.grade))];
+    const videos = grades.length ? await db.learningVideo.findMany({ where: { grade: { in: grades }, status: "VERIFIED" }, orderBy: [{ grade: "asc" }, { subject: "asc" }, { strand: "asc" }], take: 200 }) : [];
+    return NextResponse.json({ videos, weakTopics: [] });
+  }
   if (canInScope(user.role, "learningVideos", "view", "assigned")) {
     const assignments = await db.teacherAssignment.findMany({ where: { teacherId: user.id }, select: { grade: true, subject: true } });
     const gradeList = [...new Set(assignments.map((row) => row.grade))];

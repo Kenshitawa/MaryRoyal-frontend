@@ -74,6 +74,7 @@ const STANDARD_GRADES = [
   "Grade 6",
   "Grade 7",
   "Grade 8",
+  "Grade 9",
   "PP1",
   "PP2",
 ];
@@ -156,9 +157,7 @@ export default function TimetableClient({
 
   // Today's day name in Kenya
   const todayDayName = useMemo(() => {
-    const dayIndex = new Date().getDay();
-    const map = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    return map[dayIndex];
+    return new Intl.DateTimeFormat("en-KE", { weekday: "long", timeZone: "Africa/Nairobi" }).format(new Date());
   }, []);
 
   const todaySlotsForUser = useMemo(() => {
@@ -209,7 +208,8 @@ export default function TimetableClient({
   // AI-Assisted Timetable Generator (Local heuristic schedule synthesis)
   function handleGenerateAiSchedule() {
     const slots: TimetableSlot[] = [];
-    const subjects = builderGrade.includes("Grade 7") || builderGrade.includes("Grade 8")
+    const gradeNumber = Number(builderGrade.match(/\d+/)?.[0] ?? 0);
+    const subjects = gradeNumber >= 7
       ? CORE_SUBJECTS.junior
       : CORE_SUBJECTS.default;
 

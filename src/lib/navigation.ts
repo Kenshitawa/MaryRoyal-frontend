@@ -59,7 +59,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Welfare", href: "/welfare", icon: HeartHandshake },
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Timetable", href: "/timetable", icon: CalendarDays },
-    { label: "KICD videos", href: "/learning-videos", icon: BookOpenCheck },
+    { label: "KICD videos", href: "/learning-content", icon: BookOpenCheck },
     { label: "Complaints", href: "/complaints", icon: MessageCircle },
   ],
   HEAD_TEACHER: [
@@ -76,7 +76,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Reports", href: "/reports", icon: FileText },
     { label: "Timetable", href: "/timetable", icon: CalendarDays },
     { label: "Schemes of work", href: "/schemes", icon: LayoutList },
-    { label: "KICD videos", href: "/learning-videos", icon: BookOpenCheck },
+    { label: "KICD videos", href: "/learning-content", icon: BookOpenCheck },
     { label: "Weekly teaching log", href: "/teaching-log", icon: ClipboardList },
     { label: "Complaints", href: "/complaints", icon: MessageCircle },
   ],
@@ -89,7 +89,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Schemes of work", href: "/schemes", icon: LayoutList },
     { label: "Timetable", href: "/timetable", icon: CalendarDays },
     { label: "Welfare", href: "/welfare", icon: HeartHandshake },
-    { label: "KICD videos", href: "/learning-videos", icon: BookOpenCheck },
+    { label: "KICD videos", href: "/learning-content", icon: BookOpenCheck },
   ],
   SENIOR_TEACHER: [
     { label: "Overview", href: "/dashboard", icon: GraduationCap },
@@ -100,7 +100,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Schemes of work", href: "/schemes", icon: LayoutList },
     { label: "Timetable", href: "/timetable", icon: CalendarDays },
     { label: "Welfare", href: "/welfare", icon: HeartHandshake },
-    { label: "KICD videos", href: "/learning-videos", icon: BookOpenCheck },
+    { label: "KICD videos", href: "/learning-content", icon: BookOpenCheck },
   ],
   SECRETARY: [
     { label: "Overview", href: "/dashboard", icon: GraduationCap },
@@ -121,7 +121,7 @@ const navigationByRole: Record<string, NavigationItem[]> = {
     { label: "Learners", href: "/learners", icon: Users },
     { label: "Assignments", href: "/assignments", icon: ClipboardList },
     { label: "Learning content", href: "/learning-content", icon: BookOpenCheck },
-    { label: "KICD videos", href: "/learning-videos", icon: BookOpenCheck },
+    { label: "KICD videos", href: "/learning-content", icon: BookOpenCheck },
     { label: "Weekly teaching log", href: "/teaching-log", icon: FileText },
     { label: "Schemes of work", href: "/schemes", icon: LayoutList },
     { label: "Library", href: "/library", icon: Library },
@@ -162,7 +162,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
           { label: "Assessments", href: "/assessments", icon: BookOpen },
           { label: "Attendance", href: "/attendance", icon: CalendarCheck },
           { label: "Timetable", href: "/timetable", icon: CalendarDays },
-          { label: "KICD Videos", href: "/learning-videos", icon: BookOpenCheck },
+          { label: "KICD Videos", href: "/learning-content", icon: BookOpenCheck },
           { label: "Reports", href: "/reports", icon: FileText },
         ],
       },
@@ -214,7 +214,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
           { label: "Timetable", href: "/timetable", icon: CalendarDays },
           { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
           { label: "Teaching Logs", href: "/teaching-log", icon: FileText },
-          { label: "KICD Videos", href: "/learning-videos", icon: BookOpenCheck },
+          { label: "KICD Videos", href: "/learning-content", icon: BookOpenCheck },
           { label: "Reports", href: "/reports", icon: FileText },
         ],
       },
@@ -262,7 +262,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
         items: [
           { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
           { label: "Textbooks & Library", href: "/library", icon: Library },
-          { label: "KICD Videos", href: "/learning-videos", icon: BookOpenCheck },
+          { label: "KICD Videos", href: "/learning-content", icon: BookOpenCheck },
         ],
       },
       {
@@ -295,7 +295,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
         items: [
           { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
           { label: "Textbooks & Library", href: "/library", icon: Library },
-          { label: "KICD Videos", href: "/learning-videos", icon: BookOpenCheck },
+          { label: "KICD Videos", href: "/learning-content", icon: BookOpenCheck },
         ],
       },
       {
@@ -380,7 +380,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
     primary: [
       { label: "Home", href: "/dashboard", icon: GraduationCap },
       { label: "Attendance", href: "/attendance", icon: CalendarCheck },
-      { label: "Marks", href: "/assessments", icon: BookOpen },
+      { label: "Learning Content", href: "/learning-content", icon: BookOpenCheck },
       { label: "My Classes", href: "/learners", icon: Users },
     ],
     moreCategories: [
@@ -391,8 +391,8 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
           { label: "Timetable", href: "/timetable", icon: CalendarDays },
           { label: "Schemes of Work", href: "/schemes", icon: LayoutList },
           { label: "Weekly Teaching Log", href: "/teaching-log", icon: FileText },
-          { label: "Learning Content", href: "/learning-content", icon: BookOpenCheck },
-          { label: "KICD Videos", href: "/learning-videos", icon: BookOpenCheck },
+          { label: "Marks", href: "/assessments", icon: BookOpen },
+          { label: "KICD Videos", href: "/learning-content", icon: BookOpenCheck },
           { label: "Textbooks & Library", href: "/library", icon: Library },
         ],
       },
@@ -422,6 +422,7 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       {
         category: "Academics",
         items: [
+          { label: "Learning Content & KICD Videos", href: "/learning-content", icon: BookOpenCheck },
           { label: "Academic Evaluation", href: "/portal?tab=results", icon: Trophy },
         ],
       },
@@ -457,13 +458,13 @@ const mobileNavByRole: Record<string, RoleMobileNav> = {
       { label: "Home", href: "/learning", icon: GraduationCap },
       { label: "Homework", href: "/assignments", icon: ClipboardList },
       { label: "Results", href: "/learning?tab=results", icon: Trophy },
-      { label: "My Learning", href: "/learning-videos", icon: BookOpenCheck },
+      { label: "My Learning", href: "/learning-content", icon: BookOpenCheck },
     ],
     moreCategories: [
       {
         category: "Academics",
         items: [
-          { label: "KICD Video Library", href: "/learning-videos", icon: BookOpenCheck },
+          { label: "Learning Content & KICD Videos", href: "/learning-content", icon: BookOpenCheck },
           { label: "Learning Activities", href: "/learning", icon: BookOpen },
         ],
       },

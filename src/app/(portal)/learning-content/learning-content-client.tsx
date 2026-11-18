@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Spinner } from "@/components/base/spinner/spinner";
 import { activeSubject, gradeOptions, subjectOptions, type CurriculumCatalog } from "@/lib/curriculum";
+import VideoLibrary from "@/app/(portal)/learning-videos/video-library";
 
 type Assignment = { grade: string; subject: string };
 type Resource = {
@@ -33,9 +34,13 @@ type Resource = {
 export default function LearningContentClient({
   assignments,
   catalog,
+  canManageVideos = false,
+  canManageResources = false,
 }: {
   assignments: Assignment[];
   catalog?: CurriculumCatalog;
+  canManageVideos?: boolean;
+  canManageResources?: boolean;
 }) {
   const [resources, setResources] = useState<Resource[]>([]);
 
@@ -159,13 +164,13 @@ export default function LearningContentClient({
             </p>
           </div>
 
-          <button
+      {canManageResources && <button
             onClick={() => setShowCreate(!showCreate)}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl hero-cta bg-white px-5 text-xs font-bold text-blue-950 shadow-md transition hover:bg-blue-50 active:scale-95"
           >
             <Plus size={15} />
             {showCreate ? "Close Publisher" : "Publish Resource"}
-          </button>
+      </button>}
         </div>
       </div>
 
@@ -251,7 +256,7 @@ export default function LearningContentClient({
       )}
 
       {/* Publish Form (Expandable Bento) */}
-      {showCreate && (
+      {canManageResources && showCreate && (
         <form
           onSubmit={create}
           className="glass dark:glass-dark mt-6 rounded-3xl border border-blue-200/70 p-6 shadow-md transition-all sm:p-7 dark:border-blue-900/60"
@@ -512,6 +517,9 @@ export default function LearningContentClient({
             </div>
           )}
         </div>
+      </section>
+      <section className="mt-8 border-t border-separator-border pt-8" aria-label="KICD video lessons">
+        <VideoLibrary canManage={canManageVideos} embedded />
       </section>
     </section>
   );

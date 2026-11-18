@@ -11,7 +11,7 @@ export default async function LearningVideosPage() {
   const user = await db.user.findUnique({ where: { id: session.id }, select: { id: true, role: true, suspended: true, forcePasswordChange: true } });
   if (!user || user.suspended) redirect("/");
   if (user.forcePasswordChange) redirect("/change-password");
-  if (!canInScope(user.role, "learningVideos", "view", user.role === "LEARNER" ? "self" : user.role === "TEACHER" ? "assigned" : "school")) redirect("/dashboard");
+  if (!canInScope(user.role, "learningVideos", "view", user.role === "LEARNER" ? "self" : user.role === "PARENT" ? "linked" : user.role === "TEACHER" ? "assigned" : "school")) redirect("/dashboard");
   const canManage = canInScope(user.role, "learningVideos", "create", user.role === "TEACHER" ? "assigned" : "school");
   return <><section className="mx-auto max-w-6xl space-y-5 p-4 pb-28 sm:p-6 md:p-8"><VideoLibrary canManage={canManage}/></section></>;
 }

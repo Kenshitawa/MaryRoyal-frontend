@@ -34,6 +34,7 @@ const lessonSchema = z.object({
   notes: z.string().trim().max(300).optional(),
 });
 const submitSchema = z.object({ lessons: z.array(lessonSchema).min(1).max(100) });
+const scheduleSchema = z.array(z.object({ day: z.string(), grade: z.string(), subject: z.string(), teacherId: z.string().optional(), period: z.number().optional(), time: z.string().optional() }));
 
 export async function GET() {
   const user = await actor();
@@ -47,14 +48,9 @@ export async function GET() {
   const weekStart = new Date(`${today}T00:00:00.000Z`);
   weekStart.setUTCDate(weekStart.getUTCDate() - 6);
   const startDate = weekStart.toISOString().slice(0, 10);
-  const [assignments, entries] = await Promise.all([
-    teacher
-      ? db.teacherAssignment.findMany({
-          where: { teacherId: user.id },
-          select: { grade: true, subject: true },
-          orderBy: [{ grade: "asc" }, { subject: "asc" }],
-        })
-      : Promise.resolve([]),
+  const weekday = new Intl.DateTimeFormat("en-KE", { weekday: "long", timeZone: "Africa/Nairobi" }).format(new Date());
+  const [timetable, entries] = await Promise.all([
+    teacher ? db.schoolTimetable.findFirst({ where: { status: "PUBLISHED" }, orderBy: { createdAt: "desc" }, select: { scheduleJson: true } }) : Promise.resolve(null),
     db.dailyTeachingLog.findMany({
       where: {
         ...(teacher ? { teacherId: user.id } : {}),
@@ -65,6 +61,21 @@ export async function GET() {
       take: 1000,
     }),
   ]);
+  let assignments: Array<{ grade: string; subject: string; period?: number; time?: string }> = [];
+  if (teacher && timetable) {
+    try {
+      const parsed = scheduleSchema.safeParse(JSON.parse(timetable.scheduleJson));
+      if (parsed.success) {
+        const unique = new Map<string, (typeof parsed.data)[number]>();
+        for (const slot of parsed.data) {
+          if (slot.day.toLowerCase() !== weekday.toLowerCase() || slot.teacherId !== user.id) continue;
+          const key = `${slot.grade}\u0000${slot.subject}`;
+          if (!unique.has(key)) unique.set(key, slot);
+        }
+        assignments = [...unique.values()].map(({ grade, subject, period, time }) => ({ grade, subject, period, time }));
+      }
+    } catch { /* Malformed legacy timetable does not create fabricated lessons. */ }
+  }
   return NextResponse.json({ today, assignments, entries });
 }
 
@@ -86,13 +97,19 @@ export async function POST(request: Request) {
   const keys = parsed.data.lessons.map(({ grade, subject }) => `${grade}\u0000${subject}`);
   if (new Set(keys).size !== keys.length) return NextResponse.json({ error: "A class and subject can only appear once." }, { status: 400 });
 
-  const assigned = await db.teacherAssignment.findMany({
-    where: { teacherId: user.id },
-    select: { grade: true, subject: true },
-  });
-  const assignmentKeys = new Set(assigned.map(({ grade, subject }) => `${grade}\u0000${subject}`));
-  if (parsed.data.lessons.some(({ grade, subject }) => !assignmentKeys.has(`${grade}\u0000${subject}`))) {
-    return NextResponse.json({ error: "A class and subject is outside your teaching assignment." }, { status: 403 });
+  const timetable = await db.schoolTimetable.findFirst({ where: { status: "PUBLISHED" }, orderBy: { createdAt: "desc" }, select: { scheduleJson: true } });
+  let scheduledKeys = new Set<string>();
+  if (timetable) {
+    try {
+      const parsedSchedule = scheduleSchema.safeParse(JSON.parse(timetable.scheduleJson));
+      if (parsedSchedule.success) {
+        const weekday = new Intl.DateTimeFormat("en-KE", { weekday: "long", timeZone: "Africa/Nairobi" }).format(new Date());
+        scheduledKeys = new Set(parsedSchedule.data.filter((slot) => slot.day.toLowerCase() === weekday.toLowerCase() && slot.teacherId === user.id).map((slot) => `${slot.grade}\u0000${slot.subject}`));
+      }
+    } catch { /* No valid timetable means no lessons can be submitted. */ }
+  }
+  if (parsed.data.lessons.some(({ grade, subject }) => !scheduledKeys.has(`${grade}\u0000${subject}`))) {
+    return NextResponse.json({ error: "A class and subject is not on your published timetable for today." }, { status: 403 });
   }
 
   const lessonDate = nairobiDate();

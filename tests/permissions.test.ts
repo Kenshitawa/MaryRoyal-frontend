@@ -96,7 +96,7 @@ const grants: Record<Role, string[]> = {
   ],
   [Role.PARENT]: [
     "dashboard:view", "learners:view", "attendance:view", "assessments:view", "discipline:view", "finance:view",
-    "invoices:view", "payments:view", "complaints:create", "complaints:view", "notifications:view", "notifications:update"
+    "invoices:view", "payments:view", "complaints:create", "complaints:view", "learning:view", "learningVideos:view", "notifications:view", "notifications:update"
   ],
   [Role.LEARNER]: [
     "dashboard:view", "learners:view", "attendance:view", "assessments:view", "assignments:view",
@@ -178,11 +178,12 @@ describe("permission matrix", () => {
     }
   });
 
-  it("keeps KICD videos limited to learners, assigned teachers and school leaders", () => {
+  it("scopes KICD video access to learners, linked parents, assigned teachers and school leaders", () => {
     expect(canInScope(Role.LEARNER, "learningVideos", "view", "self")).toBe(true);
+    expect(canInScope(Role.PARENT, "learningVideos", "view", "linked")).toBe(true);
     expect(canInScope(Role.TEACHER, "learningVideos", "create", "assigned")).toBe(true);
     expect(canInScope(Role.DEPUTY, "learningVideos", "create", "school")).toBe(true);
-    for (const role of [Role.PARENT, Role.SECRETARY, Role.ACCOUNTANT]) {
+    for (const role of [Role.SECRETARY, Role.ACCOUNTANT]) {
       expect(can(role, "learningVideos", "view")).toBe(false);
     }
   });

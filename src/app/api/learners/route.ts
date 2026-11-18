@@ -15,6 +15,10 @@ export async function GET(request: Request) {
  }
  const { searchParams } = new URL(request.url); const parsed = z.object({ q: z.string().max(80).optional(), take: z.coerce.number().int().min(1).max(100).default(25), cursor: z.string().optional() }).safeParse(Object.fromEntries(searchParams)); if (!parsed.success) return NextResponse.json({ error: "Invalid filters." }, { status: 400 });
  const q = parsed.data.q?.trim(); let gradeScope: string[] | undefined; let linkedIds: string[] | undefined;
+ if (canInScope(user.role, "learners", "view", "roster")) {
+  const learners = await db.learner.findMany({ where: { archivedAt: null, admissionStatus: "APPROVED", ...(q ? { OR: [{ name: { contains: q } }, { grade: { contains: q } }] } : {}) }, select: { id: true, name: true, grade: true }, orderBy: [{ grade: "asc" }, { name: "asc" }], take: parsed.data.take + 1, ...(parsed.data.cursor ? { cursor: { id: parsed.data.cursor }, skip: 1 } : {}) });
+  const hasMore = learners.length > parsed.data.take; const rows = learners.slice(0, parsed.data.take); return NextResponse.json({ learners: rows, nextCursor: hasMore ? rows.at(-1)?.id : null });
+ }
  if (canInScope(user.role, "learners", "view", "learner-identity")) {
   const learners = await db.learner.findMany({ where: { archivedAt: null, admissionStatus: "APPROVED", ...(q ? { OR: [{ name: { contains: q } }, { admissionNo: { contains: q } }, { grade: { contains: q } }] } : {}) }, select: { id: true, admissionNo: true, name: true, grade: true }, orderBy: { admissionNo: "asc" }, take: parsed.data.take + 1, ...(parsed.data.cursor ? { cursor: { id: parsed.data.cursor }, skip: 1 } : {}) });
   const hasMore = learners.length > parsed.data.take; const rows = learners.slice(0, parsed.data.take); return NextResponse.json({ learners: rows, nextCursor: hasMore ? rows.at(-1)?.id : null });
