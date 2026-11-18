@@ -60,7 +60,9 @@ Render's default filesystem is ephemeral. The persistent disk is necessary for l
 
 ## Current app-host state
 
-The current full-stack source was published to `Kenshitawa/MaryRoyal-frontend` `main` at commit `ea4d2a2910444f4d812fbe516062ca92633e3fe1`. The Vercel account still has an older `maryroyalschool` project connected to `Kenshitawa/maryroyalschool`; it has no environment variables and is not connected to the canonical repository. Do not replace its production source until runtime secrets below are set. A private `mary-royal-private` Storage bucket is configured with a 4 MiB file limit. The app is not yet live against Supabase.
+Production target verified 2026-11-19: the canonical `Kenshitawa/MaryRoyal-frontend` repository deploys through its Vercel Git integration from `main` to the `mary-royal-school` project, attached to `portal.maryroyalschool.co.ke`. The Vercel commit status for `main` at `4cd0ff22f680082134b869a5508f397e5c7ecf22` reported “Deployment has completed”; the live portal returned HTTP 200 and `/api/health` returned `{"status":"ok"}`. The health route performs a database `SELECT 1`, confirming the current runtime database connection. The project is distinct from the older `maryroyalschool` Vercel project connected to `Kenshitawa/maryroyalschool`; do not replace or deploy to that legacy project. The historical 2026-10-27 note below is superseded by this current evidence.
+
+The app remains subject to the readiness gates in “Before entering real learner data”; successful web deployment and health checks do not certify privacy, security, full E2E coverage, backups or restore readiness. A private `mary-royal-private` Storage bucket is configured with a 4 MiB file limit.
 
 ## Before entering real learner data
 

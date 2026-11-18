@@ -8,6 +8,7 @@ import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@/components/base/table/table";
 import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { accountsResponseSchema, type AccountSummary } from "@/lib/account-response-schemas";
 import { RiGroupLine, RiShieldUserLine, RiUserFollowLine, RiUserSearchLine } from "@remixicon/react";
 import {
   AlertTriangle,
@@ -24,16 +25,7 @@ import {
   X,
 } from "lucide-react";
 
-type Account = {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  suspended: boolean;
-  suspensionReason: string | null;
-  forcePasswordChange: boolean;
-  failedLogins: number;
-};
+type Account = AccountSummary;
 
 type TempCredential = {
   id: string;
@@ -83,8 +75,12 @@ export default function AccountDirectory() {
         setLoading(false);
         return;
       }
-      const data = await response.json();
-      setAccounts(data.accounts);
+      const result = accountsResponseSchema.safeParse(await response.json());
+      if (!result.success) {
+        setError("The accounts service returned invalid data.");
+        return;
+      }
+      setAccounts(result.data.accounts);
     } catch {
       setError("Network error while loading accounts.");
     } finally {
