@@ -22,6 +22,10 @@ type Link = {
   relation: string;
 };
 
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
 export default function GuardianLinks() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [learners, setLearners] = useState<Learner[]>([]);
@@ -41,16 +45,67 @@ export default function GuardianLinks() {
         fetch("/api/guardians"),
       ]);
       if (a.ok) {
-        const x = await a.json();
-        setAccounts(x.accounts.filter((u: Account) => ["PARENT", "LEARNER"].includes(u.role)));
+        const x = (await a.json()) as { accounts?: unknown };
+        setAccounts(
+          asArray(x.accounts)
+            .flatMap((u): Account[] => {
+              if (!u || typeof u !== "object") return [];
+              const row = u as Partial<Account>;
+              if (
+                typeof row.id !== "string" ||
+                typeof row.name !== "string" ||
+                typeof row.email !== "string" ||
+                typeof row.role !== "string"
+              ) return [];
+              return [{ id: row.id, name: row.name, email: row.email, role: row.role }];
+            })
+            .filter((u) => ["PARENT", "LEARNER"].includes(u.role)),
+        );
       }
       if (l.ok) {
-        const x = await l.json();
-        setLearners(x.learners);
+        const x = (await l.json()) as { learners?: unknown };
+        setLearners(
+          asArray(x.learners).flatMap((v): Learner[] => {
+            if (!v || typeof v !== "object") return [];
+            const row = v as Partial<Learner>;
+            if (typeof row.id !== "string" || typeof row.name !== "string") return [];
+            return [{
+              id: row.id,
+              name: row.name,
+              admissionNo: typeof row.admissionNo === "string" ? row.admissionNo : "",
+              grade: typeof row.grade === "string" ? row.grade : "",
+            }];
+          }),
+        );
       }
       if (g.ok) {
-        const x = await g.json();
-        setLinks(x.links);
+        const x = (await g.json()) as { links?: unknown };
+        setLinks(
+          asArray(x.links).flatMap((v): Link[] => {
+            if (!v || typeof v !== "object") return [];
+            const row = v as Partial<Link>;
+            if (!row.user || !row.learner || typeof row.id !== "string") return [];
+            const user = row.user as Partial<Link["user"]>;
+            const learner = row.learner as Partial<Link["learner"]>;
+            if (
+              typeof user.name !== "string" ||
+              typeof user.email !== "string" ||
+              typeof user.role !== "string" ||
+              typeof learner.name !== "string"
+            ) return [];
+            return [{
+              id: row.id,
+              user: { name: user.name, email: user.email, role: user.role },
+              learner: {
+                id: typeof learner.id === "string" ? learner.id : undefined,
+                name: learner.name,
+                admissionNo: typeof learner.admissionNo === "string" ? learner.admissionNo : "",
+                grade: typeof learner.grade === "string" ? learner.grade : "",
+              },
+              relation: typeof row.relation === "string" ? row.relation : "Guardian",
+            }];
+          }),
+        );
       }
     } catch {
       setMessage("Could not load family linkage records.");

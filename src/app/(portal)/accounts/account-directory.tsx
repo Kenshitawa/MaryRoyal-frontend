@@ -83,8 +83,30 @@ export default function AccountDirectory() {
         setLoading(false);
         return;
       }
-      const data = await response.json();
-      setAccounts(data.accounts);
+      const data = (await response.json()) as { accounts?: unknown };
+      const rows = Array.isArray(data.accounts) ? data.accounts : [];
+      setAccounts(
+        rows.flatMap((row): Account[] => {
+          if (!row || typeof row !== "object") return [];
+          const a = row as Partial<Account>;
+          if (
+            typeof a.id !== "string" ||
+            typeof a.name !== "string" ||
+            typeof a.email !== "string" ||
+            typeof a.role !== "string"
+          ) return [];
+          return [{
+            id: a.id,
+            name: a.name,
+            email: a.email,
+            role: a.role,
+            suspended: Boolean(a.suspended),
+            suspensionReason: typeof a.suspensionReason === "string" ? a.suspensionReason : null,
+            forcePasswordChange: Boolean(a.forcePasswordChange),
+            failedLogins: typeof a.failedLogins === "number" ? a.failedLogins : 0,
+          }];
+        }),
+      );
     } catch {
       setError("Network error while loading accounts.");
     } finally {
@@ -152,8 +174,10 @@ export default function AccountDirectory() {
 
   async function action(account: Account, actionName: string) {
     if (
-      actionName === "archive" &&
-      !window.confirm(`Archive ${account.name}? They will lose portal access immediately. Their school records and history will be retained.`)
+      actionName === "delete" &&
+      !window.confirm(
+        `Permanently delete ${account.name}? Their sign-in and account data will be removed. This cannot be undone.`
+      )
     ) return;
     if (
       actionName === "suspend" &&
@@ -646,7 +670,7 @@ export default function AccountDirectory() {
                   {account.suspended && account.suspensionReason !== "ARCHIVED" ? <Button size="small" variant="secondary" disabled={saving} onClick={() => void action(account, "reactivate")}>Reactivate</Button> : !account.suspended ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={LockKeyhole} onClick={() => void action(account, "suspend")}>Suspend</Button> : null}
                   <Button size="small" variant="secondary" disabled={saving} leadingIcon={KeyRound} onClick={() => void action(account, "reset-password")}>Reset key</Button>
                   {locked ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={UnlockKeyhole} onClick={() => void action(account, "unlock")}>Unlock</Button> : null}
-                  {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving || account.suspensionReason === "ARCHIVED"} leadingIcon={UserX} onClick={() => void action(account, "archive")}>{account.suspensionReason === "ARCHIVED" ? "Archived" : "Archive"}</Button> : null}
+                  {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving} leadingIcon={UserX} onClick={() => void action(account, "delete")}>Delete</Button> : null}
                 </div>
               </li>;
             })}
@@ -680,7 +704,7 @@ export default function AccountDirectory() {
                       {account.suspended && account.suspensionReason !== "ARCHIVED" ? <Button size="small" variant="secondary" disabled={saving} onClick={() => void action(account, "reactivate")}>Reactivate</Button> : !account.suspended ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={LockKeyhole} onClick={() => void action(account, "suspend")}>Suspend</Button> : null}
                       <Button size="small" variant="secondary" disabled={saving} leadingIcon={KeyRound} onClick={() => void action(account, "reset-password")}>Reset key</Button>
                       {locked ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={UnlockKeyhole} onClick={() => void action(account, "unlock")}>Unlock</Button> : null}
-                      {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving || account.suspensionReason === "ARCHIVED"} leadingIcon={UserX} onClick={() => void action(account, "archive")}>{account.suspensionReason === "ARCHIVED" ? "Archived" : "Archive"}</Button> : null}
+                      {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving} leadingIcon={UserX} onClick={() => void action(account, "delete")}>Delete</Button> : null}
                     </div></TableCell>
                   </TableRow>
                 );
