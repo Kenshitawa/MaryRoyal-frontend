@@ -73,7 +73,7 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-4 dark:border-slate-800">
-        <PillTabList className="max-w-full overflow-x-auto rounded-full border border-separator-border bg-background-secondary-default p-1">
+        <PillTabList className="w-full min-w-0 max-w-full overflow-x-auto rounded-full border border-separator-border bg-background-secondary-default p-1 sm:w-auto">
           <PillTab variant="gray" isSelected={activeTab === "all"} onSelect={() => setActiveTab("all")}>
             Executive Overview
           </PillTab>
@@ -310,7 +310,7 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
                   <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
                     <div className="flex items-center gap-1.5">
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                      <span className="text-[10px] font-bold uppercase text-emerald-800 dark:text-emerald-300">EE (80-100%)</span>
+                      <span className="text-[10px] font-bold uppercase text-emerald-800 dark:text-emerald-300">EE1 / EE2 (75-100%)</span>
                     </div>
                     <p className="mt-1 font-mono text-lg font-black text-emerald-900 dark:text-emerald-200">
                       {assessment.descriptors.ee.count}{" "}
@@ -322,7 +322,7 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
                   <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 dark:border-blue-900/40 dark:bg-blue-950/20">
                     <div className="flex items-center gap-1.5">
                       <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
-                      <span className="text-[10px] font-bold uppercase text-blue-800 dark:text-blue-300">ME (60-79%)</span>
+                      <span className="text-[10px] font-bold uppercase text-blue-800 dark:text-blue-300">ME1 / ME2 (41-74%)</span>
                     </div>
                     <p className="mt-1 font-mono text-lg font-black text-blue-900 dark:text-blue-200">
                       {assessment.descriptors.me.count}{" "}
@@ -334,7 +334,7 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
                   <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
                     <div className="flex items-center gap-1.5">
                       <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                      <span className="text-[10px] font-bold uppercase text-amber-800 dark:text-amber-300">AE (40-59%)</span>
+                      <span className="text-[10px] font-bold uppercase text-amber-800 dark:text-amber-300">AE1 / AE2 (21-40%)</span>
                     </div>
                     <p className="mt-1 font-mono text-lg font-black text-amber-900 dark:text-amber-200">
                       {assessment.descriptors.ae.count}{" "}
@@ -346,7 +346,7 @@ export default function ReportsVisualizer({ finance, assessment, learners }: Pro
                   <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3 dark:border-rose-900/40 dark:bg-rose-950/20">
                     <div className="flex items-center gap-1.5">
                       <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                      <span className="text-[10px] font-bold uppercase text-rose-800 dark:text-rose-300">BE (&lt;40%)</span>
+                      <span className="text-[10px] font-bold uppercase text-rose-800 dark:text-rose-300">BE1 / BE2 (0-20%)</span>
                     </div>
                     <p className="mt-1 font-mono text-lg font-black text-rose-900 dark:text-rose-200">
                       {assessment.descriptors.be.count}{" "}

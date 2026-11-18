@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
-import { cbcLevel } from "./grading";
+import { CBC_LEVEL_BANDS, cbcLevel } from "./grading";
 
 export type ReportCardAssessment = {
   subject: string;
@@ -220,7 +220,7 @@ export async function buildReportCardPdf(input: ReportCardInput) {
   });
   y -= 57;
 
-  const rubricHeight = 58;
+  const rubricHeight = 72;
   page.drawRectangle({
     x: margin,
     y: y - rubricHeight,
@@ -238,17 +238,15 @@ export async function buildReportCardPdf(input: ReportCardInput) {
     color: navy
   });
 
-  const rubric = [
-    { code: "EE", text: "Exceeding expectations (80-100%)" },
-    { code: "ME", text: "Meeting expectations (60-79%)" },
-    { code: "AE", text: "Approaching expectations (40-59%)" },
-    { code: "BE", text: "Below expectations (0-39%)" }
-  ];
+  const rubric = CBC_LEVEL_BANDS.map(({ code, min, maxExclusive }) => ({
+    code,
+    text: maxExclusive === null ? `${min}-100%` : `${min}-<${maxExclusive}%`,
+  }));
   const columns = [margin + 10, margin + 270];
   for (const [index, item] of rubric.entries()) {
     const row = Math.floor(index / 2);
     const column = index % 2;
-    const itemY = y - 31 - row * 17;
+    const itemY = y - 29 - row * 11;
     page.drawText(item.code, {
       x: columns[column],
       y: itemY,
@@ -257,7 +255,7 @@ export async function buildReportCardPdf(input: ReportCardInput) {
       color: blue
     });
     page.drawText(item.text, {
-      x: columns[column] + 25,
+      x: columns[column] + 27,
       y: itemY,
       size: 7.2,
       font,

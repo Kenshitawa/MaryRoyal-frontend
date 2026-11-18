@@ -101,9 +101,9 @@ export default async function ReportsPage() {
 
   for (const a of assessmentsList) {
     scoreSum += a.score;
-    if (a.score >= 80) ee++;
-    else if (a.score >= 60) me++;
-    else if (a.score >= 40) ae++;
+    if (a.score >= 75) ee++;
+    else if (a.score >= 41) me++;
+    else if (a.score >= 21) ae++;
     else be++;
 
     const sub = subjectsMap.get(a.subject) || { sum: 0, count: 0 };

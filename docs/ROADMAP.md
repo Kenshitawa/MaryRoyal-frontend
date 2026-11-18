@@ -130,6 +130,13 @@ Deputy timetable, textbook library and schemes foundations now exist, so their e
 
 U11 is the final local acceptance/hardening gate, not deployment. Require full permission/IDOR and rebuilt E2E/mobile suites, production-schema build, local smoke checks, budget acceptance, `git diff --check`, checklist reconciliation and guide/README review. Required U4/U6/U7/U9/U10 items remain incomplete or unverified; **U11 is not complete**. The 2026-11-01 Production deployment was explicitly authorized while these gates were assumed; this is not evidence that they passed.
 
+### 2026-11-18 verification update
+
+- The PostgreSQL-schema production build completed (130 App Router entries); local lint, type-check, unit suite (87/87), schema parity, secret-history scan, local health smoke check, targeted sign-out/account-onboarding E2E (2/2) and cross-role breadcrumb/theme E2E (1/1) passed.
+- The mobile audit is still incomplete. The interrupted rebuilt suite reached test 25/50 and had recorded contrast failures, 13px text, a report-tab horizontal scroller, unnamed Library selects, a Teacher learner-detail fixture that redirected, and `/teaching-log` available to Deputy despite the audit role-page allowlist omitting it. Shared tertiary token contrast, learner summary size and report-tab viewport sizing were adjusted after the audit build; rerun the audit on the current source and reconcile the Deputy access expectation against the permission matrix before changing authorization.
+- `npm run budget:check` currently fails six raw-JavaScript budgets: shared 481.4 KB/350 KB and Assessments 388.2 KB, Finance 255.9 KB, Learners 261.6 KB, Learning 274.9 KB, and Library 258.3 KB against 250 KB each. The historical framework-floor note in `docs/OWNER_ACTIONS.md` still requires an owner decision; route-specific excesses also need analysis.
+- The full suite was interrupted; complete mobile/accessibility and all-role IDOR E2E remain open. No live host source branch, production PostgreSQL target, applied migration state, backup/recovery rehearsal or deployment workflow has been verified. Do not push a force update or promote this build to production while these gates are red.
+
 Use the dedicated isolated local E2E database/build (`scripts/run-e2e.mjs`), never production or the preserved development accounts. No routine Director-only reset should overwrite the currently preserved non-demo Parent or credentials. Owner-approved scope reductions, if any, must be explicit; visual styling does not silently reduce acceptance requirements.
 
 ## Historical operational notes — not current live-state evidence

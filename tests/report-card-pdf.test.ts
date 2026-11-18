@@ -57,7 +57,14 @@ describe("CBE report card PDF", () => {
     expect(text).toContain("maryroyalschool81@gmail.com");
     expect(text).toContain("CBE LEARNING PROGRESS REPORT");
     expect(text).toContain("ASSESSMENT RUBRIC");
-    expect(text).toContain("EE");
+    expect(text).toContain("EE1");
+    expect(text).toContain("EE2");
+    expect(text).toContain("ME1");
+    expect(text).toContain("ME2");
+    expect(text).toContain("AE1");
+    expect(text).toContain("AE2");
+    expect(text).toContain("BE1");
+    expect(text).toContain("BE2");
     expect(text).toContain("Confident with fractions and problem solving.");
     expect(text).toContain("No comment recorded.");
     expect(text).not.toContain("CBC");

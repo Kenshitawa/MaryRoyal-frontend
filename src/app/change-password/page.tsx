@@ -1,9 +1,22 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { readSession } from "@/lib/session";
 import ChangePasswordForm from "./change-password-form";
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
 
-export default function Page() {
+export default async function Page() {
+  const token = (await cookies()).get("mary_session")?.value;
+  const session = token ? await readSession(token) : null;
+  if (!session) redirect("/");
+  const user = await db.user.findUnique({
+    where: { id: session.id },
+    select: { name: true, email: true, role: true, suspended: true },
+  });
+  if (!user || user.suspended) redirect("/");
+
   return (
     <>
     <a href="#main-content" className="skip-to-content sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-blue-800 focus:px-4 focus:py-3 focus:font-semibold focus:text-white">Skip to content</a>
@@ -40,6 +53,15 @@ export default function Page() {
           </div>
         </div>
 
+        <section className="mb-4 rounded-2xl border border-border-button-default bg-background-primary-default p-4" aria-label="Your school account">
+          <h1 className="text-title-3-semibold text-text-primary">Your school account</h1>
+          <dl className="mt-2 grid gap-2 text-body-2-regular sm:grid-cols-2">
+            <div><dt className="text-text-tertiary">Name</dt><dd className="text-text-primary">{user.name}</dd></div>
+            <div><dt className="text-text-tertiary">Sign-in email</dt><dd className="break-all text-text-primary">{user.email}</dd></div>
+            <div><dt className="text-text-tertiary">Role</dt><dd className="text-text-primary">{user.role.replaceAll("_", " ")}</dd></div>
+          </dl>
+          <p className="mt-2 text-body-2-regular text-text-secondary">This is your account. Set a personal password below to finish setup.</p>
+        </section>
         <ChangePasswordForm />
       </div>
     </main>

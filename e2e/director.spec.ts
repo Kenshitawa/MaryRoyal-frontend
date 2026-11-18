@@ -82,6 +82,10 @@ test("Director signs in, changes temporary password when required, and manages l
  await expect(themeControls.getByRole("button",{name:"Switch mode (currently Dark)",exact:true})).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("dark");
  await themeControls.getByRole("button",{name:"Switch mode (currently Dark)",exact:true}).click();
+ const systemPrefersDark = await page.evaluate(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+ await expect(page.locator("html")).toHaveAttribute("data-theme",systemPrefersDark ? "dark" : "light");
+ expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("system");
+ await themeControls.getByRole("button",{name:"Switch mode (currently System)",exact:true}).click();
  await expect(page.locator("html")).toHaveAttribute("data-theme","light");
  await expect(page.locator("html")).not.toHaveClass(/dark/);
  const sidebar=page.locator(".app-sidebar");
@@ -132,7 +136,9 @@ test("Director signs in, changes temporary password when required, and manages l
   if (await createButton.isVisible({ timeout: 1000 }).catch(() => false)) await createButton.click();
   const createResponse = await createRequest;
   expect(createResponse.status(), await createResponse.text()).toBe(201);
-  return page.getByRole("status").innerText();
+  const credentialNotice = page.getByRole("status").filter({ hasText: email });
+  await expect(credentialNotice).toBeVisible();
+  return `${email} · ${await credentialNotice.locator("code").innerText()}`;
  }
  const teacherEmail=`teacher-${Date.now()}@maryroyal.ac.ke`;
  const tempText = await createAccount("Demo Newly Created Teacher", teacherEmail, "TEACHER");
@@ -588,9 +594,11 @@ test("breadcrumbs, safe back, mobile detail bar and unsaved-form warning work fo
    const profile=page.getByRole("dialog").filter({has:page.getByText("Appearance",{exact:true})});await expect(profile).toBeVisible();
    await expect(profile).toHaveAttribute("aria-modal","true");
    await profile.getByRole("button",{name:"Glass"}).click();await expect(page.locator("html")).toHaveAttribute("data-style","glass");
-   await profile.getByRole("button",{name:"System"}).click();expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("system");
-   await profile.getByRole("button",{name:"Light"}).click();await expect(page.locator("html")).toHaveAttribute("data-theme","light");
-   await profile.getByRole("button",{name:"Dark"}).click();await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
+   const modeButton=profile.getByRole("button",{name:/Colour mode: .* Switch to the next mode\./});
+   await expect(modeButton).toHaveAttribute("title","Switch mode (currently Dark)");
+   await modeButton.click();await expect(modeButton).toHaveAttribute("title","Switch mode (currently System)");expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("system");
+   await modeButton.click();await expect(modeButton).toHaveAttribute("title","Switch mode (currently Light)");await expect(page.locator("html")).toHaveAttribute("data-theme","light");
+   await modeButton.click();await expect(modeButton).toHaveAttribute("title","Switch mode (currently Dark)");await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
    expect(await page.evaluate(()=>localStorage.getItem("mary-style"))).toBe("glass");expect(await page.evaluate(()=>localStorage.getItem("mary-theme"))).toBe("dark");
    await page.keyboard.press("Escape");await expect(profile).toHaveCount(0);
   }

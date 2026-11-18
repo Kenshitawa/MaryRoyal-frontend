@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
+import { motion, type HTMLMotionProps } from "motion/react";
 import { useTheme } from "./theme-provider";
 
 export type CardTint = "none" | "sky" | "mint" | "lavender" | "amber";

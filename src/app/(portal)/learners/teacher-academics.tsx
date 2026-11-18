@@ -110,8 +110,8 @@ export default function TeacherAcademicRoster({ assignments }: { assignments: As
             const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
             return { strand, average: Math.round(average), level: cbcLevel(average) };
           });
-          const strengths = learningAreas.filter((area) => area.level === "EE" || area.level === "ME");
-          const supportAreas = learningAreas.filter((area) => area.level === "AE" || area.level === "BE");
+          const strengths = learningAreas.filter((area) => area.level.startsWith("EE") || area.level.startsWith("ME"));
+          const supportAreas = learningAreas.filter((area) => area.level.startsWith("AE") || area.level.startsWith("BE"));
 
           return (
             <li key={learner.id} className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
@@ -170,7 +170,7 @@ export default function TeacherAcademicRoster({ assignments }: { assignments: As
                   <ul className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                     {learner.assessments.map((record) => (
                       <li key={record.id} className="rounded-xl border border-separator-border p-3">
-                        <p className="text-body-2-medium text-text-primary">{record.strand || record.competency || "Assessment"} · {record.term}</p>
+                        <p className="text-body-medium text-text-primary">{record.strand || record.competency || "Assessment"} · {record.term}</p>
                         <p className="mt-1 text-body-2-regular text-text-secondary">
                           {record.status === "RELEASED" ? `${record.score}% · ${cbcLevel(record.score)}` : "Awaiting release"}
                         </p>

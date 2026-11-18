@@ -13,7 +13,7 @@ import type { DataGridColumn, DataGridProps } from "@/components/application/dat
 import { Select, SelectItem } from "@/components/base/select/select";
 import { Input } from "@/components/base/input/input";
 import { Button } from "@/components/base/buttons/button";
-import { cbcLevel } from "@/lib/grading";
+import { CBC_LEVEL_BANDS, cbcLevel } from "@/lib/grading";
 import { RiSaveLine } from "@remixicon/react";
 
 type TeachingAssignment = { grade: string; subject: string };
@@ -332,21 +332,14 @@ export default function AssessmentWorkspace({
         }
       />
 
-      {/* Rubric Scale Quick Reference Strip */}
+      {/* Fixed CBC exam grading scale */}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 text-xs font-bold">
-        <span className="text-slate-400 uppercase tracking-wider mr-1">Rubric Scale:</span>
-        <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-          EE: 80 - 100% (Exceeding)
-        </span>
-        <span className="rounded-lg bg-blue-50 px-2.5 py-1 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
-          ME: 60 - 79% (Meeting)
-        </span>
-        <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          AE: 40 - 59% (Approaching)
-        </span>
-        <span className="rounded-lg bg-rose-50 px-2.5 py-1 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
-          BE: 0 - 39% (Below)
-        </span>
+        <span className="text-slate-400 uppercase tracking-wider mr-1">Exam grade:</span>
+        {CBC_LEVEL_BANDS.map((band) => (
+          <span key={band.code} className="rounded-lg bg-background-secondary-default px-2.5 py-1 text-text-secondary">
+            {band.code}: {band.min}–{band.maxExclusive === null ? "100" : `<${band.maxExclusive}`}%
+          </span>
+        ))}
       </div>
 
       {message && (

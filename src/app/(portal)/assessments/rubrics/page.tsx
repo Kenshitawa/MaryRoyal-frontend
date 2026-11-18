@@ -21,12 +21,10 @@ export default async function RubricsPage() {
     redirect("/dashboard");
   }
 
-  const canManage = canInScope(user.role, "rubrics", "create", "school");
-
   return (
     <>
       <section className="mx-auto max-w-7xl p-4 pb-28 sm:p-6 md:p-8">
-        <RubricsClient canManage={canManage} />
+        <RubricsClient />
       </section>
     </>
   );

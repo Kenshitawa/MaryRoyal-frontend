@@ -4,17 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { HelpCircle, Search, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import NotificationBell from "@/components/notification-bell";
-import { LearnerGuide } from "@/components/learner-guide";
 import { ThemeStyleControls } from "@/components/design-system/theme-provider";
-import { CommandPalette } from "@/components/design-system/command-palette";
 import ConfirmLogoutForm from "@/components/confirm-logout-form";
 import PageNavigation from "@/components/page-navigation";
 import { getRoleNavigation, getSectionForPath } from "@/lib/navigation";
 import { PortalHeader } from "@/components/ui/portal-header";
 import { PortalNav } from "@/components/ui/portal-nav";
 import { ToastProvider } from "@/components/ui/toast";
+
+const LearnerGuide = dynamic(() => import("@/components/learner-guide").then((module) => module.LearnerGuide), { ssr: false });
+const CommandPalette = dynamic(() => import("@/components/design-system/command-palette").then((module) => module.CommandPalette), { ssr: false });
 
 type ShellUser = {
   id: string;
@@ -55,6 +57,17 @@ export function PageShell({
         }
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   return (
@@ -178,7 +191,7 @@ export function PageShell({
         <PortalNav role={user.role} />
         {user.role === "LEARNER" ? <LearnerGuide name={user.name} /> : null}
       </div>
-      <CommandPalette isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen ? <CommandPalette isOpen onClose={() => setSearchOpen(false)} /> : null}
     </ToastProvider>
   );
 }
