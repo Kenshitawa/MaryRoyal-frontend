@@ -23,6 +23,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { Spinner } from "@/components/base/spinner/spinner";
+import { ProgressBar } from "@/components/base/progress/progress";
 
 type Teaching = { grade: string; subject: string };
 type Submission = {
@@ -80,8 +81,10 @@ export default function AssignmentsClient({  role,
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
   const [attachmentType, setAttachmentType] = useState<string | null>(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [learnerAttachments, setLearnerAttachments] = useState<Record<string, { url: string; type: string }>>({});
   const [learnerUploading, setLearnerUploading] = useState<Record<string, boolean>>({});
+  const [learnerUploadProgress, setLearnerUploadProgress] = useState<Record<string, number>>({});
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -133,15 +136,28 @@ export default function AssignmentsClient({  role,
     }
     const formData = new FormData();
     formData.append("file", file);
-    if (!forAssignmentId) setUploadingAttachment(true);
-    else setLearnerUploading((prev) => ({ ...prev, [forAssignmentId]: true }));
+    if (!forAssignmentId) { setUploadingAttachment(true); setUploadProgress(0); }
+    else { setLearnerUploading((prev) => ({ ...prev, [forAssignmentId]: true })); setLearnerUploadProgress((prev) => ({ ...prev, [forAssignmentId]: 0 })); }
     try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
+      const data = await new Promise<{ url: string; type: string }>((resolve, reject) => {
+        const request = new XMLHttpRequest();
+        request.open("POST", "/api/upload");
+        request.upload.onprogress = (event) => {
+          if (!event.lengthComputable) return;
+          const percent = Math.round((event.loaded / event.total) * 100);
+          if (!forAssignmentId) setUploadProgress(percent);
+          else setLearnerUploadProgress((prev) => ({ ...prev, [forAssignmentId]: percent }));
+        };
+        request.onerror = () => reject(new Error("Upload failed. Check your connection and try again."));
+        request.onload = () => {
+          let payload: { url?: string; type?: string; error?: string } = {};
+          try { payload = JSON.parse(request.responseText) as typeof payload; } catch { /* handled as server error below */ }
+          if (request.status < 200 || request.status >= 300 || !payload.url || !payload.type) {
+            reject(new Error(payload.error || "Upload failed"));
+          } else resolve({ url: payload.url, type: payload.type });
+        };
+        request.send(formData);
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
       if (!forAssignmentId) {
         setAttachmentUrl(data.url);
         setAttachmentType(data.type);
@@ -158,6 +174,8 @@ export default function AssignmentsClient({  role,
     } finally {
       if (!forAssignmentId) setUploadingAttachment(false);
       else setLearnerUploading((prev) => ({ ...prev, [forAssignmentId]: false }));
+      if (!forAssignmentId) setUploadProgress(0);
+      else setLearnerUploadProgress((prev) => ({ ...prev, [forAssignmentId]: 0 }));
     }
   }
 
@@ -289,6 +307,8 @@ export default function AssignmentsClient({  role,
               <BookOpenCheck size={13} />
               CBC Learning Tasks
             </div>
+
+            {uploadingAttachment ? <ProgressBar aria-label="Assignment attachment upload" label="Uploading attachment" value={uploadProgress} /> : null}
             <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
               Coursework & Assignments
             </h1>
@@ -881,6 +901,7 @@ export default function AssignmentsClient({  role,
                                 }}
                               />
                             </label>
+                            {isLearnerUploading ? <ProgressBar aria-label={`Upload work for ${assignment.title}`} label="Uploading your work" value={learnerUploadProgress[assignment.id] ?? 0} className="min-w-40 flex-1" /> : null}
 
                             {(currentLearnerAttachment?.url || submission?.attachmentUrl) && (
                               <div className="inline-flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400 font-semibold bg-green-50 dark:bg-green-950/40 px-2.5 py-1 rounded-lg">

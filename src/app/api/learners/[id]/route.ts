@@ -181,3 +181,31 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true, learner: updated });
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const token = (await cookies()).get("mary_session")?.value;
+  const session = token ? await readSession(token) : null;
+  if (!session) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  const user = await db.user.findUnique({
+    where: { id: session.id },
+    select: { id: true, role: true, suspended: true, forcePasswordChange: true },
+  });
+  if (!user || user.suspended || user.forcePasswordChange) {
+    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  }
+  if (!can(user.role, "learners", "delete")) {
+    await db.auditEvent.create({ data: { actorId: user.id, action: "ACCESS_DENIED", entity: "LearnerArchive" } });
+    return NextResponse.json({ error: "Only the Director can archive learner records." }, { status: 403 });
+  }
+  const { id } = await params;
+  const learner = await db.learner.findUnique({ where: { id }, select: { id: true, archivedAt: true } });
+  if (!learner || learner.archivedAt) return NextResponse.json({ error: "Active learner not found." }, { status: 404 });
+  await db.$transaction(async (tx) => {
+    await tx.learner.update({ where: { id }, data: { archivedAt: new Date() } });
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "LEARNER_ARCHIVED", entity: "Learner", entityId: id } });
+  });
+  return NextResponse.json({ ok: true, message: "Learner archived. Their education and finance history is retained." });
+}

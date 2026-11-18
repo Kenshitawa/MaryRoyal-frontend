@@ -450,26 +450,33 @@ export async function DELETE(
 
   const staff = await db.user.findUnique({
     where: { id },
+    select: { id: true, role: true, suspended: true },
   });
   if (!staff) {
     return NextResponse.json({ error: "Staff member not found." }, { status: 404 });
   }
+  if (["PARENT", "LEARNER"].includes(staff.role)) {
+    return NextResponse.json({ error: "This route only archives staff accounts." }, { status: 400 });
+  }
+  if (staff.suspended) {
+    return NextResponse.json({ error: "This account is already suspended or archived." }, { status: 409 });
+  }
 
   try {
     await db.$transaction(async (tx) => {
-      // Soft archive or delete
-      await tx.user.delete({ where: { id } });
+      // Disable sign-in while preserving staff history and foreign-key records.
+      await tx.user.update({ where: { id }, data: { suspended: true, suspensionReason: "ARCHIVED" } });
       await tx.auditEvent.create({
         data: {
           actorId: user.id,
-          action: "STAFF_ACCOUNT_DELETED",
+          action: "STAFF_ACCOUNT_ARCHIVED",
           entity: "User",
           entityId: id,
         },
       });
     });
 
-    return NextResponse.json({ success: true, message: "Staff account deleted successfully." });
+    return NextResponse.json({ success: true, message: "Staff account archived. Sign-in is disabled and records are retained." });
   } catch {
     console.error("Staff account deletion failed.");
     return NextResponse.json({ error: "Failed to delete staff account." }, { status: 500 });

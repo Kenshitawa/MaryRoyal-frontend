@@ -11,12 +11,13 @@ import {
   Plus,
   Printer,
   Search,
-  UserCheck,
-  Users,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { RiBookOpenLine, RiGroupLine, RiUserAddLine, RiUserStarLine } from "@remixicon/react";
 import { LearnerLink } from "@/components/learner-link";
-import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { PageHeader } from "@/components/ui/primitives";
 import { InlineLoader, LoadingState } from "@/components/ui/loader";
 
 type Learner = {
@@ -40,10 +41,12 @@ type Credentials = {
 export default function LearnerDirectory({
   canCreate,
   canApprove = false,
+  canDelete = false,
   identityOnly = false,
 }: {
   canCreate: boolean;
   canApprove?: boolean;
+  canDelete?: boolean;
   identityOnly?: boolean;
 }) {
   const [rows, setRows] = useState<Learner[]>([]);
@@ -131,6 +134,24 @@ export default function LearnerDirectory({
       await load(search);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Admission could not be approved.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function archiveLearner(learner: Learner) {
+    if (!window.confirm(`Archive ${learner.name}? This removes the learner from active lists while keeping their academic and finance history.`)) return;
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch(`/api/learners/${learner.id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Learner could not be archived.");
+      setRows((current) => current.filter((row) => row.id !== learner.id));
+      setNotice(`${learner.name} was archived. Their school history is retained.`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Learner could not be archived.");
     } finally {
       setSaving(false);
     }
@@ -245,12 +266,12 @@ export default function LearnerDirectory({
         }
       />
 
-      <section aria-label="Register summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Enrolled pupils" value={busy ? "…" : String(rows.length)} note="Across all grades" icon={Users} tone="brand" />
-        <StatCard label="Approved" value={busy ? "…" : String(approvedCount)} note="Fully enrolled" icon={UserCheck} tone="success" />
-        <StatCard label="Pending approval" value={busy ? "…" : String(pendingCount)} note="Awaiting Head Teacher" tone="warning" />
-        <StatCard label="Grade bands" value={String(grades.length)} note="Classes represented" tone="neutral" />
-      </section>
+      <section aria-label="Register summary"><StatCards columns={4} stats={[
+        { label: "Enrolled pupils", value: busy ? "…" : String(rows.length), note: "Across all grades", icon: RiGroupLine },
+        { label: "Approved", value: busy ? "…" : String(approvedCount), note: "Fully enrolled", icon: RiUserStarLine },
+        { label: "Pending approval", value: busy ? "…" : String(pendingCount), note: "Awaiting Head Teacher", icon: RiUserAddLine },
+        { label: "Grade bands", value: String(grades.length), note: "Classes represented", icon: RiBookOpenLine },
+      ] satisfies Stat[]} /></section>
 
       {notice && (
         <div
@@ -430,6 +451,7 @@ export default function LearnerDirectory({
                             Approve
                           </button>
                         )}
+                        {canDelete && <button type="button" disabled={saving} onClick={() => void archiveLearner(learner)} className="btn btn-secondary btn-sm text-danger"><Trash2 size={14} aria-hidden="true"/> Archive learner</button>}
                         <a href={`/learners/${learner.id}`} className="btn btn-secondary btn-sm">
                           View profile
                         </a>
@@ -462,7 +484,7 @@ export default function LearnerDirectory({
                     <th className="px-5 py-3.5">Gender</th>
                     <th className="px-5 py-3.5">Status</th>
                     <th className="px-5 py-3.5">Portal Access</th>
-                    {canApprove && <th className="px-5 py-3.5">Actions</th>}
+                    {(canApprove || canDelete) && <th className="px-5 py-3.5">Actions</th>}
                     <th className="px-5 py-3.5 text-right">Profile</th>
                   </>
                 )}
@@ -472,7 +494,7 @@ export default function LearnerDirectory({
               {busy ? (
                 <tr>
                   <td
-                    colSpan={identityOnly ? 3 : canApprove ? 8 : 7}
+                    colSpan={identityOnly ? 3 : canApprove || canDelete ? 8 : 7}
                     className="p-12 text-center"
                   >
                     <InlineLoader label="Loading learner records…" className="justify-center" />
@@ -481,7 +503,7 @@ export default function LearnerDirectory({
               ) : filteredRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={identityOnly ? 3 : canApprove ? 8 : 7}
+                    colSpan={identityOnly ? 3 : canApprove || canDelete ? 8 : 7}
                     className="p-12 text-center text-slate-500"
                   >
                     No learners found matching the search criteria.
@@ -552,9 +574,10 @@ export default function LearnerDirectory({
                             )}
                           </td>
 
-                          {canApprove && (
+                          {(canApprove || canDelete) && (
                             <td className="px-5 py-4">
-                              {learner.admissionStatus === "PENDING" && (
+                              <div className="flex items-center gap-2">
+                              {canApprove && learner.admissionStatus === "PENDING" && (
                                 <button
                                   disabled={saving}
                                   onClick={() => void approve(learner)}
@@ -564,6 +587,8 @@ export default function LearnerDirectory({
                                   Approve
                                 </button>
                               )}
+                              {canDelete && <button type="button" disabled={saving} onClick={() => void archiveLearner(learner)} aria-label={`Archive ${learner.name}`} className="inline-flex size-9 items-center justify-center rounded-xl border border-border-error-default text-text-error-primary hover:bg-background-tertiary-error focus-visible:ring-2 focus-visible:ring-border-focus-ring"><Trash2 size={15}/></button>}
+                              </div>
                             </td>
                           )}
 

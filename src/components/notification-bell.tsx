@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Check, CheckCheck, X, Clock, AlertCircle, Info, Zap } from "lucide-react";
+import { Bell } from "lucide-react";
+import { NotificationCenter, type NotificationCenterItem } from "@/components/application/notification-center/notification-center";
 
 
 type Notification = {
@@ -26,20 +27,6 @@ function timeAgo(dateStr: string) {
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
 }
-
-const typeIcon: Record<string, React.ReactNode> = {
-  INFO: <Info size={14} className="text-blue-500" />,
-  SUCCESS: <Check size={14} className="text-emerald-500" />,
-  WARNING: <AlertCircle size={14} className="text-amber-500" />,
-  ACTION: <Zap size={14} className="text-rose-500" />,
-};
-
-const typeBg: Record<string, string> = {
-  INFO: "bg-blue-50 dark:bg-blue-950/30",
-  SUCCESS: "bg-emerald-50 dark:bg-emerald-950/30",
-  WARNING: "bg-amber-50 dark:bg-amber-950/30",
-  ACTION: "bg-rose-50 dark:bg-rose-950/30",
-};
 
 export default function NotificationBell() {
   const router = useRouter();
@@ -92,15 +79,35 @@ export default function NotificationBell() {
     setUnread((c) => Math.max(0, c - 1));
   }
 
-  function openNotification(notification: Notification) {
-    setOpen(false);
-    void (async () => {
-      await markRead(notification.id);
-      if (notification.link) router.push(notification.link);
-    })();
-  }
-
   const actionRequired = notifications.filter((n) => n.actionRequired && !n.actionDone);
+  const boardNotifications: NotificationCenterItem[] = notifications.map((item) => ({
+    id: item.id,
+    category: item.type === "ACTION" ? "activity" : "system",
+    group: new Intl.DateTimeFormat("en-KE", { dateStyle: "medium", timeZone: "Africa/Nairobi" }).format(new Date(item.createdAt)),
+    title: item.title,
+    description: item.message,
+    timestamp: timeAgo(item.createdAt),
+    unread: !item.read,
+    status: item.type === "SUCCESS" ? "success" : item.type === "WARNING" ? "error" : item.type === "ACTION" ? "information" : "neutral",
+    actions: [
+      ...(item.link ? [{ id: "open", label: "Open", variant: "secondary" as const }] : []),
+      ...(item.actionRequired && !item.actionDone ? [{ id: "done", label: "Mark done", variant: "primary" as const }] : []),
+    ],
+  }));
+
+  async function act(notificationId: string, actionId: string) {
+    const item = notifications.find((notification) => notification.id === notificationId);
+    if (!item) return;
+    if (actionId === "done") {
+      await markDone(item.id);
+      return;
+    }
+    await markRead(item.id);
+    if (item.link) {
+      setOpen(false);
+      router.push(item.link);
+    }
+  }
 
   return (
     <div className="relative" ref={panelRef}>
@@ -119,105 +126,17 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-[min(350px,calc(100vw-2rem))] rounded-2xl border border-slate-200/80 bg-white shadow-2xl ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <Bell size={15} className="text-blue-700" />
-              <span className="text-sm font-bold text-slate-900 dark:text-white">Notifications</span>
-              {unread > 0 && (
-                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">
-                  {unread} new
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              {unread > 0 && (
-                <button onClick={markAllRead} title="Mark all read" className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-slate-500 hover:bg-slate-50 hover:text-blue-700">
-                  <CheckCheck size={12} /> All read
-                </button>
-              )}
-              <button type="button" aria-label="Close notifications" onClick={() => setOpen(false)} className="grid h-6 w-6 place-items-center rounded-lg text-slate-400 hover:bg-slate-100">
-                <X size={13} />
-              </button>
-            </div>
-          </div>
-
-          {/* Action required badge */}
-          {actionRequired.length > 0 && (
-            <div className="border-b border-rose-100 bg-rose-50 px-4 py-2 dark:border-rose-900/30 dark:bg-rose-950/20">
-              <p className="text-[11px] font-bold text-rose-700">
-                ⚡ {actionRequired.length} item{actionRequired.length > 1 ? "s" : ""} require your action
-              </p>
-            </div>
-          )}
-
-          {/* List */}
-          <div className="max-h-[400px] overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-10 text-center">
-                <Bell size={28} className="text-slate-200" />
-                <p className="text-xs text-slate-400">No notifications yet</p>
-              </div>
-            ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openNotification(n)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      openNotification(n);
-                    }
-                  }}
-                  className={`relative block w-full cursor-pointer border-b border-slate-50 px-4 py-3 text-left transition hover:bg-slate-50/80 last:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:border-slate-800 dark:hover:bg-slate-800/60 ${!n.read ? typeBg[n.type] ?? "bg-blue-50" : "bg-white dark:bg-slate-900"}`}
-                >
-                  {!n.read && <span className="absolute right-4 top-3.5 h-1.5 w-1.5 rounded-full bg-blue-600" />}
-                  <div className="flex items-start gap-2">
-                    <div className="mt-0.5 shrink-0">{typeIcon[n.type] ?? typeIcon.INFO}</div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[12px] font-semibold text-slate-900 dark:text-white">{n.title}</p>
-                      <p className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">{n.message}</p>
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <span className="flex items-center gap-1 text-[10px] text-slate-400">
-                          <Clock size={9} />{timeAgo(n.createdAt)}
-                        </span>
-                        {n.link && (
-                          <span className="text-[10px] font-semibold text-blue-700 hover:underline">
-                            Open page →
-                          </span>
-                        )}
-                        {n.actionRequired && !n.actionDone && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void markDone(n.id);
-                            }}
-                            className="flex items-center gap-1 rounded-md bg-blue-700 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-blue-800"
-                          >
-                            <Check size={9} /> Done
-                          </button>
-                        )}
-                        {!n.read && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void markRead(n.id);
-                            }}
-                            className="text-[10px] text-slate-400 hover:text-blue-700"
-                          >
-                            Mark read
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+        <div className="absolute end-0 top-12 z-50 w-[min(430px,calc(100vw-1rem))]">
+          <NotificationCenter
+            title="Notifications"
+            emptyMessage="No notifications yet"
+            notifications={boardNotifications}
+            onAction={(notificationId, actionId) => void act(notificationId, actionId)}
+            onMarkAllRead={() => void markAllRead()}
+            className="max-w-none"
+          />
+          {actionRequired.length > 0 ? <p className="sr-only">{actionRequired.length} notifications need your action.</p> : null}
+          <button type="button" onClick={() => setOpen(false)} className="sr-only">Close notifications</button>
         </div>
       )}
     </div>

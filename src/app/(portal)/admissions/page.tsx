@@ -10,7 +10,9 @@ import { db } from "@/lib/db";
 import { can, canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
 import { AdmissionsClient } from "./admissions-client";
-import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { PageHeader } from "@/components/ui/primitives";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { RiFileList3Line, RiGraduationCapLine, RiSendPlaneLine } from "@remixicon/react";
 
 export default async function AdmissionsPage({
   searchParams,
@@ -95,11 +97,11 @@ export default async function AdmissionsPage({
         }
       />
 
-      <section aria-label="Admission counts" className="grid grid-cols-3 gap-3">
-        <StatCard label="Drafts" value={String(counts.draft)} note="Incomplete" tone="brand" />
-        <StatCard label="Submitted" value={String(counts.submitted)} note="Awaiting" tone="warning" />
-        <StatCard label="Enrolled" value={String(counts.enrolled)} note="Completed" tone="success" />
-      </section>
+      <section aria-label="Admission counts"><StatCards columns={4} stats={[
+        { label: "Drafts", value: String(counts.draft), note: "Incomplete", icon: RiFileList3Line },
+        { label: "Submitted", value: String(counts.submitted), note: "Awaiting review", icon: RiSendPlaneLine },
+        { label: "Enrolled", value: String(counts.enrolled), note: "Completed", icon: RiGraduationCapLine },
+      ] satisfies Stat[]} /></section>
 
       {retentionNotice ? (
         <p role="status" className="card card-pad text-label text-ink-2">{retentionNotice}</p>

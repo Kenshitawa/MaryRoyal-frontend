@@ -161,3 +161,8 @@ Keep the existing Next.js full-stack monolith on one approved app host; `fronten
 - The mobile layout and family diary changes are committed locally as `972cf17` on `perf/fast-web-all-devices`. The diary PostgreSQL migration at `prisma/postgresql/migrations/20261118120000_family_diary/migration.sql` is prepared but has not been applied to production. This phase explicitly excludes deployment per the project operating rules; do not describe this feature as live.
 - Local lint, type-check, production-schema build (87 routes), local health/unauthenticated diary API smoke checks, and `git diff --check` passed. Full automated tests and signed-in mobile browser review were not run.
 - Release follow-up: after the project’s deployment gate is authorized, deploy the monolith and apply/verify the diary migration before enabling diary in production. Re-run full permission/IDOR and mobile E2E acceptance; confirm production migration history and app health.
+
+## 2026-11-18 account, receipt and mobile UX release follow-up
+
+- Local changes are complete on `perf/fast-web-all-devices`: BoardUI dashboard metrics, account list, notification center, bulk receipt PDF/CSV, upload progress, theme visibility and Director-only account/learner archival. Validation passed locally, including 88/88 unit tests and an 88-route production-schema build. The finance invoice area already uses a responsive list.
+- Not released: these changes have not been pushed or deployed. The supplied `AGENTS.md` says not to deploy, and U11/mobile, IDOR and production acceptance remain open. Account and learner controls preserve records through suspension/archive instead of hard-deleting history. A release requires a separate authorized production workflow after acceptance gates are addressed.

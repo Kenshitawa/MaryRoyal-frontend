@@ -135,10 +135,14 @@ export default function LoginForm() {
 
       <Button
         type="submit"
+        variant={success ? "secondary" : "primary"}
         disabled={success}
         aria-busy={busy}
         leadingIcon={busy ? LoadingIcon : success ? SuccessIcon : undefined}
-        className={cx("mt-1 min-h-11 w-full", success && "animate-boardui-in")}
+        className={cx(
+          "mt-1 min-h-11 w-full",
+          success && "border-0 bg-notification-success-background text-notification-success-foreground hover:bg-notification-success-background animate-boardui-in",
+        )}
       >
         {success ? "Signed in successfully" : busy ? "Signing you in…" : "Sign in securely"}
       </Button>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
 import { Users, BookOpenCheck, ReceiptText, FileBarChart2 } from "lucide-react";
 import ReportsVisualizer, {
   FinanceData,
@@ -169,12 +170,6 @@ export default async function ReportsPage() {
     },
   ];
 
-  const toneStyles: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300",
-    purple: "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300",
-    emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300",
-  };
-
   return (
     <>
       <section className="mx-auto max-w-7xl space-y-5 p-4 pb-28 sm:p-6 lg:p-8">
@@ -197,23 +192,7 @@ export default async function ReportsPage() {
         </div>
 
         {/* High Level Metrics Bar */}
-        <section className="grid gap-3.5 sm:grid-cols-3" aria-label="Executive summary metrics">
-          {totals.map(({ label, value, icon: Icon, description, tone }) => (
-            <article
-              key={label}
-              className="card flex items-center justify-between rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-xs backdrop-blur dark:border-slate-800 dark:bg-slate-900/90"
-            >
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
-                <p className="mt-0.5 text-2xl font-bold text-slate-900 tabular-nums dark:text-white">{value}</p>
-                <p className="mt-0.5 text-[11px] text-slate-400">{description}</p>
-              </div>
-              <span className={`grid h-10 w-10 place-items-center rounded-xl ${toneStyles[tone]}`}>
-                <Icon size={18} />
-              </span>
-            </article>
-          ))}
-        </section>
+        <section aria-label="Executive summary metrics"><StatCards columns={4} stats={totals.map(({ label, value, icon, description }) => ({ label, value: String(value), note: description, icon })) satisfies Stat[]} /></section>
 
         {/* Visual Charts & Download Side-by-Side Panels */}
         <ReportsVisualizer

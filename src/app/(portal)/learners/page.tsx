@@ -45,6 +45,7 @@ export default async function LearnersPage() {
           identityOnly={identityOnly}
           canCreate={canInScope(user.role, "admissions", "create", "school")}
           canApprove={user.role === "HEAD_TEACHER"}
+          canDelete={user.role === "DIRECTOR"}
         />
       </section>
     </>

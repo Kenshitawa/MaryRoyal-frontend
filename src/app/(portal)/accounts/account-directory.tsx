@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { PageHeader } from "@/components/ui/primitives";
 import { LoadingState } from "@/components/ui/loader";
 import { Button } from "@/components/base/buttons/button";
+import { Chip } from "@/components/base/badges/chip";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@/components/base/table/table";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { RiGroupLine, RiShieldUserLine, RiUserFollowLine, RiUserSearchLine } from "@remixicon/react";
 import {
   AlertTriangle,
   Check,
@@ -13,13 +17,9 @@ import {
   KeyRound,
   LockKeyhole,
   Search,
-  Shield,
-  ShieldAlert,
   Sparkles,
   UnlockKeyhole,
-  UserCheck,
   UserPlus,
-  Users,
   UserX,
   X,
 } from "lucide-react";
@@ -30,6 +30,7 @@ type Account = {
   email: string;
   role: string;
   suspended: boolean;
+  suspensionReason: string | null;
   forcePasswordChange: boolean;
   failedLogins: number;
 };
@@ -150,6 +151,10 @@ export default function AccountDirectory() {
   }
 
   async function action(account: Account, actionName: string) {
+    if (
+      actionName === "archive" &&
+      !window.confirm(`Archive ${account.name}? They will lose portal access immediately. Their school records and history will be retained.`)
+    ) return;
     if (
       actionName === "suspend" &&
       !window.confirm(`Suspend ${account.name}? They will lose access immediately.`)
@@ -334,8 +339,9 @@ export default function AccountDirectory() {
       const isLocked = acc.failedLogins >= 8;
       const matchesStatus =
         statusFilter === "ALL" ||
+        (statusFilter === "ARCHIVED" && acc.suspensionReason === "ARCHIVED") ||
         (statusFilter === "ACTIVE" && !acc.suspended && !isLocked) ||
-        (statusFilter === "SUSPENDED" && acc.suspended) ||
+        (statusFilter === "SUSPENDED" && acc.suspended && acc.suspensionReason !== "ARCHIVED") ||
         (statusFilter === "LOCKED" && isLocked) ||
         (statusFilter === "MUST_CHANGE" && acc.forcePasswordChange);
 
@@ -367,12 +373,12 @@ export default function AccountDirectory() {
         }
       />
 
-      <section aria-label="Account summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Total accounts" value={loading ? "…" : String(totalCount)} note="All roles" icon={Users} tone="brand" />
-        <StatCard label="Active users" value={loading ? "…" : String(activeCount)} note="Can sign in" icon={UserCheck} tone="success" />
-        <StatCard label="Faculty & staff" value={loading ? "…" : String(staffCount)} note="Teachers and leaders" icon={Shield} tone="neutral" />
-        <StatCard label="Needs attention" value={loading ? "…" : String(alertCount)} note="Locked or suspended" icon={UserX} tone="warning" />
-      </section>
+      <section aria-label="Account summary"><StatCards columns={4} stats={[
+        { label: "Total accounts", value: loading ? "…" : String(totalCount), note: "All roles", icon: RiGroupLine },
+        { label: "Active users", value: loading ? "…" : String(activeCount), note: "Can sign in", icon: RiUserFollowLine },
+        { label: "Faculty and staff", value: loading ? "…" : String(staffCount), note: "Teachers and leaders", icon: RiShieldUserLine },
+        { label: "Needs attention", value: loading ? "…" : String(alertCount), note: "Locked or suspended", icon: RiUserSearchLine },
+      ] satisfies Stat[]} /></section>
 
       {/* Temporary password fallback: only when its account card is filtered out */}
       {temp && !tempVisible ? credentialNotice(temp) : null}
@@ -602,174 +608,89 @@ export default function AccountDirectory() {
               <option value="ALL">All Statuses</option>
               <option value="ACTIVE">Active Only</option>
               <option value="SUSPENDED">Suspended</option>
+              <option value="ARCHIVED">Archived access</option>
               <option value="LOCKED">Locked Out (8+ fails)</option>
               <option value="MUST_CHANGE">Pending Password Change</option>
             </select>
           </div>
         </div>
 
-        {/* Account Cards Grid */}
-        <div className="mt-5">
-          {loading ? (
-            <LoadingState
-              label="Loading account directory…"
-              hint="Fetching roles, sign-in state and security flags."
-            />
-          ) : filteredAccounts.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 p-12 text-center dark:border-slate-800">
-              <CircleUserRound className="mx-auto text-slate-400" size={32} />
-              <p className="mt-3 text-sm font-bold text-slate-900 dark:text-white">
-                No matching accounts
-              </p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Try refining your search keyword or active role filter.
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+        {/* Account list */}
+      <div className="mt-5">
+        {loading ? (
+          <LoadingState label="Loading account directory…" hint="Fetching roles, sign-in state and security flags." />
+        ) : filteredAccounts.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border-button-default p-12 text-center">
+            <CircleUserRound className="mx-auto text-foreground-icon-tertiary" size={32} />
+            <p className="mt-3 text-body-medium text-text-primary">No matching accounts</p>
+            <p className="mt-1 text-body-2-regular text-text-secondary">Try refining your search keyword or role filter.</p>
+          </div>
+        ) : (
+          <>
+          <ul className="divide-y divide-separator-border lg:hidden" aria-label="User accounts">
+            {filteredAccounts.map((account) => {
+              const locked = account.failedLogins >= 8;
+              const state = account.suspensionReason === "ARCHIVED" ? "Archived" : account.suspended ? "Suspended" : locked ? "Locked" : account.forcePasswordChange ? "Update needed" : "Active";
+              const color = account.suspended || locked ? "rose" : account.forcePasswordChange ? "yellow" : "lime";
+              return <li key={account.id} className="space-y-3 py-4">
+                {temp?.id === account.id ? credentialNotice(temp) : null}
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-body-medium text-text-primary">{account.name}</p>
+                    <p className="truncate text-body-2-regular text-text-secondary" dir="ltr">{account.email}</p>
+                  </div>
+                  <Chip variant="caption" color="soft">{account.role.replaceAll("_", " ")}</Chip>
+                </div>
+                <div className="flex items-center gap-2"><Chip variant="caption" color={color}>{state}</Chip>{locked ? <span className="text-caption-1-medium text-text-tertiary">8+ failed sign-ins</span> : null}</div>
+                <div className="flex flex-wrap gap-2">
+                  {account.suspended && account.suspensionReason !== "ARCHIVED" ? <Button size="small" variant="secondary" disabled={saving} onClick={() => void action(account, "reactivate")}>Reactivate</Button> : !account.suspended ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={LockKeyhole} onClick={() => void action(account, "suspend")}>Suspend</Button> : null}
+                  <Button size="small" variant="secondary" disabled={saving} leadingIcon={KeyRound} onClick={() => void action(account, "reset-password")}>Reset key</Button>
+                  {locked ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={UnlockKeyhole} onClick={() => void action(account, "unlock")}>Unlock</Button> : null}
+                  {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving || account.suspensionReason === "ARCHIVED"} leadingIcon={UserX} onClick={() => void action(account, "archive")}>{account.suspensionReason === "ARCHIVED" ? "Archived" : "Archive"}</Button> : null}
+                </div>
+              </li>;
+            })}
+          </ul>
+          <div className="hidden overflow-x-auto lg:block">
+          <Table aria-label="User accounts" selectionMode="none" className="min-w-[820px]">
+            <TableHeader>
+              <TableColumn id="person" isRowHeader>Account</TableColumn>
+              <TableColumn id="role">Role</TableColumn>
+              <TableColumn id="status">Access</TableColumn>
+              <TableColumn id="actions">Actions</TableColumn>
+            </TableHeader>
+            <TableBody>
               {filteredAccounts.map((account) => {
                 const locked = account.failedLogins >= 8;
-                const state = account.suspended
-                  ? "Suspended"
-                  : locked
-                  ? "Locked"
-                  : account.forcePasswordChange
-                  ? "Update Needed"
-                  : "Active";
-
-                const isStaff = [
-                  "DIRECTOR",
-                  "HEAD_TEACHER",
-                  "DEPUTY",
-                  "SENIOR_TEACHER",
-                  "SECRETARY",
-                  "ACCOUNTANT",
-                  "TEACHER",
-                ].includes(account.role);
-
+                const state = account.suspensionReason === "ARCHIVED" ? "Archived" : account.suspended ? "Suspended" : locked ? "Locked" : account.forcePasswordChange ? "Update needed" : "Active";
+                const isStaff = ["DIRECTOR", "HEAD_TEACHER", "DEPUTY", "SENIOR_TEACHER", "SECRETARY", "ACCOUNTANT", "TEACHER"].includes(account.role);
+                const color = account.suspended || locked ? "rose" : account.forcePasswordChange ? "yellow" : "lime";
                 return (
-                  <article
-                    key={account.id}
-                    className={`group relative flex min-w-0 flex-col justify-between rounded-2xl border p-4 transition-all hover:shadow-md ${
-                      account.suspended || locked
-                        ? "border-red-200 bg-red-50/20 dark:border-red-900/40 dark:bg-red-950/20"
-                        : temp?.id === account.id
-                        ? "border-accent-300 bg-accent-50/40 ring-2 ring-accent-200/70 dark:border-accent-700 dark:bg-accent-950/20 dark:ring-accent-900"
-                        : "border-slate-200/80 bg-white/70 hover:border-blue-200 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700"
-                    }`}
-                  >
-                    {temp?.id === account.id ? credentialNotice(temp) : null}
-                    <div>
-                      <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-                        <div className="flex min-w-0 flex-1 items-center gap-3">
-                          <span
-                            className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl font-bold ${
-                              account.suspended || locked
-                                ? "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400"
-                                : "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400"
-                            }`}
-                          >
-                            {account.name.charAt(0).toUpperCase()}
-                          </span>
-                          <div className="min-w-0">
-                            <h3 className="truncate text-sm font-black text-slate-900 dark:text-white">
-                              {isStaff ? (
-                                <Link
-                                  href={`/staff/${account.id}`}
-                                  className="transition hover:text-blue-600 hover:underline dark:hover:text-blue-400"
-                                >
-                                  {account.name}
-                                </Link>
-                              ) : (
-                                account.name
-                              )}
-                            </h3>
-                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                              {account.email}
-                            </p>
-                          </div>
-                        </div>
-
-                        <span className="max-w-full break-words rounded-full bg-slate-100 px-2.5 py-1 text-center text-[10px] font-bold tracking-wider text-slate-600 uppercase dark:bg-slate-800 dark:text-slate-300 sm:max-w-[45%]">
-                          {account.role.replaceAll("_", " ")}
-                        </span>
+                  <TableRow key={account.id} id={account.id}>
+                    <TableCell id="person">
+                      {temp?.id === account.id ? credentialNotice(temp) : null}
+                      <div className="min-w-48">
+                        <p className="text-body-medium text-text-primary">{isStaff ? <Link href={`/staff/${account.id}`} className="underline-offset-4 hover:underline">{account.name}</Link> : account.name}</p>
+                        <p className="text-body-2-regular text-text-secondary" dir="ltr">{account.email}</p>
                       </div>
-
-                      <div className="mt-3.5 flex flex-wrap items-center gap-2">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${
-                            account.suspended || locked
-                              ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300"
-                              : account.forcePasswordChange
-                              ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300"
-                              : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300"
-                          }`}
-                        >
-                          {account.suspended || locked ? (
-                            <ShieldAlert size={12} />
-                          ) : account.forcePasswordChange ? (
-                            <KeyRound size={12} />
-                          ) : (
-                            <Check size={12} />
-                          )}
-                          {state}
-                        </span>
-
-                        {locked && (
-                          <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">
-                            8+ failed logins
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800/80">
-                      {account.suspended ? (
-                        <button
-                          disabled={saving}
-                          onClick={() => void action(account, "reactivate")}
-                          className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300"
-                        >
-                          Reactivate
-                        </button>
-                      ) : (
-                        <button
-                          disabled={saving}
-                          onClick={() => void action(account, "suspend")}
-                          className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50/70 px-3 py-1.5 text-xs font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/50 dark:text-red-300"
-                        >
-                          <LockKeyhole size={12} />
-                          Suspend
-                        </button>
-                      )}
-
-                      <button
-                        disabled={saving}
-                        onClick={() => void action(account, "reset-password")}
-                        className="inline-flex items-center gap-1 rounded-xl border border-amber-200 bg-amber-50/70 px-3 py-1.5 text-xs font-bold text-amber-900 transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/50 dark:text-amber-300"
-                      >
-                        <KeyRound size={12} />
-                        Reset Key
-                      </button>
-
-                      {locked && (
-                        <button
-                          disabled={saving}
-                          onClick={() => void action(account, "unlock")}
-                          className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-800 transition hover:bg-blue-100 dark:border-blue-900/60 dark:bg-blue-950/50 dark:text-blue-300"
-                        >
-                          <UnlockKeyhole size={12} />
-                          Unlock
-                        </button>
-                      )}
-                    </div>
-                  </article>
+                    </TableCell>
+                    <TableCell id="role"><Chip variant="caption" color="soft">{account.role.replaceAll("_", " ")}</Chip></TableCell>
+                    <TableCell id="status"><Chip variant="caption" color={color}>{state}</Chip>{locked ? <p className="mt-1 text-caption-1-medium text-text-tertiary">8+ failed sign-ins</p> : null}</TableCell>
+                    <TableCell id="actions"><div className="flex max-w-[390px] flex-wrap items-center gap-1.5">
+                      {account.suspended && account.suspensionReason !== "ARCHIVED" ? <Button size="small" variant="secondary" disabled={saving} onClick={() => void action(account, "reactivate")}>Reactivate</Button> : !account.suspended ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={LockKeyhole} onClick={() => void action(account, "suspend")}>Suspend</Button> : null}
+                      <Button size="small" variant="secondary" disabled={saving} leadingIcon={KeyRound} onClick={() => void action(account, "reset-password")}>Reset key</Button>
+                      {locked ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={UnlockKeyhole} onClick={() => void action(account, "unlock")}>Unlock</Button> : null}
+                      {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving || account.suspensionReason === "ARCHIVED"} leadingIcon={UserX} onClick={() => void action(account, "archive")}>{account.suspensionReason === "ARCHIVED" ? "Archived" : "Archive"}</Button> : null}
+                    </div></TableCell>
+                  </TableRow>
                 );
               })}
-            </div>
-          )}
-        </div>
+            </TableBody>
+          </Table>
+          </div>
+          </>
+        )}
+      </div>
       </section>
     </div>
   );

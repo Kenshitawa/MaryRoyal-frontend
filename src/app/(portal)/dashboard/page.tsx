@@ -5,18 +5,18 @@ import { db } from "@/lib/db";
 import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
 import {
-  Users,
-  GraduationCap,
-  CalendarCheck,
-  BookOpen,
-  Wallet,
-  ClipboardCheck,
-  CircleDollarSign,
-  Clock3,
-  TrendingUp,
-} from "lucide-react";
+  RiBookOpenLine,
+  RiCalendarCheckLine,
+  RiClipboardLine,
+  RiCoinsFill,
+  RiGraduationCapLine,
+  RiGroupLine,
+  RiTimeLine,
+  RiWallet3Line,
+} from "@remixicon/react";
 import { DirectorGettingStartedChecklist } from "@/components/director-checklist";
-import { Card, EmptyState, PageHeader, StatCard } from "@/components/ui/primitives";
+import { Card, EmptyState, PageHeader } from "@/components/ui/primitives";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
 
 const roleTitles: Record<string, string> = {
   DIRECTOR: "Director",
@@ -451,20 +451,23 @@ export default async function Dashboard() {
 
   const metricIcon = (name: string) => {
     switch (name) {
-      case "users": return Users;
-      case "graduation": return GraduationCap;
-      case "calendar": return CalendarCheck;
-      case "book": return BookOpen;
-      case "wallet": return Wallet;
-      case "clock": return Clock3;
-      case "dollar": return CircleDollarSign;
-      case "clipboard": return ClipboardCheck;
-      default: return TrendingUp;
+      case "users": return RiGroupLine;
+      case "graduation": return RiGraduationCapLine;
+      case "calendar": return RiCalendarCheckLine;
+      case "book": return RiBookOpenLine;
+      case "wallet": return RiWallet3Line;
+      case "clock": return RiTimeLine;
+      case "dollar": return RiCoinsFill;
+      case "clipboard": return RiClipboardLine;
+      default: return RiBookOpenLine;
     }
   };
-
-  const metricTone = (tone?: MetricItem["tone"]): "brand" | "success" | "warning" | "danger" | "neutral" =>
-    tone === "emerald" ? "success" : tone === "amber" ? "warning" : tone === "rose" ? "danger" : tone === "purple" ? "neutral" : "brand";
+  const schoolStats: Stat[] = metrics.map((metric) => ({
+    label: metric.label,
+    value: metric.value,
+    note: metric.note,
+    icon: metricIcon(metric.iconName),
+  }));
 
   const hasGradeCounts = gradeRows.some((row) => row._count.id > 0);
 
@@ -482,18 +485,7 @@ export default async function Dashboard() {
 
       {role === "DIRECTOR" ? <DirectorGettingStartedChecklist stats={directorStats} /> : null}
 
-      <section aria-label="Key metrics" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {metrics.map((metric) => (
-          <StatCard
-            key={metric.label}
-            label={metric.label}
-            value={metric.value}
-            note={metric.note}
-            icon={metricIcon(metric.iconName)}
-            tone={metricTone(metric.tone)}
-          />
-        ))}
-      </section>
+      <section aria-label="Key metrics"><StatCards stats={schoolStats} columns={4} /></section>
 
       {role === "DIRECTOR" ? (
         <div className="grid gap-3 xl:grid-cols-[1.35fr_.85fr]">

@@ -3,7 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { ButtonLink } from "@/components/base/buttons/button";
 import { StatusPill } from "@/components/design-system/status-pill";
-import { Card, EmptyState, ListRow, PageHeader, StatCard } from "@/components/ui/primitives";
+import { Card, EmptyState, ListRow, PageHeader } from "@/components/ui/primitives";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { RiCoinsFill, RiReceiptLine } from "@remixicon/react";
 import { db } from "@/lib/db";
 import { canInScope } from "@/lib/permissions";
 import { readSession } from "@/lib/session";
@@ -107,17 +109,17 @@ export default async function ReceiptsPage({
       <PageHeader
         title="Official receipts"
         help="Browse confirmed payments and keep voided receipts available for reference."
-        action={
-          <ButtonLink href={homeHref} variant="secondary" size="small">
-            {user.role === "PARENT" ? "Back to portal" : "Back to finance"}
-          </ButtonLink>
-        }
+        action={<div className="flex flex-wrap items-center gap-2">
+          <a href="/api/receipts/export" className="btn btn-primary btn-sm">Download all receipts (PDF)</a>
+          <a href="/api/receipts/export?format=csv" className="btn btn-secondary btn-sm">Download register (CSV)</a>
+          <ButtonLink href={homeHref} variant="secondary" size="small">{user.role === "PARENT" ? "Back to portal" : "Back to finance"}</ButtonLink>
+        </div>}
       />
 
-      <section aria-label="Receipt summary" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <StatCard label="Receipts" value={receiptCount.toLocaleString("en-KE")} note="Confirmed and voided" />
-        <StatCard label="Confirmed collection" value={kes(collected._sum.amount ?? 0)} note="Excludes pending and voided payments" />
-      </section>
+      <section aria-label="Receipt summary"><StatCards columns={2} stats={[
+        { label: "Receipts", value: receiptCount.toLocaleString("en-KE"), note: "Confirmed and voided", icon: RiReceiptLine },
+        { label: "Confirmed collection", value: kes(collected._sum.amount ?? 0), note: "Excludes pending and voided payments", icon: RiCoinsFill },
+      ] satisfies Stat[]} /></section>
 
       <Card
         title="Receipt register"

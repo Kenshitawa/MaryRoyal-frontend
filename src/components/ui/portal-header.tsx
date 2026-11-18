@@ -39,6 +39,7 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const nav = useMemo(() => getMobileNavigation(user.role), [user.role]);
+  const { theme, toggleTheme } = useTheme();
   const isPrimaryTab = useMemo(
     () => nav.primary.some((item) => item.href.split("?")[0] === pathname.split("?")[0]),
     [nav, pathname],
@@ -64,6 +65,9 @@ export function PortalHeader({ user }: { user: HeaderUser }) {
         </Link>
         <div className="flex shrink-0 items-center gap-0.5">
           <IconButton ariaLabel="Search" onClick={() => setSearchOpen(true)}><Search size={19} /></IconButton>
+          <IconButton ariaLabel={`Colour mode: ${theme === "dark" ? "dark" : theme === "system" ? "system" : "light"}. Switch theme.`} title="Switch colour mode" onClick={toggleTheme}>
+            {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
+          </IconButton>
           <NotificationBell />
           <button type="button" aria-label="Open profile menu" onClick={() => setProfileOpen(true)} className="grid h-11 w-11 shrink-0 place-items-center rounded-full">
             <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-brand-soft text-label font-semibold text-brand-ink ring-1 ring-brand-line">

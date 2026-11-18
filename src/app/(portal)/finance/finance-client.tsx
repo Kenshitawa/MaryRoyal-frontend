@@ -8,7 +8,9 @@ import {
 import { ThemedCard } from "@/components/design-system/card";
 import { StatusPill } from "@/components/design-system/status-pill";
 import { LearnerLink } from "@/components/learner-link";
-import { EmptyState, StatCard } from "@/components/ui/primitives";
+import { EmptyState } from "@/components/ui/primitives";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { RiCoinsFill, RiPercentLine, RiReceiptLine, RiWallet3Line } from "@remixicon/react";
 import { LoadingState } from "@/components/ui/loader";
 import { Input } from "@/components/base/input/input";
 import { ButtonLink } from "@/components/base/buttons/button";
@@ -469,37 +471,12 @@ export default function FinanceClient({
       )}
 
       {/* KPI Stats Cards */}
-      <section aria-label="Finance summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard
-          label="Total invoiced"
-          value={loading ? "…" : kesShort(totalBilled)}
-          note={`${invoices.length} learner ${invoices.length === 1 ? "invoice" : "invoices"}`}
-          icon={Receipt}
-          tone="brand"
-        />
-        <StatCard
-          label="Collected"
-          value={loading ? "…" : kesShort(totalCollected)}
-          note={`${collectionRate}% collection target`}
-          icon={CheckCircle2}
-          tone="success"
-        />
-        <StatCard
-          label="Outstanding arrears"
-          value={loading ? "…" : kesShort(totalOutstanding)}
-          note="Pending recovery"
-          icon={Wallet}
-          tone="warning"
-        />
-        <StatCard
-          label="Collection rate"
-          value={loading ? "…" : `${collectionRate}%`}
-          note="Against invoiced total"
-          icon={CreditCard}
-          tone="brand"
-          progress={loading ? 0 : collectionRate}
-        />
-      </section>
+      <section aria-label="Finance summary"><StatCards columns={4} stats={[
+        { label: "Total invoiced", value: loading ? "…" : kesShort(totalBilled), note: `${invoices.length} learner ${invoices.length === 1 ? "invoice" : "invoices"}`, icon: RiReceiptLine },
+        { label: "Collected", value: loading ? "…" : kesShort(totalCollected), note: `${collectionRate}% collection target`, icon: RiCoinsFill },
+        { label: "Outstanding arrears", value: loading ? "…" : kesShort(totalOutstanding), note: "Pending recovery", icon: RiWallet3Line },
+        { label: "Collection rate", value: loading ? "…" : `${collectionRate}%`, note: "Against invoiced total", icon: RiPercentLine },
+      ] satisfies Stat[]} /></section>
 
       {/* Tabs navigation */}
       <div className="grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1" role="tablist" aria-label="Finance views">
@@ -656,36 +633,12 @@ export default function FinanceClient({
       {/* TAB 2: Arrears & Aging Buckets */}
       {activeTab === "arrears" && (
         <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatCard
-              label="Current (0–30 days)"
-              value={kes(aging.b0_30)}
-              note="Recently invoiced terms"
-              icon={Receipt}
-              tone="brand"
-            />
-            <StatCard
-              label="Overdue (31–60 days)"
-              value={kes(aging.b31_60)}
-              note="1st reminder stage"
-              icon={CreditCard}
-              tone="warning"
-            />
-            <StatCard
-              label="Arrears (61–90 days)"
-              value={kes(aging.b61_90)}
-              note="2nd follow-up stage"
-              icon={Wallet}
-              tone="warning"
-            />
-            <StatCard
-              label="Chronic (90+ days)"
-              value={kes(aging.b90plus)}
-              note="Head Teacher review required"
-              icon={AlertTriangle}
-              tone="danger"
-            />
-          </div>
+          <StatCards columns={4} stats={[
+            { label: "Current (0–30 days)", value: kes(aging.b0_30), note: "Recently invoiced terms", icon: Receipt },
+            { label: "Overdue (31–60 days)", value: kes(aging.b31_60), note: "1st reminder stage", icon: CreditCard },
+            { label: "Arrears (61–90 days)", value: kes(aging.b61_90), note: "2nd follow-up stage", icon: Wallet },
+            { label: "Chronic (90+ days)", value: kes(aging.b90plus), note: "Head Teacher review required", icon: AlertTriangle },
+          ] satisfies Stat[]} />
 
           <ThemedCard className="p-6">
             <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Top Outstanding Learner Arrears</h3>

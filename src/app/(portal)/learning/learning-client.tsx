@@ -12,7 +12,9 @@ import {
   Lightbulb,
   Trophy,
 } from "lucide-react";
-import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { PageHeader } from "@/components/ui/primitives";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { RiBookOpenLine, RiCalendarCheckLine, RiFileList3Line, RiGamepadLine } from "@remixicon/react";
 import { ButtonLink } from "@/components/base/buttons/button";
 
 type Learner = { id: string; name: string; admissionNo: string; grade: string };
@@ -336,12 +338,12 @@ export default function LearningClient({
         }
       />
 
-      <section aria-label="Learning summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Released marks" value={String(assessments.length)} note="Official assessments" icon={Trophy} tone="brand" />
-        <StatCard label="Tasks handed in" value={String(submissions.length)} note="Evaluated by teacher" icon={BookOpenCheck} tone="neutral" />
-        <StatCard label="Practice games" value={String(attempts.length)} note="Completed quiz rounds" icon={Gamepad2} tone="neutral" />
-        <StatCard label="Attendance" value={attendanceRate === null ? "—" : `${attendanceRate}%`} note="Recent classroom record" icon={CheckCircle2} tone="success" />
-      </section>
+      <section aria-label="Learning summary"><StatCards columns={4} stats={[
+        { label: "Released marks", value: String(assessments.length), note: "Official assessments", icon: RiFileList3Line },
+        { label: "Tasks handed in", value: String(submissions.length), note: "Evaluated by teacher", icon: RiBookOpenLine },
+        { label: "Practice games", value: String(attempts.length), note: "Completed quiz rounds", icon: RiGamepadLine },
+        { label: "Attendance", value: attendanceRate === null ? "—" : `${attendanceRate}%`, note: "Recent classroom record", icon: RiCalendarCheckLine },
+      ] satisfies Stat[]} /></section>
 
       {/* Progress & Quick Games Bento Grid */}
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">

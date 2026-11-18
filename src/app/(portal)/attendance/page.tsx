@@ -5,13 +5,12 @@ import { readSession } from "@/lib/session";
 import { canInScope } from "@/lib/permissions";
 import AttendanceClient from "./attendance-client";
 import StaffAttendanceClient from "./staff-attendance-client";
-import { Card, EmptyState, PageHeader, StatCard } from "@/components/ui/primitives";
+import { Card, EmptyState, PageHeader } from "@/components/ui/primitives";
+import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
+import { RiCheckboxCircleLine, RiGroupLine, RiUserFollowLine, RiUserUnfollowLine } from "@remixicon/react";
 import {
   Calendar,
-  CheckCircle2,
-  UserCheck,
   Users,
-  UserX,
 } from "lucide-react";
 
 export default async function AttendancePage() {
@@ -141,12 +140,12 @@ export default async function AttendancePage() {
 
         {overview && (
           <>
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <StatCard label="Enrolled learners" value={counts.total} note="Across active classes" icon={Users} />
-              <StatCard label="Present today" value={counts.present} note={`${counts.late} recorded late`} icon={UserCheck} tone="success" />
-              <StatCard label="Absent today" value={counts.absent} note="Needs guardian follow-up" icon={UserX} tone="danger" />
-              <StatCard label="Registers marked" value={`${completionPct}%`} note={`${classes.filter((c) => c.marked === c.total && c.total > 0).length} of ${classes.filter((c) => c.total > 0).length} classes`} icon={CheckCircle2} tone="neutral" />
-            </div>
+            <StatCards columns={4} stats={[
+              { label: "Enrolled learners", value: String(counts.total), note: "Across active classes", icon: RiGroupLine },
+              { label: "Present today", value: String(counts.present), note: `${counts.late} recorded late`, icon: RiUserFollowLine },
+              { label: "Absent today", value: String(counts.absent), note: "Needs guardian follow-up", icon: RiUserUnfollowLine },
+              { label: "Registers marked", value: `${completionPct}%`, note: `${classes.filter((c) => c.marked === c.total && c.total > 0).length} of ${classes.filter((c) => c.total > 0).length} classes`, icon: RiCheckboxCircleLine },
+            ] satisfies Stat[]} />
 
             <Card title="Class registers" description="Completion by class for today.">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
