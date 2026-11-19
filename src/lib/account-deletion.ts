@@ -53,6 +53,9 @@ const REASSIGN_TO_ACTOR: ReadonlyArray<readonly [model: string, field: string]> 
   ["staffDocument", "uploadedById"],
   ["staffHistory", "actorId"],
   ["staffDraft", "createdById"],
+  // Attendance rows owned by the target are deleted below, but rows recorded
+  // by the target for other staff must remain and retain their audit trail.
+  ["staffAttendance", "recordedById"],
 ];
 
 const CLEAR_OPTIONAL: ReadonlyArray<readonly [model: string, field: string]> = [
