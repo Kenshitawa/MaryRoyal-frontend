@@ -196,19 +196,22 @@ export default function VideoLibrary({ canManage = false, embedded = false }: { 
       )}
 
       <section aria-labelledby="kicd-resources-title" className="rounded-3xl border border-border-button-default bg-background-primary-default p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 id="kicd-resources-title" className="text-title-3-semibold text-text-primary">Official KICD learning resources</h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h2 id="kicd-resources-title" className="text-title-3-semibold text-text-primary">KICD official learning</h2>
             <p className="mt-1 max-w-2xl text-body-regular text-text-secondary">
-              Open curriculum materials from Kenya Education Cloud and KICD. Resources stay on their
-              official sites; copyrighted course content is not copied into this system.
+              Kenya Education Cloud blocks pages from loading inside other websites. Keep this school portal open and launch the official learning portal in a separate tab.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <a className="rounded-xl border border-border-button-default px-3 py-2 text-body-medium text-text-primary hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring" href="https://oer.kec.ac.ke/" target="_blank" rel="noreferrer">KICD OER portal</a>
-            <a className="rounded-xl border border-border-button-default px-3 py-2 text-body-medium text-text-primary hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring" href="https://kec.ac.ke/" target="_blank" rel="noreferrer">Kenya Education Cloud</a>
-            <a className="rounded-xl border border-border-button-default px-3 py-2 text-body-medium text-text-primary hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring" href="https://kicd.ac.ke/" target="_blank" rel="noreferrer">KICD website</a>
-          </div>
+          <a
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-border-button-default bg-background-secondary-default px-4 py-2 text-body-medium text-text-primary transition hover:bg-background-secondary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            href="https://kec.ac.ke/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <ExternalLink size={16} aria-hidden="true" />
+            Open Kenya Education Cloud
+          </a>
         </div>
       </section>
 

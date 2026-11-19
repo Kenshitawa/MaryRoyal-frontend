@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/primitives";
 import { LoadingState } from "@/components/ui/loader";
+import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@/components/base/table/table";
@@ -50,6 +51,7 @@ const roles = [
 ];
 
 export default function AccountDirectory() {
+  const { notify } = useToast();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [error, setError] = useState("");
   const [temp, setTemp] = useState<TempCredential | null>(null);
@@ -67,22 +69,25 @@ export default function AccountDirectory() {
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  async function load() {
+  async function load(): Promise<Account[] | null> {
     try {
-      const response = await fetch("/api/accounts");
+      const response = await fetch("/api/accounts", { cache: "no-store" });
       if (!response.ok) {
         setError("Could not load accounts.");
         setLoading(false);
-        return;
+        return null;
       }
       const result = accountsResponseSchema.safeParse(await response.json());
       if (!result.success) {
         setError("The accounts service returned invalid data.");
-        return;
+        return null;
       }
       setAccounts(result.data.accounts);
+      setError("");
+      return result.data.accounts;
     } catch {
       setError("Network error while loading accounts.");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -148,8 +153,10 @@ export default function AccountDirectory() {
 
   async function action(account: Account, actionName: string) {
     if (
-      actionName === "archive" &&
-      !window.confirm(`Archive ${account.name}? They will lose portal access immediately. Their school records and history will be retained.`)
+      actionName === "delete" &&
+      !window.confirm(
+        `Permanently delete ${account.name}? Their sign-in and account data will be removed. This cannot be undone.`
+      )
     ) return;
     if (
       actionName === "suspend" &&
@@ -180,6 +187,10 @@ export default function AccountDirectory() {
         setError(data.error ?? "Account could not be changed.");
         return;
       }
+      if (actionName === "delete" && data.ok !== true) {
+        setError("The server did not confirm account deletion. The account is still in place.");
+        return;
+      }
       if (data.temporaryPassword) {
         showCredential({
           id: account.id,
@@ -189,7 +200,14 @@ export default function AccountDirectory() {
           password: data.temporaryPassword,
         });
       }
-      await load();
+      const refreshedAccounts = await load();
+      if (actionName === "delete" && refreshedAccounts) {
+        if (refreshedAccounts.some((item) => item.id === account.id)) {
+          setError("The account is still listed after deletion. Refresh and try again.");
+        } else {
+          notify(`${account.name} was deleted successfully.`, "success");
+        }
+      }
     } catch {
       setError("Could not connect. Try again.");
     } finally {
@@ -642,7 +660,7 @@ export default function AccountDirectory() {
                   {account.suspended && account.suspensionReason !== "ARCHIVED" ? <Button size="small" variant="secondary" disabled={saving} onClick={() => void action(account, "reactivate")}>Reactivate</Button> : !account.suspended ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={LockKeyhole} onClick={() => void action(account, "suspend")}>Suspend</Button> : null}
                   <Button size="small" variant="secondary" disabled={saving} leadingIcon={KeyRound} onClick={() => void action(account, "reset-password")}>Reset key</Button>
                   {locked ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={UnlockKeyhole} onClick={() => void action(account, "unlock")}>Unlock</Button> : null}
-                  {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving || account.suspensionReason === "ARCHIVED"} leadingIcon={UserX} onClick={() => void action(account, "archive")}>{account.suspensionReason === "ARCHIVED" ? "Archived" : "Archive"}</Button> : null}
+                  {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving} leadingIcon={UserX} onClick={() => void action(account, "delete")}>Delete</Button> : null}
                 </div>
               </li>;
             })}
@@ -663,20 +681,20 @@ export default function AccountDirectory() {
                 const color = account.suspended || locked ? "rose" : account.forcePasswordChange ? "yellow" : "lime";
                 return (
                   <TableRow key={account.id} id={account.id}>
-                    <TableCell id="person">
+                    <TableCell>
                       {temp?.id === account.id ? credentialNotice(temp) : null}
                       <div className="min-w-48">
                         <p className="text-body-medium text-text-primary">{isStaff ? <Link href={`/staff/${account.id}`} className="underline-offset-4 hover:underline">{account.name}</Link> : account.name}</p>
                         <p className="text-body-2-regular text-text-secondary" dir="ltr">{account.email}</p>
                       </div>
                     </TableCell>
-                    <TableCell id="role"><Chip variant="caption" color="soft">{account.role.replaceAll("_", " ")}</Chip></TableCell>
-                    <TableCell id="status"><Chip variant="caption" color={color}>{state}</Chip>{locked ? <p className="mt-1 text-caption-1-medium text-text-tertiary">8+ failed sign-ins</p> : null}</TableCell>
-                    <TableCell id="actions"><div className="flex max-w-[390px] flex-wrap items-center gap-1.5">
+                    <TableCell><Chip variant="caption" color="soft">{account.role.replaceAll("_", " ")}</Chip></TableCell>
+                    <TableCell><Chip variant="caption" color={color}>{state}</Chip>{locked ? <p className="mt-1 text-caption-1-medium text-text-tertiary">8+ failed sign-ins</p> : null}</TableCell>
+                    <TableCell><div className="flex max-w-[390px] flex-wrap items-center gap-1.5">
                       {account.suspended && account.suspensionReason !== "ARCHIVED" ? <Button size="small" variant="secondary" disabled={saving} onClick={() => void action(account, "reactivate")}>Reactivate</Button> : !account.suspended ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={LockKeyhole} onClick={() => void action(account, "suspend")}>Suspend</Button> : null}
                       <Button size="small" variant="secondary" disabled={saving} leadingIcon={KeyRound} onClick={() => void action(account, "reset-password")}>Reset key</Button>
                       {locked ? <Button size="small" variant="secondary" disabled={saving} leadingIcon={UnlockKeyhole} onClick={() => void action(account, "unlock")}>Unlock</Button> : null}
-                      {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving || account.suspensionReason === "ARCHIVED"} leadingIcon={UserX} onClick={() => void action(account, "archive")}>{account.suspensionReason === "ARCHIVED" ? "Archived" : "Archive"}</Button> : null}
+                      {account.role !== "DIRECTOR" ? <Button size="small" variant="danger" disabled={saving} leadingIcon={UserX} onClick={() => void action(account, "delete")}>Delete</Button> : null}
                     </div></TableCell>
                   </TableRow>
                 );
