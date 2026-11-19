@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/primitives";
 import { LoadingState } from "@/components/ui/loader";
+import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@/components/base/table/table";
@@ -58,6 +59,7 @@ const roles = [
 ];
 
 export default function AccountDirectory() {
+  const { notify } = useToast();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [error, setError] = useState("");
   const [temp, setTemp] = useState<TempCredential | null>(null);
@@ -75,40 +77,46 @@ export default function AccountDirectory() {
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  async function load() {
+  async function load(): Promise<Account[] | null> {
     try {
-      const response = await fetch("/api/accounts");
+      const response = await fetch("/api/accounts", { cache: "no-store" });
       if (!response.ok) {
         setError("Could not load accounts.");
         setLoading(false);
-        return;
+        return null;
       }
       const data = (await response.json()) as { accounts?: unknown };
-      const rows = Array.isArray(data.accounts) ? data.accounts : [];
-      setAccounts(
-        rows.flatMap((row): Account[] => {
-          if (!row || typeof row !== "object") return [];
-          const a = row as Partial<Account>;
-          if (
-            typeof a.id !== "string" ||
-            typeof a.name !== "string" ||
-            typeof a.email !== "string" ||
-            typeof a.role !== "string"
-          ) return [];
-          return [{
-            id: a.id,
-            name: a.name,
-            email: a.email,
-            role: a.role,
-            suspended: Boolean(a.suspended),
-            suspensionReason: typeof a.suspensionReason === "string" ? a.suspensionReason : null,
-            forcePasswordChange: Boolean(a.forcePasswordChange),
-            failedLogins: typeof a.failedLogins === "number" ? a.failedLogins : 0,
-          }];
-        }),
-      );
+      if (!Array.isArray(data.accounts)) {
+        setError("Account list returned an invalid response.");
+        return null;
+      }
+      const rows = data.accounts;
+      const nextAccounts = rows.flatMap((row): Account[] => {
+        if (!row || typeof row !== "object") return [];
+        const a = row as Partial<Account>;
+        if (
+          typeof a.id !== "string" ||
+          typeof a.name !== "string" ||
+          typeof a.email !== "string" ||
+          typeof a.role !== "string"
+        ) return [];
+        return [{
+          id: a.id,
+          name: a.name,
+          email: a.email,
+          role: a.role,
+          suspended: Boolean(a.suspended),
+          suspensionReason: typeof a.suspensionReason === "string" ? a.suspensionReason : null,
+          forcePasswordChange: Boolean(a.forcePasswordChange),
+          failedLogins: typeof a.failedLogins === "number" ? a.failedLogins : 0,
+        }];
+      });
+      setAccounts(nextAccounts);
+      setError("");
+      return nextAccounts;
     } catch {
       setError("Network error while loading accounts.");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -208,6 +216,10 @@ export default function AccountDirectory() {
         setError(data.error ?? "Account could not be changed.");
         return;
       }
+      if (actionName === "delete" && data.ok !== true) {
+        setError("The server did not confirm account deletion. The account is still in place.");
+        return;
+      }
       if (data.temporaryPassword) {
         showCredential({
           id: account.id,
@@ -217,7 +229,14 @@ export default function AccountDirectory() {
           password: data.temporaryPassword,
         });
       }
-      await load();
+      const refreshedAccounts = await load();
+      if (actionName === "delete" && refreshedAccounts) {
+        if (refreshedAccounts.some((item) => item.id === account.id)) {
+          setError("The account is still listed after deletion. Refresh and try again.");
+        } else {
+          notify(`${account.name} was deleted successfully.`, "success");
+        }
+      }
     } catch {
       setError("Could not connect. Try again.");
     } finally {
