@@ -26,19 +26,13 @@ export async function GET(request: Request) {
   const scope = url.searchParams.get("scope");
   const memberId = url.searchParams.get("memberId");
 
-  // Admin/welfare chair/director can see all
-  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "WELFARE_CHAIR"].includes(user.role);
+  // Only the Director and Welfare Chair need the member-level management view.
+  // Everyone else receives their own member record from the default response.
+  const isAdmin = ["DIRECTOR", "WELFARE_CHAIR"].includes(user.role);
 
-  // Members may see a privacy-preserving ranking, never other members' savings or contributions.
+  // A ranking still exposes other staff identities and patterns of contribution.
   if (scope === "leaderboard") {
-    const totals = await db.welfareContribution.groupBy({ by: ["memberId"], _sum: { amount: true }, orderBy: { _sum: { amount: "desc" } }, take: 3 });
-    const ids = totals.map((item) => item.memberId);
-    const members = await db.welfareMember.findMany({ where: { id: { in: ids } }, select: { id: true, user: { select: { name: true, role: true } } } });
-    const byId = new Map(members.map((member) => [member.id, member]));
-    return NextResponse.json({ leaderboard: totals.flatMap((item, index) => {
-      const member = byId.get(item.memberId);
-      return member ? [{ rank: index + 1, name: member.user.name, role: member.user.role }] : [];
-    }) });
+    return NextResponse.json({ error: "Welfare rankings are not available." }, { status: 403 });
   }
 
   if (scope === "staff" && ["DIRECTOR", "WELFARE_CHAIR"].includes(user.role)) {
@@ -48,6 +42,35 @@ export async function GET(request: Request) {
       orderBy: { name: "asc" },
     });
     return NextResponse.json({ staff });
+  }
+
+  if (scope === "approvals" && user.role === "HEAD_TEACHER") {
+    const loans = await db.welfareLoan.findMany({
+      where: { status: "PENDING_HEADTEACHER" },
+      select: {
+        id: true,
+        type: true,
+        principalAmount: true,
+        repaymentTermMonths: true,
+        monthlyDeduction: true,
+        status: true,
+        repaidAmount: true,
+        purpose: true,
+        headteacherNotes: true,
+        headteacherApprovedAt: true,
+        directorNotes: true,
+        directorApprovedAt: true,
+        rejectedAt: true,
+        rejectedByRole: true,
+        disbursedAt: true,
+        paidAt: true,
+        createdAt: true,
+        updatedAt: true,
+        member: { select: { user: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    return NextResponse.json({ loans });
   }
 
   if (scope === "overview" && isAdmin) {
@@ -79,7 +102,7 @@ export async function GET(request: Request) {
     });
   }
 
-  // A specific member's data (admin viewing)
+  // A specific member's data is available only in the management scope.
   if (memberId && isAdmin) {
     const member = await db.welfareMember.findUnique({
       where: { id: memberId },

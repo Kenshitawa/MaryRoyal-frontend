@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { LearnerLink } from "@/components/learner-link";
 import { InlineLoader } from "@/components/ui/loader";
+import { fetchAllLearnerOptions } from "@/lib/learner-options";
 import {
   accountsResponseSchema,
   guardianLinksResponseSchema,
-  learnersResponseSchema,
 } from "@/lib/account-response-schemas";
 import {
   AlertCircle,
@@ -40,26 +40,25 @@ export default function GuardianLinks() {
 
   async function load() {
     try {
-      const [a, l, g] = await Promise.all([
+      const [a, learnersResult, g] = await Promise.all([
         fetch("/api/accounts"),
-        fetch("/api/learners?take=100"),
+        fetchAllLearnerOptions(),
         fetch("/api/guardians"),
       ]);
-      if (!a.ok || !l.ok || !g.ok) {
+      if (!a.ok || !g.ok) {
         setMessage("Could not load family linkage records.");
         return;
       }
-      const [accountResult, learnerResult, linkResult] = await Promise.all([
+      const [accountResult, linkResult] = await Promise.all([
         a.json().then((data: unknown) => accountsResponseSchema.safeParse(data)),
-        l.json().then((data: unknown) => learnersResponseSchema.safeParse(data)),
         g.json().then((data: unknown) => guardianLinksResponseSchema.safeParse(data)),
       ]);
-      if (!accountResult.success || !learnerResult.success || !linkResult.success) {
+      if (!accountResult.success || !linkResult.success) {
         setMessage("A family linkage service returned invalid data.");
         return;
       }
       setAccounts(accountResult.data.accounts.filter((account) => ["PARENT", "LEARNER"].includes(account.role)));
-      setLearners(learnerResult.data.learners);
+      setLearners(learnersResult);
       setLinks(linkResult.data.links);
     } catch {
       setMessage("Could not load family linkage records.");

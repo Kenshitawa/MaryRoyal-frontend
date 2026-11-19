@@ -10,6 +10,7 @@ import { Chip } from "@/components/base/badges/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@/components/base/table/table";
 import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
 import { accountsResponseSchema, type AccountSummary } from "@/lib/account-response-schemas";
+import { fetchAllLearnerOptions, type LearnerOption } from "@/lib/learner-options";
 import { RiGroupLine, RiShieldUserLine, RiUserFollowLine, RiUserSearchLine } from "@remixicon/react";
 import {
   AlertTriangle,
@@ -61,6 +62,10 @@ export default function AccountDirectory() {
   const [saving, setSaving] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [createStep, setCreateStep] = useState(1);
+  const [selectedRole, setSelectedRole] = useState(roles[0]);
+  const [learnerOptions, setLearnerOptions] = useState<LearnerOption[]>([]);
+  const [learnerOptionsLoading, setLearnerOptionsLoading] = useState(false);
+  const [selectedLearnerId, setSelectedLearnerId] = useState("");
   const createFormRef = useRef<HTMLFormElement>(null);
   const copyTimer = useRef<number | null>(null);
 
@@ -100,6 +105,17 @@ export default function AccountDirectory() {
     };
   }, []);
 
+  useEffect(() => {
+    if (selectedRole !== "LEARNER") return;
+    let active = true;
+    setLearnerOptionsLoading(true);
+    void fetchAllLearnerOptions()
+      .then((options) => { if (active) setLearnerOptions(options); })
+      .catch(() => { if (active) setError("Could not load learner records for account linking."); })
+      .finally(() => { if (active) setLearnerOptionsLoading(false); });
+    return () => { active = false; };
+  }, [selectedRole]);
+
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (createStep < 3) {
@@ -132,6 +148,8 @@ export default function AccountDirectory() {
       form.reset();
       setShowCreate(false);
       setCreateStep(1);
+      setSelectedRole(roles[0]);
+      setSelectedLearnerId("");
       await load();
     } catch {
       setError("Could not connect. Try again.");
@@ -427,7 +445,7 @@ export default function AccountDirectory() {
           </div>
 
           <ol aria-label="Account setup steps" className="mb-5 grid grid-cols-3 gap-2">
-            {["Identity", "Role", "Staff details"].map((label, index) => (
+            {["Identity", "Role", selectedRole === "LEARNER" ? "Learner record" : "Staff details"].map((label, index) => (
               <li key={label} aria-current={createStep === index + 1 ? "step" : undefined} className={`rounded-xl border px-3 py-2 text-center text-caption-1-semibold ${createStep === index + 1 ? "border-border-focus-ring bg-background-secondary-default text-text-primary" : "border-separator-border text-text-tertiary"}`}>
                 <span className="me-1">{index + 1}.</span>{label}
               </li>
@@ -474,6 +492,11 @@ export default function AccountDirectory() {
                   id="account-role"
                   name="role"
                   required
+                  value={selectedRole}
+                  onChange={(event) => {
+                    setSelectedRole(event.target.value);
+                    setSelectedLearnerId("");
+                  }}
                   className="mt-1.5 min-h-11 w-full rounded-2xl border border-slate-200 bg-white/70 px-4 text-sm text-slate-900 shadow-sm transition outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white"
                 >
                   {roles.map((r) => (
@@ -485,7 +508,36 @@ export default function AccountDirectory() {
               </div>
             </div>
 
-            <details hidden={createStep !== 3} className="rounded-2xl border border-separator-border bg-background-secondary-default p-4 transition">
+            {selectedRole === "LEARNER" && (
+              <div hidden={createStep !== 3} className="space-y-2 rounded-2xl border border-border-button-default bg-background-secondary-default p-4">
+                <label htmlFor="account-learner-record" className="text-body-medium text-text-primary">Link to learner record</label>
+                <p className="text-body-2-regular text-text-secondary">Choose the existing school record. The learner profile will be linked to this sign-in so the learner can see their school information and updates.</p>
+                <select
+                  id="account-learner-record"
+                  name="learnerId"
+                  required={selectedRole === "LEARNER"}
+                  disabled={selectedRole !== "LEARNER" || learnerOptionsLoading}
+                  value={selectedLearnerId}
+                  onChange={(event) => {
+                    setSelectedLearnerId(event.target.value);
+                    const learner = learnerOptions.find((option) => option.id === event.target.value);
+                    const nameInput = createFormRef.current?.elements.namedItem("name");
+                    if (learner && nameInput instanceof HTMLInputElement) nameInput.value = learner.name;
+                  }}
+                  className="min-h-11 w-full rounded-xl border border-border-button-default bg-background-primary-default px-3 text-body-medium text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                >
+                  <option value="">{learnerOptionsLoading ? "Loading learner records…" : "Select learner…"}</option>
+                  {learnerOptions.filter((learner) => !learner.hasLearnerLogin).map((learner) => (
+                    <option key={learner.id} value={learner.id}>{learner.name} · {learner.admissionNo} · {learner.grade}</option>
+                  ))}
+                </select>
+                {!learnerOptionsLoading && learnerOptions.length > 0 && learnerOptions.every((learner) => learner.hasLearnerLogin) && (
+                  <p className="text-body-2-regular text-text-secondary">Every learner record already has a portal account.</p>
+                )}
+              </div>
+            )}
+
+            <details hidden={createStep !== 3 || selectedRole === "LEARNER"} className="rounded-2xl border border-separator-border bg-background-secondary-default p-4 transition">
               <summary className="cursor-pointer text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
                 + Staff Details (Optional for Teachers & Faculty)
               </summary>

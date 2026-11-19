@@ -54,18 +54,22 @@ export default function LearnerDirectory({
   const [gradeFilter, setGradeFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [busy, setBusy] = useState(true);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async (query: string) => {
+  const load = useCallback(async (query: string, cursor?: string | null) => {
     setBusy(true);
     setError("");
     try {
+      const params = new URLSearchParams({ take: "100" });
+      if (query) params.set("q", query);
+      if (cursor) params.set("cursor", cursor);
       const response = await fetch(
-        `/api/learners?take=100${query ? `&q=${encodeURIComponent(query)}` : ""}`
+        `/api/learners?${params}`
       );
       if (!response.ok) {
         throw new Error(
@@ -75,7 +79,8 @@ export default function LearnerDirectory({
         );
       }
       const data = await response.json();
-      setRows(data.learners);
+      setRows((current) => cursor ? [...current, ...data.learners] : data.learners);
+      setNextCursor(data.nextCursor ?? null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not load learners.");
     } finally {
@@ -610,6 +615,13 @@ export default function LearnerDirectory({
             </tbody>
           </table>
         </div>
+        {nextCursor && (
+          <div className="mt-5 flex justify-center">
+            <button type="button" disabled={busy} onClick={() => void load(search, nextCursor)} className="btn btn-secondary">
+              {busy ? "Loading learners…" : "Load more learners"}
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );

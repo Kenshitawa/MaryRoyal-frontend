@@ -14,6 +14,7 @@ import { RiCoinsFill, RiPercentLine, RiReceiptLine, RiWallet3Line } from "@remix
 import { LoadingState } from "@/components/ui/loader";
 import { Input } from "@/components/base/input/input";
 import { ButtonLink } from "@/components/base/buttons/button";
+import { fetchAllLearnerOptions } from "@/lib/learner-options";
 
 type Learner = { id: string; name: string; admissionNo: string; grade: string };
 type Line = { id: string; category: string; description: string; amount: number; optional?: boolean };
@@ -108,15 +109,15 @@ export default function FinanceClient({
 
   const refresh = useCallback(async () => {
     try {
-      const [invRes, learnRes, structRes, waiverRes] = await Promise.all([
+      const [invRes, learnerOptions, structRes, waiverRes] = await Promise.all([
         fetch("/api/finance/invoices"),
-        fetch("/api/learners?take=100"),
+        fetchAllLearnerOptions(),
         fetch("/api/finance/structures"),
         canViewWaivers ? fetch("/api/finance/waivers") : Promise.resolve(null)
       ]);
 
       if (invRes.ok) setInvoices((await invRes.json()).invoices || []);
-      if (learnRes.ok) setLearners((await learnRes.json()).learners || []);
+      setLearners(learnerOptions);
       if (structRes.ok) setStructures((await structRes.json()).structures || []);
       if (waiverRes?.ok) setWaivers((await waiverRes.json()).waivers || []);
     } catch {

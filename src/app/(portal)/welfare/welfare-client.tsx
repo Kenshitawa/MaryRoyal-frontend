@@ -61,8 +61,6 @@ type WelfareProduct = {
   monthlyAmount: number | null;
   status: string;
 };
-type WelfareRank = { rank: number; name: string; role: string };
-
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const EMPTY_LOAN_FORM = { memberId: "", type: "LOAN", principalAmount: "", repaymentTermMonths: "3", purpose: "" };
 
@@ -87,13 +85,13 @@ const STATUS_LABELS: Record<string, string> = {
 function fmt(n: number) { return `KES ${n.toLocaleString()}`; }
 
 export default function WelfareClient({ role }: { role: string; userId?: string; userName?: string }) {
-  const isAdmin = ["DIRECTOR", "HEAD_TEACHER", "WELFARE_CHAIR"].includes(role);
+  const canViewOverview = ["DIRECTOR", "WELFARE_CHAIR"].includes(role);
   const canApprove = ["HEAD_TEACHER", "DIRECTOR"].includes(role);
   const canCreate = ["WELFARE_CHAIR", "DIRECTOR"].includes(role);
 
   const [members, setMembers] = useState<WelfareMember[]>([]);
   const [products, setProducts] = useState<WelfareProduct[]>([]);
-  const [leaderboard, setLeaderboard] = useState<WelfareRank[]>([]);
+  const [approvalLoans, setApprovalLoans] = useState<(WelfareLoan & { memberName: string })[]>([]);
   const [myMember, setMyMember] = useState<WelfareMember | null>(null);
   const [tab, setTab] = useState<"my-welfare" | "overview" | "loans" | "products">("my-welfare");
   const [busy, setBusy] = useState(false);
@@ -119,7 +117,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
 
   const load = useCallback(async () => {
     try {
-      if (isAdmin && ["DIRECTOR", "WELFARE_CHAIR", "HEAD_TEACHER"].includes(role)) {
+      if (canViewOverview) {
         const res = await fetch("/api/welfare?scope=overview");
         if (res.ok) {
           const data = await res.json();
@@ -128,17 +126,22 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
           if (data.stats) setOverviewStats(data.stats);
         }
       }
+      if (role === "HEAD_TEACHER") {
+        const res = await fetch("/api/welfare?scope=approvals", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          setApprovalLoans((data.loans ?? []).map((loan: WelfareLoan & { member: { user: { name: string } } }) => ({ ...loan, memberName: loan.member.user.name })));
+        }
+      }
       // Always load own member record
       const selfRes = await fetch("/api/welfare");
       if (selfRes.ok) {
         const selfData = await selfRes.json();
         setMyMember(selfData.member);
-        if (!isAdmin || role === "NON_TEACHING_STAFF") setProducts(selfData.products ?? []);
+        if (!canViewOverview) setProducts(selfData.products ?? []);
       }
-      const ranksRes = await fetch("/api/welfare?scope=leaderboard");
-      if (ranksRes.ok) setLeaderboard((await ranksRes.json()).leaderboard ?? []);
     } catch { /* ignore */ }
-  }, [isAdmin, role]);
+  }, [canViewOverview, role]);
 
   const loadStaff = useCallback(async () => {
     try {
@@ -227,15 +230,17 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
     if (ok) { notify(action === "reject" ? "Application rejected." : "Done!"); void load(); }
   }
 
-  const pendingLoans = members.flatMap((m) => m.loans.filter((l) => l.status === "PENDING_HEADTEACHER" || l.status === "PENDING_DIRECTOR")).map((l) => {
+  const pendingLoans = canViewOverview ? members.flatMap((m) => m.loans.filter((l) => l.status === "PENDING_HEADTEACHER" || l.status === "PENDING_DIRECTOR")).map((l) => {
     const m = members.find((mb) => mb.loans.some((ml) => ml.id === l.id));
     return { ...l, memberName: m?.user.name ?? "Unknown" };
-  });
+  }) : approvalLoans;
 
   // Self member card
   const selfTotalSavings = myMember?.totalSavings ?? 0;
   const selfLoanLimit = Math.floor(selfTotalSavings * 0.6);
-  const selfActiveLoans = myMember?.loans.filter((l) => !["REJECTED", "PAID"].includes(l.status)) ?? [];
+  const selfActiveLoans = myMember?.loans.filter((l) => ["APPROVED", "DISBURSED"].includes(l.status)) ?? [];
+  const hasPendingLoan = myMember?.loans.some((loan) => ["PENDING_HEADTEACHER", "PENDING_DIRECTOR"].includes(loan.status)) ?? false;
+  const selfContributionTotal = myMember?.contributions.reduce((total, contribution) => total + contribution.amount, 0) ?? 0;
 
   return (
     <div className="mx-auto max-w-6xl space-y-3">
@@ -261,7 +266,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
       <div className="mb-6 flex gap-1 rounded-2xl bg-slate-100/80 p-1 dark:bg-slate-800">
         {[
           { key: "my-welfare", label: "My Welfare", icon: PiggyBank },
-          ...(["DIRECTOR", "WELFARE_CHAIR", "HEAD_TEACHER"].includes(role) ? [{ key: "overview", label: "All Members", icon: Users }] : []),
+          ...(canViewOverview ? [{ key: "overview", label: "Welfare management", icon: Users }] : []),
           { key: "loans", label: "Loans & Advances", icon: CreditCard },
           { key: "products", label: "Welfare Products", icon: Gift },
         ].map(({ key, label, icon: Icon }) => (
@@ -293,35 +298,14 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
                 <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 p-5 text-white shadow-lg">
                   <p className="text-xs font-semibold opacity-80">Active Loans</p>
                   <p className="mt-2 text-2xl font-extrabold">{selfActiveLoans.length}</p>
-                  <p className="mt-1 text-xs opacity-70">{selfActiveLoans.length ? `KES ${selfActiveLoans.reduce((a, l) => a + l.principalAmount - l.repaidAmount, 0).toLocaleString()} outstanding · 3 mos clearance` : "No active loans"}</p>
+                  <p className="mt-1 text-xs opacity-70">{selfActiveLoans.length ? `KES ${selfActiveLoans.reduce((a, l) => a + l.principalAmount - l.repaidAmount, 0).toLocaleString()} outstanding` : hasPendingLoan ? "Application awaiting approval" : "No active loans"}</p>
                 </div>
                 <div className="rounded-2xl bg-gradient-to-br from-rose-400 to-rose-600 p-5 text-white shadow-lg">
                   <p className="text-xs font-semibold opacity-80">Contributions</p>
-                  <p className="mt-2 text-2xl font-extrabold">{myMember.contributions.length}</p>
-                  <p className="mt-1 text-xs opacity-70">Total records</p>
+                  <p className="mt-2 text-2xl font-extrabold">{fmt(selfContributionTotal)}</p>
+                  <p className="mt-1 text-xs opacity-70">{myMember.contributions.length} personal contribution records</p>
                 </div>
               </div>
-
-              {/* Top 3 Highest Contributors (Smart compact widget) */}
-              {leaderboard.length > 0 && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-3.5 text-xs text-blue-950 dark:border-blue-950 dark:bg-blue-950/30 dark:text-blue-200">
-                  <div className="flex items-center gap-2 font-bold">
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-blue-700 text-xs text-white">★</span>
-                    <span>Top 3 Welfare Contributors:</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {leaderboard.slice(0, 3).map((item, idx) => (
-                      <span key={item.rank} className="inline-flex items-center gap-1.5 rounded-full border border-blue-200/60 bg-white px-3 py-1 font-semibold text-slate-800 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                        <span className={`grid h-4 w-4 place-items-center rounded-full text-[9px] font-black text-white ${idx === 0 ? "bg-amber-500" : idx === 1 ? "bg-slate-400" : "bg-amber-700"}`}>
-                          {item.rank}
-                        </span>
-                        {item.name}
-                        <span className="text-[10px] text-slate-400">({item.role.replaceAll("_", " ")})</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Apply buttons with 3-month clearance rule & loan top-up */}
               <div className="space-y-2">
@@ -408,7 +392,7 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
       )}
 
       {/* Overview Tab (Admin) */}
-      {tab === "overview" && ["DIRECTOR", "WELFARE_CHAIR", "HEAD_TEACHER"].includes(role) && (
+      {tab === "overview" && canViewOverview && (
         <div className="space-y-4">
           {/* Loan portfolio totals are restricted to the Director and Welfare Chair. */}
           <div className={`grid gap-3 ${["DIRECTOR", "WELFARE_CHAIR"].includes(role) ? "sm:grid-cols-3" : ""}`}>
@@ -543,17 +527,17 @@ export default function WelfareClient({ role }: { role: string; userId?: string;
                     <p className="text-xs font-bold text-blue-700 mb-1">Available Loan Limit</p>
                     <p className="text-xl font-extrabold text-blue-900 dark:text-blue-200">{fmt(selfLoanLimit)}</p>
                     <p className="text-xs text-blue-600 mt-1">60% of your {fmt(selfTotalSavings)} savings</p>
-                    <button onClick={() => openLoan("LOAN")}
-                      className="mt-3 w-full rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800">
-                      Apply for Loan
+                    <button onClick={() => openLoan("LOAN")} disabled={hasPendingLoan}
+                      className="mt-3 w-full rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 disabled:opacity-50">
+                      {hasPendingLoan ? "Application pending" : "Apply for Loan"}
                     </button>
                   </div>
                   <div className="rounded-xl bg-emerald-50 p-4 dark:bg-emerald-950/30">
                     <p className="text-xs font-bold text-emerald-700 mb-1">Salary Advance</p>
                     <p className="text-xl font-extrabold text-emerald-900 dark:text-emerald-200">Up to KES 3,000</p>
                     <p className="text-xs text-emerald-600 mt-1">Available from 15th of month</p>
-                    <button onClick={() => openLoan("SALARY_ADVANCE")}
-                      className="mt-3 w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800">
+                    <button onClick={() => openLoan("SALARY_ADVANCE")} disabled={hasPendingLoan}
+                      className="mt-3 w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-50">
                       Request Advance
                     </button>
                   </div>

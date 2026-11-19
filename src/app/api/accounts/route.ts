@@ -30,12 +30,19 @@ const createSchema = z.object({
   tscNumber: z.string().trim().max(40).optional().default(""),
   qualifications: z.string().trim().max(500).optional().default(""),
   employmentTitle: z.string().trim().max(100).optional().default(""),
+  learnerId: z.string().trim().min(1).optional(),
 }).superRefine((value, context) => {
   if (
     (value.role === Role.PARENT || value.role === Role.LEARNER) &&
     (value.staffNumber || value.tscNumber || value.qualifications || value.employmentTitle)
   ) {
     context.addIssue({ code: "custom", message: "Employment details are only valid for staff accounts." });
+  }
+  if (value.role === Role.LEARNER && !value.learnerId) {
+    context.addIssue({ code: "custom", path: ["learnerId"], message: "Select the learner record this account belongs to." });
+  }
+  if (value.role !== Role.LEARNER && value.learnerId) {
+    context.addIssue({ code: "custom", path: ["learnerId"], message: "A learner record can only be linked to a learner account." });
   }
 });
 
@@ -87,13 +94,29 @@ export async function POST(request: Request) {
   const temporaryPassword = randomBytes(12).toString("base64url");
   try {
     const account = await db.$transaction(async (tx) => {
+      const { learnerId, ...accountData } = parsed.data;
+      const learner = parsed.data.role === Role.LEARNER && learnerId
+        ? await tx.learner.findUnique({ where: { id: learnerId }, select: { id: true, name: true, archivedAt: true } })
+        : null;
+      if (parsed.data.role === Role.LEARNER && (!learner || learner.archivedAt)) {
+        throw new Error("LEARNER_PROFILE_NOT_FOUND");
+      }
+      if (learner) {
+        const existingLogin = await tx.guardianLink.findFirst({ where: { learnerId: learner.id, relation: "Learner" }, select: { id: true } });
+        if (existingLogin) throw new Error("LEARNER_LOGIN_EXISTS");
+      }
       const created = await tx.user.create({
         data: {
-          ...parsed.data,
+          ...accountData,
+          ...(learner ? { name: learner.name } : {}),
           passwordHash: await bcrypt.hash(temporaryPassword, 12),
           forcePasswordChange: true,
         },
       });
+      if (learner) {
+        await tx.guardianLink.create({ data: { userId: created.id, learnerId: learner.id, relation: "Learner" } });
+        await tx.auditEvent.create({ data: { actorId: user.id, action: "LEARNER_ACCOUNT_LINKED", entity: "Learner", entityId: learner.id } });
+      }
       await createStaffWelfareMember(tx, created.id, created.role, user.id);
       await tx.auditEvent.create({
         data: { actorId: user.id, action: "ACCOUNT_CREATED", entity: "User", entityId: created.id },
@@ -105,6 +128,12 @@ export async function POST(request: Request) {
       temporaryPassword,
     }, { status: 201 });
   } catch (error) {
+    if (error instanceof Error && error.message === "LEARNER_PROFILE_NOT_FOUND") {
+      return NextResponse.json({ error: "The selected learner record is unavailable. Refresh the directory and select an active learner." }, { status: 404 });
+    }
+    if (error instanceof Error && error.message === "LEARNER_LOGIN_EXISTS") {
+      return NextResponse.json({ error: "This learner already has a portal account. Use the existing account and learner link." }, { status: 409 });
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
     }

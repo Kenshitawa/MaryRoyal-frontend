@@ -9,12 +9,21 @@ async function currentRole() { const token = (await cookies()).get("mary_session
 export async function GET(request: Request) {
  const user = await currentRole(); if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
  try { assertCan(user.role, "learners", "view"); } catch { await db.auditEvent.create({ data: { actorId: user.id, action: "ACCESS_DENIED", entity: "Learner" } }); return NextResponse.json({ error: "Forbidden" }, { status: 403 }); }
- if (user.role === "TEACHER") {
-  await db.auditEvent.create({ data: { actorId: user.id, action: "LEARNER_DIRECTORY_ACCESS_DENIED", entity: "Learner" } });
-  return NextResponse.json({ error: "Use the assigned class academic records view." }, { status: 403 });
+ const { searchParams } = new URL(request.url); const parsed = z.object({ q: z.string().max(80).optional(), query: z.string().max(80).optional(), take: z.coerce.number().int().min(1).max(100).default(25), cursor: z.string().optional() }).safeParse(Object.fromEntries(searchParams)); if (!parsed.success) return NextResponse.json({ error: "Invalid filters." }, { status: 400 });
+ const q = (parsed.data.q ?? parsed.data.query)?.trim(); let gradeScope: string[] | undefined; let linkedIds: string[] | undefined;
+ if (user.role === "TEACHER" && canInScope(user.role, "learners", "view", "roster")) {
+  const learners = await db.learner.findMany({
+   where: { archivedAt: null, admissionStatus: "APPROVED", ...(q ? { OR: [{ name: { contains: q } }, { grade: { contains: q } }] } : {}) },
+   select: { id: true, name: true, grade: true },
+   orderBy: [{ grade: "asc" }, { name: "asc" }],
+   take: parsed.data.take + 1,
+   ...(parsed.data.cursor ? { cursor: { id: parsed.data.cursor }, skip: 1 } : {}),
+  });
+  const hasMore = learners.length > parsed.data.take;
+  const rows = learners.slice(0, parsed.data.take);
+  await db.auditEvent.create({ data: { actorId: user.id, action: "LEARNER_ROSTER_VIEWED", entity: "Learner", entityId: String(rows.length) } });
+  return NextResponse.json({ learners: rows, nextCursor: hasMore ? rows.at(-1)?.id : null });
  }
- const { searchParams } = new URL(request.url); const parsed = z.object({ q: z.string().max(80).optional(), take: z.coerce.number().int().min(1).max(100).default(25), cursor: z.string().optional() }).safeParse(Object.fromEntries(searchParams)); if (!parsed.success) return NextResponse.json({ error: "Invalid filters." }, { status: 400 });
- const q = parsed.data.q?.trim(); let gradeScope: string[] | undefined; let linkedIds: string[] | undefined;
  if (canInScope(user.role, "learners", "view", "roster")) {
   const learners = await db.learner.findMany({ where: { archivedAt: null, admissionStatus: "APPROVED", ...(q ? { OR: [{ name: { contains: q } }, { grade: { contains: q } }] } : {}) }, select: { id: true, name: true, grade: true }, orderBy: [{ grade: "asc" }, { name: "asc" }], take: parsed.data.take + 1, ...(parsed.data.cursor ? { cursor: { id: parsed.data.cursor }, skip: 1 } : {}) });
   const hasMore = learners.length > parsed.data.take; const rows = learners.slice(0, parsed.data.take); return NextResponse.json({ learners: rows, nextCursor: hasMore ? rows.at(-1)?.id : null });

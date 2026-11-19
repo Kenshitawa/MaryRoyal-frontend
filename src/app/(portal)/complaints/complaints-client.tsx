@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Spinner } from "@/components/base/spinner/spinner";
+import { fetchAllLearnerOptions } from "@/lib/learner-options";
 
 type Child = { id: string; name: string; grade: string };
 type Reply = {
@@ -92,7 +93,7 @@ export default function ComplaintsClient({
     void refresh();
     // Secretary needs to load all learners
     if (isSecretary) {
-      fetch("/api/learners?take=100").then(r => r.ok ? r.json() : null).then(d => { if (d?.learners) setAllLearners(d.learners); }).catch(() => {});
+      void fetchAllLearnerOptions().then(setAllLearners).catch(() => {});
     }
   }, [refresh, isSecretary]);
 
